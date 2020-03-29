@@ -22,7 +22,7 @@ const getUsers = (request, response) => {
 }
 
 const addUser = (request, response) => {
-  const { author, title } = request.body
+  const { name, username, password, role } = request.body
 
   pool.query('INSERT INTO users (name, username, password, role) VALUES ($1, $2, $3, $4)', 
     [name, username, password, role], error => {
