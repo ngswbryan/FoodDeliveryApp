@@ -16,6 +16,8 @@ import { StaffComponent } from './staff/staff.component';
 import { ManagerComponent } from './manager/manager.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+import { RegisterComponent } from './register/register.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -25,7 +27,8 @@ import { ToastrModule } from 'ngx-toastr';
     RiderComponent,
     CustomerComponent,
     StaffComponent,
-    ManagerComponent
+    ManagerComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,
@@ -35,7 +38,9 @@ import { ToastrModule } from 'ngx-toastr';
     TooltipModule.forRoot(),
     NgxLoadingModule.forRoot({}),
     BrowserAnimationsModule,
-    ToastrModule.forRoot()
+    ToastrModule.forRoot(),
+    FormsModule,
+    ReactiveFormsModule
     
   ],
   providers: [ApiService, LoadingService],

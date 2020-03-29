@@ -22,33 +22,46 @@ export class LoginComponent implements OnInit {
     this.loadingService.loading.next(true);
     this.ApiService.getUsers().subscribe((users : any) => {
       this.users = users;
+      console.log(this.users);
     });
     this.loadingService.loading.next(false);
   }
 
   login(inputuser, inputpassword) {
+    let loggedin = false;
     this.loadingService.loading.next(true);
-    for (let user of this.users) {
-      if (user.username === inputuser) {
-        if (user.password === inputpassword) {
-          if (user.user_role === 'rider') {
-            this.router.navigate([`/rider/${user.username}`]);
-          } else if (user.user_role === 'staff') {
-            this.router.navigate([`/staff/${user.username}`]);
-          } else if (user.user_role === 'customer') {
-            this.router.navigate([`/customer/${user.username}`]);
+    for (let i = 0; i < this.users.length; i++) {
+      if (this.users[i].username === inputuser) {
+        if (this.users[i].password === inputpassword) {
+          loggedin = true;
+          if (this.users[i].user_role === 'rider') {
+            this.router.navigate([`/rider/${this.users[i].username}`]);
+          } else if (this.users[i].user_role === 'staff') {
+            this.router.navigate([`/staff/${this.users[i].username}`]);
+          } else if (this.users[i].user_role === 'customer') {
+            this.router.navigate([`/customer/${this.users[i].username}`]);
           } else {
-            this.router.navigate([`/manager/${user.username}`]);
+            this.router.navigate([`/manager/${this.users[i].username}`]);
           }
         } else {
-          this.toastr.error("Wrong password!");
+          this.toastr.show("Wrong password!");
+          this.loadingService.loading.next(false);
+          return;
         }
       } else {
         continue;
       }
     }
-    this.toastr.error("No such user");
-    this.loadingService.loading.next(true);
+    if (loggedin) {
+      this.toastr.show("Success!");
+    } else {
+      this.toastr.show("No such user");
+    }
+    this.loadingService.loading.next(false);
+  }
+
+  register() {
+    this.router.navigate(['/register']);
   }
 
 }

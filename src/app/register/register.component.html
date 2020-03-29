@@ -1,0 +1,59 @@
+
+    <div class="container-fluid">
+        <div class="row">
+          <div class="col-1"></div>
+          <div class="col-10" style="text-align: center;">
+            <br>
+            <h5>Let's create an account</h5>
+            <form [formGroup]="createUserForm">
+              <br />
+  
+            <div class="container-fluid">
+              <div class="row">
+  
+                <div class="col-12">
+                  <input type="text" placeholder="Name" formControlName="name" class="form-control form-input" />
+                </div>
+  
+                <div class="col-12">
+                    <input type="text" placeholder="Username" formControlName="username" class="form-control form-input" />
+                  </div>
+
+                  <div class="col-12">
+                    <input type="password" placeholder="Password" class="form-control form-input" formControlName="password" />
+                  </div>
+  
+                <div class="col-12">
+                  <select placeholder="Role" class="form-control form-input" formControlName="user_role">
+                    <option value="rider">Rider</option>
+                  <option value="customer">Customer</option>
+                  <option value="manager">Manager</option>
+                  <option value="staff">Restaurant Staff</option>
+                  </select>
+                </div>
+  
+                <div class="col-12">
+                  <button (click)="submitForm()" class="btn btn-block btn-primary">Sign Up</button>
+                  <br>
+                </div>
+              </div>
+  
+            </div>
+  
+          <hr />
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-12" style="font-size: 14px;">
+                <a class="pri-color" (click)="goToLogin()">or login</a>
+              </div>
+            </div>
+          </div>
+  
+          </form>
+  
+          <br>
+          </div>
+          <div class="col-1"></div>
+        </div>
+      </div>
+  

@@ -5,18 +5,21 @@ import { environment } from '../environments/environment';
 
 @Injectable()
 export class ApiService {
-  url;
+  
 
   constructor(private http: HttpClient) {
   }
 
   getBooks() {
-    console.log(this.url);
     return this.http.get('/books');
   }
 
   getUsers() {
     return this.http.get('/users');
+  }
+
+  addUser(user) {
+    return this.http.post('/users', user);
   }
 
 }

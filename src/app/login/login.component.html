@@ -10,13 +10,13 @@
             <input type="password" placeholder="password" class="form-control form-input" #userPassword required />
             <br>
             <div class="col-12" style="font-size: 14px; text-align: center;">
-                <a class="btn btn-block btn-primary">Log In</a>
+                <a class="btn btn-block btn-primary" (click)="login(userName.value, userPassword.value)">Log In</a>
               </div>
           <hr />
           <div class="container-fluid">
             <div class="row">
               <div class="col-12" style="font-size: 14px; text-align: center;">
-                <a class="btn btn-block btn-primary">Sign Up</a>
+                <a class="btn btn-block btn-primary" (click)="register()">Sign Up</a>
               </div>
             </div>
           </div>
