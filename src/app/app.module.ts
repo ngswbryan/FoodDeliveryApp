@@ -10,12 +10,22 @@ import { ApiService } from './api.service';
 import { LoginComponent } from './login/login.component';
 import { LoadingComponent } from './loading/loading.component';
 import { LoadingService } from './loading.service';
+import { RiderComponent } from './rider/rider.component';
+import { CustomerComponent } from './customer/customer.component';
+import { StaffComponent } from './staff/staff.component';
+import { ManagerComponent } from './manager/manager.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastrModule } from 'ngx-toastr';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
-    LoadingComponent
+    LoadingComponent,
+    RiderComponent,
+    CustomerComponent,
+    StaffComponent,
+    ManagerComponent
   ],
   imports: [
     BrowserModule,
@@ -23,7 +33,9 @@ import { LoadingService } from './loading.service';
     HttpClientModule,
     ModalModule.forRoot(),
     TooltipModule.forRoot(),
-    NgxLoadingModule.forRoot({})
+    NgxLoadingModule.forRoot({}),
+    BrowserAnimationsModule,
+    ToastrModule.forRoot()
     
   ],
   providers: [ApiService, LoadingService],
