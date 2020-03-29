@@ -22,10 +22,10 @@ const getUsers = (request, response) => {
 }
 
 const addUser = (request, response) => {
-  const { name, username, password, role } = request.body
+  const { name, username, password, user_role } = request.body
 
-  pool.query('INSERT INTO users (name, username, password, role) VALUES ($1, $2, $3, $4)', 
-    [name, username, password, role], error => {
+  pool.query('INSERT INTO users (name, username, password, user_role) VALUES ($1, $2, $3, $4)', 
+    [name, username, password, user_role], error => {
     if (error) {
       throw error
     }
