@@ -15,4 +15,8 @@ export class ApiService {
     return this.http.get('/books');
   }
 
+  getUsers() {
+    return this.http.get('/users');
+  }
+
 }

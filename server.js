@@ -12,8 +12,8 @@ app.use(cors())
 var distDir = __dirname + "/dist/";
 app.use(express.static(distDir));
 
-const getBooks = (request, response) => {
-  pool.query('SELECT * FROM books', (error, results) => {
+const getUsers = (request, response) => {
+  pool.query('SELECT * FROM users', (error, results) => {
     if (error) {
       throw error
     }
@@ -21,23 +21,24 @@ const getBooks = (request, response) => {
   })
 }
 
-const addBook = (request, response) => {
+const addUser = (request, response) => {
   const { author, title } = request.body
 
-  pool.query('INSERT INTO books (author, title) VALUES ($1, $2)', [author, title], error => {
+  pool.query('INSERT INTO users (name, username, password, role) VALUES ($1, $2, $3, $4)', 
+    [name, username, password, role], error => {
     if (error) {
       throw error
     }
-    response.status(201).json({ status: 'success', message: 'Book added.' })
+    response.status(201).json({ status: 'success', message: 'User added.' })
   })
 }
 
 app
-  .route('/books')
+  .route('/users')
   // GET endpoint
-  .get(getBooks)
+  .get(getUsers)
   // POST endpoint
-  .post(addBook)
+  .post(addUser)
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {

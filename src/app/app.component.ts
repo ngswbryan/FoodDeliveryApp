@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ApiService } from './api.service';
+import { LoadingService } from './loading.service';
 
 @Component({
   selector: 'app-root',
@@ -12,8 +13,12 @@ export class AppComponent {
     title : "lol"
   }];
 
-  constructor(private ApiService : ApiService) {
+  public loading = false;
 
+  constructor(private ApiService : ApiService, private loadingService: LoadingService) {
+    this.loadingService.loading.subscribe((load : any) => {
+      this.loading = load;
+    })
   }
 
   logBooks() {
