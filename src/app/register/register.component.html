@@ -24,11 +24,25 @@
                   </div>
   
                 <div class="col-12">
-                  <select placeholder="Role" class="form-control form-input" formControlName="user_role">
+                  <select placeholder="Role" class="form-control form-input" formControlName="user_role"
+                   (change)="onChange($event.target.value)">
                     <option value="rider">Rider</option>
                   <option value="customer">Customer</option>
                   <option value="manager">Manager</option>
                   <option value="staff">Restaurant Staff</option>
+                  </select>
+                </div>
+
+                <div *ngIf="isRider()" class="col-12">
+                  <select placeholder="rider_type" class="form-control form-input" formControlName="rider_type">
+                    <option value="rider">Part Time Rider</option>
+                  <option value="customer">Full Time Rider</option>
+                  </select>
+                </div>
+
+                <div *ngIf="isRestaurant()" class="col-12">
+                  <select placeholder="restaurant_name" class="form-control form-input" formControlName="restaurant_name">
+                    <option value="rider">test rest</option>
                   </select>
                 </div>
   

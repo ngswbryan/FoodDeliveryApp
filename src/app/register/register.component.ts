@@ -13,6 +13,7 @@ export class RegisterComponent implements OnInit {
 
   createUserForm: FormGroup;
   users = [];
+  role = "";
 
   constructor(private apiService: ApiService,
     private loadingService: LoadingService,
@@ -29,6 +30,8 @@ export class RegisterComponent implements OnInit {
       'username': new FormControl(''),
       'password': new FormControl(''),
       'user_role': new FormControl(''),
+      'rider_type': new FormControl(''),
+      'restaurant_name': new FormControl('')
     });
     this.loadingService.loading.next(false);
   }
@@ -59,6 +62,29 @@ export class RegisterComponent implements OnInit {
         });
         
       }
+    }
+  }
+
+  onChange(role) {
+    this.role = role;
+  }
+
+  isRider() {
+
+    if (this.role === "rider") {
+      return true;
+    } else {
+      return false;
+    }
+
+  }
+
+
+  isRestaurant() {
+    if (this.role === "manager" || this.role === "staff") {
+      return true;
+    } else {
+      return false;
     }
   }
 
