@@ -1,29 +1,36 @@
 -- ENTITIES
 
 CREATE TABLE Users (
-    uid  SERIAL PRIMARY KEY,
+    uid SERIAL PRIMARY KEY,
     name VARCHAR(100),
-    username VARCHAR(100) UNIQUE,
+    username VARCHAR(100),
     password VARCHAR(100),
-    user_role VARCHAR(100)
+    role_type VARCHAR(100),
+    date_joined INTEGER,
+    UNIQUE(username)
 );
 
-CREATE TABLE PartTimeDeliveryRider (
-    uid INTEGER REFERENCES Users
+CREATE TABLE Riders (
+    rider_id INTEGER REFERENCES Users(uid)
         ON DELETE CASCADE,
-    weekly_salary FLOAT,
-    UNIQUE(uid)
+    rating FLOAT,
+    working INTEGER, --to know if he's free or not
+    base_salary FLOAT, --in terms of monthly
+    rider_type BOOLEAN, --pt or ft
+    UNIQUE(rider_id)
 );
 
-CREATE TABLE FullTimeDeliveryRider (
-    uid INTEGER REFERENCES Users
-        ON DELETE CASCADE,
-    monthly_salary FLOAT,
-    UNIQUE(uid)
+CREATE TABLE Restaurants (
+    rid INTEGER PRIMARY KEY,
+    rname VARCHAR(100),
+    min_order FLOAT,
+    unique(rid)
 );
 
 CREATE TABLE RestaurantStaff (
     uid INTEGER REFERENCES Users
+        ON DELETE CASCADE,
+    rid INTEGER REFERENCES Restaurants(rid)
         ON DELETE CASCADE
 );
 
@@ -44,17 +51,11 @@ CREATE TABLE Customers (
     -- recentFIfth VARCHAR(100)
 );
 
-CREATE TABLE Restaurants (
-    rid INTEGER PRIMARY KEY,
-    rname VARCHAR(100),
-    min_order FLOAT,
-    unique(rid)
-);
-
 CREATE TABLE FoodOrder (
     order_id INTEGER PRIMARY KEY,
     rid INTEGER REFERENCES Restaurants NOT NULL,
-    total_price FLOAT NOT NULL,
+    total_cost FLOAT NOT NULL,
+    order_date DATE,
     date_time TIMESTAMP NOT NULL,
     status VARCHAR(100),
     UNIQUE(order_id)
@@ -67,7 +68,9 @@ CREATE TABLE FoodItem (
     cuisine_type VARCHAR(100),
     food_name VARCHAR(100),
     quantity INTEGER,
-    availability_status INTEGER
+    overall_rating FLOAT,
+    ordered_count INTEGER,
+    availability_status BOOLEAN
 );
 
 CREATE TABLE PromotionalCampaign (
@@ -78,16 +81,9 @@ CREATE TABLE PromotionalCampaign (
     end_date DATE
 );
 
-CREATE TABLE Report (
-    uid INTEGER REFERENCES FDSManager,
-    report_id INTEGER PRIMARY KEY,
-    description VARCHAR(100),
-    report_date DATE
-);
-
 CREATE TABLE WeeklyWorkSchedule (
-    wws_id INTEGER PRIMARY KEY,
-    rider_id INTEGER references PartTimeDeliveryRider(uid),
+    wws_id SERIAL PRIMARY KEY,
+    rider_id INTEGER references Riders(rider_id),
     start_hour INTEGER,
     end_hour INTEGER,
     day INTEGER,
@@ -98,6 +94,15 @@ CREATE TABLE WeeklyWorkSchedule (
     -- CHECK(start_hour >= 10),
     -- CHECK(end_hour <= 22),
     -- CHECK(end_hour >= 10)
+);
+
+CREATE TABLE MonthlyWorkSchedule (
+    mws_id INTEGER PRIMARY KEY,
+    rider_id INTEGER REFERENCES Riders(rider_id), 
+    firstWWS INTEGER,
+    secondWWS INTEGER,
+    thirdWWS INTEGER,
+    fourthWWS INTEGER 
 );
 
 -- for WWS
@@ -118,15 +123,6 @@ CREATE TRIGGER update_WWS
   EXECUTE PROCEDURE checkWWS();
 -- for WWS
 
-CREATE TABLE MonthlyWorkSchedule (
-    mws_id INTEGER PRIMARY KEY,
-    rider_id INTEGER REFERENCES FullTimeDeliveryRider(uid), 
-    firstWWS INTEGER,
-    secondWWS INTEGER,
-    thirdWWS INTEGER,
-    fourthWWS INTEGER 
-);
-
 
 
 --ENTITIES
@@ -143,16 +139,17 @@ CREATE TABLE MonthlyWorkSchedule (
 -- )
 
 CREATE TABLE Orders (
-    uid INTEGER REFERENCES Customers(uid) NOT NULL,
     order_id INTEGER REFERENCES FoodOrder(order_id) NOT NULL,
-    payment_method INTEGER NOT NULL,
+    have_credit_card BOOLEAN,
+    PRIMARY KEY(order_id),
     UNIQUE(order_id)
 );
 
 CREATE TABLE Sells (
     rid INTEGER REFERENCES Restaurants(rid) NOT NULL, 
     food_id INTEGER REFERENCES FoodItem(food_id) NOT NULL,
-    price FLOAT NOT NULL
+    price FLOAT NOT NULL,
+    PRIMARY KEY(rid, food_id)
 );
 
 CREATE TABLE Receives (
@@ -162,20 +159,40 @@ CREATE TABLE Receives (
 
 CREATE TABLE Delivery (
     delivery_id INTEGER,
-    cost FLOAT,
-    delivery_start_time TIME,
-    delivery_end_time TIME,
+    order_id INTEGER REFERENCES Orders(order_id),
+    uid INTEGER REFERENCES Customers(uid),
+    rider_id INTEGER REFERENCES Riders(rider_id),
+    cost FLOAT NOT NULL,
+    delivery_start_time TIMESTAMP NOT NULL,
+    delivery_end_time TIMESTAMP NOT NULL,
+    time_for_one_delivery INTEGER,
     location VARCHAR(100),
-    rating INTEGER, 
+    delivery_rating INTEGER, 
+    food_review varchar(100),
+    ongoing BOOLEAN,
+    PRIMARY KEY(delivery_id),
     UNIQUE(delivery_id)
 );
 
 CREATE TABLE Contain (
     order_id INTEGER REFERENCES FoodOrder(order_id),
-    food_id INTEGER REFERENCES FoodItem(food_id)
+    food_id INTEGER REFERENCES FoodItem(food_id),
+    PRIMARY KEY(order_id, food_id),
+    UNIQUE(order_id, food_id)
 );
 
 --RELATIONSHIPS
+
+
+
+-- --POPULATING DATA
+-- INSERT INTO Restaurants VALUES (1, 'kfc', 5.0);
+-- INSERT INTO Restaurants VALUES (2, 'mac', 4.0);
+
+-- INSERT INTO FoodItem VALUES (1, 1, 'asian', 'chicken rice', 20, 1);
+-- INSERT INTO FoodItem VALUES (2. 2, 'western', 'pork chop', 15, 1);
+
+-- INSERT INTO PromotionalCampaign values (100, 20, 'this is discount 1', '22-01-2018', '23-02-2018');  
 
 
 
