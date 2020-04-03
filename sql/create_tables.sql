@@ -6,7 +6,7 @@ CREATE TABLE Users (
     username VARCHAR(100),
     password VARCHAR(100),
     role_type VARCHAR(100),
-    date_joined INTEGER,
+    date_joined TIMESTAMP,
     UNIQUE(username)
 );
 
@@ -23,7 +23,7 @@ CREATE TABLE Riders (
 CREATE TABLE Restaurants (
     rid INTEGER PRIMARY KEY,
     rname VARCHAR(100),
-    min_order FLOAT,
+    min_order_price DECIMAL,
     unique(rid)
 );
 
@@ -52,10 +52,11 @@ CREATE TABLE Customers (
 );
 
 CREATE TABLE FoodOrder (
-    order_id INTEGER PRIMARY KEY,
+    order_id SERIAL PRIMARY KEY,
+    uid INTEGER REFERENCES Users NOT NULL,
     rid INTEGER REFERENCES Restaurants NOT NULL,
-    total_cost FLOAT NOT NULL,
-    order_date DATE,
+    have_credit_card BOOLEAN,
+    total_cost DECIMAL NOT NULL,
     date_time TIMESTAMP NOT NULL,
     status VARCHAR(100),
     UNIQUE(order_id)
@@ -68,7 +69,7 @@ CREATE TABLE FoodItem (
     cuisine_type VARCHAR(100),
     food_name VARCHAR(100),
     quantity INTEGER,
-    overall_rating FLOAT,
+    overall_rating DECIMAL,
     ordered_count INTEGER,
     availability_status BOOLEAN
 );
@@ -138,17 +139,10 @@ CREATE TRIGGER update_WWS
 
 -- )
 
-CREATE TABLE Orders (
-    order_id INTEGER REFERENCES FoodOrder(order_id) NOT NULL,
-    have_credit_card BOOLEAN,
-    PRIMARY KEY(order_id),
-    UNIQUE(order_id)
-);
-
 CREATE TABLE Sells (
     rid INTEGER REFERENCES Restaurants(rid) NOT NULL, 
     food_id INTEGER REFERENCES FoodItem(food_id) NOT NULL,
-    price FLOAT NOT NULL,
+    price DECIMAL NOT NULL,
     PRIMARY KEY(rid, food_id)
 );
 
@@ -158,11 +152,10 @@ CREATE TABLE Receives (
 );
 
 CREATE TABLE Delivery (
-    delivery_id INTEGER,
-    order_id INTEGER REFERENCES Orders(order_id),
-    uid INTEGER REFERENCES Customers(uid),
+    delivery_id SERIAL,
+    order_id INTEGER REFERENCES FoodOrder(order_id),
     rider_id INTEGER REFERENCES Riders(rider_id),
-    cost FLOAT NOT NULL,
+    cost DECIMAL NOT NULL,
     delivery_start_time TIMESTAMP NOT NULL,
     delivery_end_time TIMESTAMP NOT NULL,
     time_for_one_delivery INTEGER,
@@ -182,17 +175,5 @@ CREATE TABLE Contain (
 );
 
 --RELATIONSHIPS
-
-
-
--- --POPULATING DATA
--- INSERT INTO Restaurants VALUES (1, 'kfc', 5.0);
--- INSERT INTO Restaurants VALUES (2, 'mac', 4.0);
-
--- INSERT INTO FoodItem VALUES (1, 1, 'asian', 'chicken rice', 20, 1);
--- INSERT INTO FoodItem VALUES (2. 2, 'western', 'pork chop', 15, 1);
-
--- INSERT INTO PromotionalCampaign values (100, 20, 'this is discount 1', '22-01-2018', '23-02-2018');  
-
 
 
