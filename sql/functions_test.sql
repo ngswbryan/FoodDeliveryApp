@@ -17,10 +17,10 @@
 -- SELECT match_to_uid('jess10');
 
 --function test for f
--- SELECT filter_by_uid('lance'); --doesn't work yet
+-- SELECT filter_by_uid('lance');
 
 --function test for g
--- g doesnt work yet
+ SELECT riders_table(true);
 
 --function test for h
-SELECT location_table();
+--SELECT location_table();
