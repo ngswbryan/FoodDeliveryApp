@@ -11,4 +11,16 @@
 -- SELECT customers_table();
 
 --function test for e
-SELECT filterByMonth(5, 2018);
+-- SELECT filterByMonth(5, 2018);
+
+--function test for 
+-- SELECT match_to_uid('jess10');
+
+--function test for f
+-- SELECT filter_by_uid('lance'); --doesn't work yet
+
+--function test for g
+-- g doesnt work yet
+
+--function test for h
+SELECT location_table();

@@ -26,7 +26,7 @@
 --     AND (SELECT EXTRACT(YEAR FROM FO.date_time)) = input_year;
 -- $$ LANGUAGE SQL;
 
---d) STATISTICS OF ALL CUSTOMERS
+-- d) STATISTICS OF ALL CUSTOMERS
 -- CREATE OR REPLACE FUNCTION customers_table()
 -- RETURNS TABLE (
 --     order_month BIGINT,
@@ -37,8 +37,8 @@
 -- ) AS $$
 --     SELECT (SELECT EXTRACT(MONTH FROM FO.date_time)::BIGINT) as order_month, (SELECT EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, FO.uid, count(*), SUM(FO.total_cost)
 --     FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id
---     GROUP BY input_month, input_year, FO.uid;
--- $$ LANGUAGE SQL
+--     GROUP BY order_month, order_year, FO.uid;
+-- $$ LANGUAGE SQL;
 
 -- --e)
 -- CREATE OR REPLACE FUNCTION filterByMonth(input_month BIGINT, input_year BIGINT)
@@ -58,16 +58,22 @@
 --     WHERE CTE.order_month = input_month;
 -- $$ LANGUAGE SQL;
 
-CREATE OR REPLACE FUNCTION match_to_uid(input_name VARCHAR)
-RETURNS INTEGER $$
-    SELECT U.uid
-    FROM Users U
-    WHERE input_name = U.username;
-$$ LANGUAGE SQL;
+-- CREATE OR REPLACE FUNCTION match_to_uid(input_name VARCHAR)
+-- RETURNS INTEGER AS $$
+--     SELECT U.uid
+--     FROM Users U
+--     WHERE input_name = U.username;
+-- $$ LANGUAGE SQL;
 
--- --f)
+--f)
 -- CREATE OR REPLACE FUNCTION filter_by_uid(input_name VARCHAR)
--- RETURNS TABLE $$
+-- RETURNS TABLE ( 
+--     order_month BIGINT,
+--     order_year BIGINT,
+--     delivery_uid INTEGER,
+--     count BIGINT,
+--     sum DECIMAL
+-- ) AS $$
 -- declare 
 --     uid_matched INTEGER;
 -- begin
@@ -75,28 +81,47 @@ $$ LANGUAGE SQL;
 
 --     SELECT * 
 --     FROM (
---         SELECT EXTRACT(MONTH FROM FO.order_date) AS order_month, D.uid, count(*), SUM(FO.total_cost)
---         FROM FoodOrder FO join Delivery D on FO.uid = D.uid
---         GROUP BY order_month, FO.uidavera
+--         SELECT (SELECT EXTRACT(MONTH FROM FO.date_time)::BIGINT) AS order_month, (SELECT EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, FO.uid as uid, count(*), SUM(FO.total_cost)
+--         FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id
+--         GROUP BY order_month, order_year, FO.uid
 --     ) AS CTE
 --     WHERE CTE.uid = uid_matched;
 -- end
 -- $$ LANGUAGE PLPGSQL;
 
--- -- --g) statistics of riders 
--- -- CREATE OR REPLACE FUNCTION riders_table(rider_type BOOLEAN)
--- -- RETURNS TABLE $$
--- --     SELECT EXTRACT(MONTH FROM FO.order_date) AS order_month, D.rider_id, count(*), SUM(D.time_for_one_delivery) as total_hours_worked, 
--- --     (CASE WHEN rider_type THEN (SUM(D.time_for_one_delivery) *  + count(*) * 15) --FT
--- --          ELSE (SUM(D.time_for_one_delivery) * 10 + count(*) * 10)) as total_salary_earned, (total_hours_worked/count(*)) as average_delivery_time,
--- --     count(D.delivery_rating) as total_number_ratings, (sum(D.delivery_rating)/total_number_ratings) as average_ratings
--- --     FROM FoodOrder FO join Delivery D on FO.rider_id = D.rider_id join Riders R on R.rider_id = D.rider_id
--- --     GROUP BY order_month, FO.rider_id
--- -- $$ LANGUAGE SQL 
+-- g) statistics of riders 
+-- CREATE OR REPLACE FUNCTION riders_table(rider_type BOOLEAN)
+-- RETURNS TABLE (
+--     order_month BIGINT,
+--     order_year BIGINT,
+--     rider_id INTEGER,
+--     count BIGINT,
+--     total_hours_worked BIGINT,
+--     total_salary BIGINT,
+--     average_delivery_time BIGINT,
+--     total_number_ratings BIGINT,
+--     average_ratings DECIMAL
+-- ) AS $$
+--     SELECT (SELECT EXTRACT(MONTH FROM FO.date_time)::BIGINT) as order_month, (SELECT EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, 
+--     D.rider_id as rider_id, count(*) as count, SUM(D.time_for_one_delivery) as total_hours_worked, 
+--     CASE WHEN rider_type THEN (SUM(D.time_for_one_delivery) *  + count(*) * 15)
+--          ELSE (sum(D.time_for_one_delivery) * 10 + count(*) * 10)
+--     END as total_salary,
+
+--     sum(D.time_for_one_delivery)/count(*) as average_delivery_time,
+--     count(D.delivery_rating) as total_number_ratings, 
+--     (sum(D.delivery_rating)/count(D.delivery_rating)) as average_ratings
+--     FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id join Riders R on R.rider_id = D.rider_id
+--     GROUP BY order_month, R.rider_id
+-- $$ LANGUAGE SQL;
 
 -- --h) statistic of location
--- CREATE OR REPLACE FUNCTION location_table
--- RETURNS TABLE $$
+-- CREATE OR REPLACE FUNCTION location_table()
+-- RETURNS TABLE (
+--     delivery_location VARCHAR,
+--     count BIGINT,
+--     hour VARCHAR
+-- ) AS $$
 --     SELECT D.location, count(*), 
 --     CASE WHEN EXTRACT(HOUR FROM FO.date_time) = 10 THEN '1000 - 1100'
 --          WHEN EXTRACT(HOUR FROM FO.date_time) = 11 THEN '1100 - 1200'

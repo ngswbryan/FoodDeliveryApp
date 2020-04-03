@@ -13,7 +13,7 @@ CREATE TABLE Users (
 CREATE TABLE Riders (
     rider_id INTEGER REFERENCES Users(uid)
         ON DELETE CASCADE,
-    rating FLOAT,
+    rating DECIMAL,
     working INTEGER, --to know if he's free or not
     base_salary FLOAT, --in terms of monthly
     rider_type BOOLEAN, --pt or ft
