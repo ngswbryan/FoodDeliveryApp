@@ -15,11 +15,11 @@ export class ApiService {
   }
 
   getUsers() {
-    return this.http.get('/users');
+    return this.http.get('http://localhost:3002/users');
   }
 
   addUser(user) {
-    return this.http.post('/users', user);
+    return this.http.post('http://localhost:3002/users', user);
   }
 
 }
