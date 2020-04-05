@@ -1,1 +1,205 @@
-<p>manager works!</p>
+<div
+  class="container-fluid"
+  style="align-content: center; background-color: #f3f5f8;"
+>
+  <div class="row">
+    <div class="col-md-12" style="text-align: center;">
+      <h1>Welcome to FoodHub, {{ username }}</h1>
+    </div>
+  </div>
+
+  <br />
+
+  <div class="row">
+    <div class="col-md-2"></div>
+
+    <div class="col-md-8" style="text-align: center;">
+      <h5>View data for the month of</h5>
+      <select id="cars" name="cars">
+        <option value="volvo">January</option>
+        <option value="saab">February</option>
+        <option value="fiat">March</option>
+        <option value="audi">April</option>
+        <option value="audi">May</option>
+        <option value="audi">June</option>
+        <option value="audi">July</option>
+        <option value="audi">blah</option>
+        <option value="audi">blahhh</option>
+      </select>
+      <select id="cars" name="cars">
+        <option value="volvo">year</option>
+      </select>
+    </div>
+
+    <div class="col-md-2"></div>
+  </div>
+  <br />
+  <br />
+
+  <div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+      <div class="row">
+        <div class="col-md-4 box">
+          <div class="inner">
+            <h5>New Customers</h5>
+            <span>Number</span>
+          </div>
+        </div>
+        <div class="col-md-4 box">
+          <div class="inner">
+            <h5>Total Orders</h5>
+            <span>Number</span>
+          </div>
+        </div>
+        <div class="col-md-4 box">
+          <div class="inner">
+            <h5>Total Cost of Orders</h5>
+            <span>Number</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-1"></div>
+  </div>
+  <br />
+  <div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+      <div class="row">
+        <div class="col-md-4 box">
+          <div style="background-color: transparent;" class="inner">
+            <button class="btn btn-primary" (click)="seeLocation()">
+              See Statistics By Location
+            </button>
+          </div>
+        </div>
+        <div class="col-md-4 box">
+          <div style="background-color: transparent;" class="inner">
+            <button class="btn btn-primary" (click)="seeCustomers()">
+              See Statistics Of All Customer
+            </button>
+          </div>
+        </div>
+        <div class="col-md-4 box">
+          <div style="background-color: transparent;" class="inner">
+            <button class="btn btn-primary" (click)="seeRiders()">
+              See Statistics For All Riders
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-1"></div>
+  </div>
+  <br />
+  <div class="row" *ngIf="showCustomers">
+    <div class="col-md-2"></div>
+
+    <div class="col-md-8">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">Month</th>
+            <th scope="col">Customer ID</th>
+            <th scope="col">Total Orders</th>
+            <th scope="col">Total Order Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let country of countries; index as i">
+            <th scope="row">{{ i + 1 }}</th>
+            <td>
+              <img
+                [src]="
+                  'https://upload.wikimedia.org/wikipedia/commons/' +
+                  country.flag
+                "
+                class="mr-2"
+                style="width: 20px"
+              />
+              {{ country.name }}
+            </td>
+            <td>{{ country.area | number }}</td>
+            <td>{{ country.population | number }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-md-2"></div>
+  </div>
+
+  <div class="row" *ngIf="showLocation">
+    <div class="col-md-2"></div>
+
+    <div class="col-md-8">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">Location</th>
+            <th scope="col">Time</th>
+            <th scope="col">Total Orders</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let country of countries; index as i">
+            <th scope="row">{{ i + 1 }}</th>
+            <td>
+              <img
+                [src]="
+                  'https://upload.wikimedia.org/wikipedia/commons/' +
+                  country.flag
+                "
+                class="mr-2"
+                style="width: 20px"
+              />
+              {{ country.name }}
+            </td>
+            <td>{{ country.area | number }}</td>
+            <td>{{ country.population | number }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-md-2"></div>
+  </div>
+
+  <div class="row" *ngIf="showRiders">
+    <div class="col-md-12">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">Month</th>
+            <th scope="col">Rider ID</th>
+            <th scope="col">Total Orders Delivered</th>
+            <th scope="col">Total Hours Worked</th>
+            <th scope="col">Total Salary Earned</th>
+            <th scope="col">Average Delivery Time</th>
+            <th scope="col">Number of Ratings</th>
+            <th scope="col">Average Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let country of countries; index as i">
+            <th scope="row">{{ i + 1 }}</th>
+            <td>
+              <img
+                [src]="
+                  'https://upload.wikimedia.org/wikipedia/commons/' +
+                  country.flag
+                "
+                class="mr-2"
+                style="width: 20px"
+              />
+              {{ country.name }}
+            </td>
+            <td>{{ country.area | number }}</td>
+            <td>{{ country.population | number }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
