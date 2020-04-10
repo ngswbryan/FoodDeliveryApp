@@ -58,7 +58,7 @@ CREATE TABLE FoodOrder (
     have_credit_card BOOLEAN,
     total_cost DECIMAL NOT NULL,
     date_time TIMESTAMP NOT NULL,
-    status VARCHAR(100),
+    completion_status BOOLEAN,
     UNIQUE(order_id)
 );
 
@@ -72,15 +72,18 @@ CREATE TABLE FoodItem (
     overall_rating DECIMAL,
     ordered_count INTEGER,
     availability_status BOOLEAN,
-    PRIMARY KEY(food_id, rid)
+    PRIMARY KEY(food_id, rid),
+    UNIQUE(food_id)
 );
 
 CREATE TABLE PromotionalCampaign (
     promo_id INTEGER PRIMARY KEY,
+    rid INTEGER REFERENCES Restaurants 
+        ON DELETE CASCADE,
     discount INTEGER,
     description VARCHAR(100),
-    start_date DATE,
-    end_date DATE
+    start_date TIMESTAMP,
+    end_date TIMESTAMP
 );
 
 CREATE TABLE WeeklyWorkSchedule (
@@ -156,7 +159,7 @@ CREATE TABLE Delivery (
     delivery_id SERIAL,
     order_id INTEGER REFERENCES FoodOrder(order_id),
     rider_id INTEGER REFERENCES Riders(rider_id),
-    cost DECIMAL NOT NULL,
+    delivery_cost DECIMAL NOT NULL,
     delivery_start_time TIMESTAMP NOT NULL,
     delivery_end_time TIMESTAMP NOT NULL,
     time_for_one_delivery INTEGER,
