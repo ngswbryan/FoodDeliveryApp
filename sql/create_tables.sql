@@ -63,7 +63,7 @@ CREATE TABLE FoodOrder (
 );
 
 CREATE TABLE FoodItem (
-    food_id INTEGER PRIMARY KEY, 
+    food_id INTEGER, 
     rid INTEGER REFERENCES Restaurants
         ON DELETE CASCADE,
     cuisine_type VARCHAR(100),
@@ -71,7 +71,8 @@ CREATE TABLE FoodItem (
     quantity INTEGER,
     overall_rating DECIMAL,
     ordered_count INTEGER,
-    availability_status BOOLEAN
+    availability_status BOOLEAN,
+    PRIMARY KEY(food_id, rid)
 );
 
 CREATE TABLE PromotionalCampaign (
