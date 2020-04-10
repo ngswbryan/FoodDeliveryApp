@@ -110,8 +110,8 @@ CREATE TYPE orderdeliveryid AS (
     foodquantity INTEGER;
     item INTEGER[];
  BEGIN
-      INSERT INTO FoodOrder(uid, rid, have_credit_card, total_cost, date_time, status)
-      VALUES (customer_uid, restaurant_id, have_credit, total_order_cost, current_timestamp, 'In Progress')
+      INSERT INTO FoodOrder(uid, rid, have_credit_card, total_cost, date_time, completion_status)
+      VALUES (customer_uid, restaurant_id, have_credit, total_order_cost, current_timestamp, FALSE)
       RETURNING order_id into orderid;
 
       INSERT INTO Delivery(order_id, rider_id, delivery_cost, delivery_start_time, location, ongoing)
@@ -211,7 +211,7 @@ CREATE TYPE orderdeliveryid AS (
  RETURNS VOID AS $$
  BEGIN 
      UPDATE FoodOrder
-     SET status = 'done'
+     SET completion_status = TRUE
      WHERE order_id = ( SELECT D.order_id FROM Delivery D WHERE D.delivery_id = deliveryid);
  
      UPDATE Delivery
