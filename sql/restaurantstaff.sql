@@ -27,7 +27,7 @@
 -- end
 -- $$ LANGUAGE PLPGSQL;
 
---b) update menu items that belong -> can change count of food items, cuisine_type, food_name
+-- b) update menu items that belong -> can change count of food items, cuisine_type, food_name
 -- CREATE OR REPLACE FUNCTION update_count(food_item INTEGER, current_rid INTEGER, new_count INTEGER)
 -- RETURNS VOID AS $$
 -- BEGIN TRANSACTION;
@@ -61,30 +61,80 @@
 --     AND food_id = food_item;
 -- $$ LANGUAGE SQL;
 
---c) generate report for restaurant
--- CREATE OR REPLACE FUNCTION generate_report(input_month INTEGER)
+--generates top five based on highest rating
+-- CREATE OR REPLACE FUNCTION generate_top_five(current_rid INTEGER)
 -- RETURNS TABLE (
---     num_orders INTEGER,
---     num_cost DECIMAL,
-
+--     top_few VARCHAR
 -- ) AS $$
-
-CREATE OR REPLACE FUNCTION generate_top_five(input_month INTEGER, current_rid INTEGER)
-RETURNS TABLE (
-    top_few VARCHAR
-) AS $$
-    SELECT food_name
-    FROM FoodItem FO
-    WHERE FO.rid = current_rid
-    ORDER BY FO.overall_rating DESC
-    LIMIT(5); 
-$$ LANGUAGE SQL;
-
---a)
--- CREATE OR REPLACE FUNCTION new_customers(input_month INTEGER, input_year INTEGER)
--- RETURNS INTEGER AS $$
---     SELECT C.uid 
---     FROM Customers C join Users U on C.uid = U.uid
---     WHERE (SELECT EXTRACT(MONTH FROM U.date_joined)) = input_month
---     AND (SELECT EXTRACT(YEAR FROM U.date_joined)) = input_year;
+--     SELECT DISTINCT food_name
+--     FROM FoodItem FO
+--     WHERE FO.rid = current_rid
+--     ORDER BY FO.overall_rating DESC
+--     LIMIT(5); 
 -- $$ LANGUAGE SQL;
+
+-- CREATE OR REPLACE FUNCTION generate_total_num_of_orders(input_month INTEGER, input_year INTEGER, current_rid INTEGER)
+-- RETURNS BIGINT AS $$
+--     SELECT count(*)
+--     FROM FoodOrder FO 
+--     WHERE FO.rid = current_rid
+--     AND (SELECT(EXTRACT(MONTH FROM FO.date_time))) = input_month
+--     AND (SELECT(EXTRACT(YEAR FROM FO.date_time))) = input_year
+--     AND FO.completion_status = TRUE;
+-- $$ LANGUAGE SQL;
+
+-- CREATE OR REPLACE FUNCTION generate_total_cost_of_orders(input_month INTEGER, input_year INTEGER, current_rid INTEGER)
+-- RETURNS DECIMAL AS $$
+--     SELECT SUM(FO.total_cost)
+--     FROM FoodOrder FO 
+--     WHERE FO.rid = current_rid
+--     AND (SELECT(EXTRACT(MONTH FROM FO.date_time))) = input_month
+--     AND (SELECT(EXTRACT(YEAR FROM FO.date_time))) = input_year
+--     AND FO.completion_status = TRUE;
+-- $$ LANGUAGE SQL;
+
+
+--- PROMOTIONAL CAMPAIGN
+-- CREATE OR REPLACE FUNCTION generate_all_my_promos(current_rid INTEGER)
+-- RETURNS TABLE (
+--     promo_id INTEGER,
+--     discount INTEGER,
+--     description VARCHAR(100),
+--     start_date TIMESTAMP,
+--     end_date TIMESTAMP,
+--     duration INTEGER
+-- ) AS $$
+--     declare
+--         time_frame INTEGER;
+--     begin
+--         SELECT (DATE_PART('day', (input_end_date::timestamp - input_start_date::timestamp))) INTO time_frame;
+        
+--         RETURN QUERY(
+--             SELECT DISTINCT PC.promo_id, PC.discount, PC.description, PC.start_date, PC.end_date, time_frame
+--             FROM PromotionalCampaign PC
+--             WHERE PC.rid = current_rid
+--         );
+--     end
+-- $$ LANGUAGE PLPGSQL;
+
+
+--AVERAGE ORDERS DURING THIS PROMO
+-- CREATE OR REPLACE FUNCTION average_orders_during_promo(current_rid INTEGER, input_start_date TIMESTAMP, input_end_date TIMESTAMP)
+-- RETURNS DECIMAL 
+-- AS $$
+--     declare 
+--         time_frame INTEGER;
+--     begin
+--          SELECT (DATE_PART('day', (input_end_date::timestamp - input_start_date::timestamp))) INTO time_frame;
+
+
+--         RETURN (
+--             SELECT count(*)::decimal/time_frame::decimal
+--             FROM FoodOrder FO join PromotionalCampaign PC
+--             ON FO.rid = PC.rid
+--             WHERE PC.rid = current_rid
+--             AND FO.date_time BETWEEN input_start_date and input_end_date
+--             AND FO.completion_status = TRUE
+--         );
+--     end
+-- $$ LANGUAGE PLPGSQL;
