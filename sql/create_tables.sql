@@ -52,7 +52,7 @@ CREATE TABLE Customers (
 );
 
 CREATE TABLE FoodOrder (
-    order_id SERIAL PRIMARY KEY,
+    order_id SERIAL PRIMARY KEY NOT NULL,
     uid INTEGER REFERENCES Users NOT NULL,
     rid INTEGER REFERENCES Restaurants NOT NULL,
     have_credit_card BOOLEAN,
@@ -152,13 +152,13 @@ CREATE TABLE Receives (
 );
 
 CREATE TABLE Delivery (
-    delivery_id SERIAL,
+    delivery_id SERIAL NOT NULL,
     order_id INTEGER REFERENCES FoodOrder(order_id),
     rider_id INTEGER REFERENCES Riders(rider_id),
     cost DECIMAL NOT NULL,
     delivery_start_time TIMESTAMP NOT NULL,
-    delivery_end_time TIMESTAMP NOT NULL,
-    time_for_one_delivery INTEGER,
+    delivery_end_time TIMESTAMP,
+    time_for_one_delivery INTEGER, --in minutes
     location VARCHAR(100),
     delivery_rating INTEGER, 
     food_review varchar(100),

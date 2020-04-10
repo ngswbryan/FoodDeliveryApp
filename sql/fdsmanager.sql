@@ -112,7 +112,7 @@
      count(D.delivery_rating) as total_number_ratings, 
      (sum(D.delivery_rating)/count(D.delivery_rating))::DECIMAL as average_ratings
      FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id join Riders R on R.rider_id = D.rider_id
-     GROUP BY order_month, D.rider_id, order_year, rider_type
+     GROUP BY order_month, D.rider_id, order_year, rider_type;
  $$ LANGUAGE SQL;
 
  --h) statistic of location
