@@ -3,3 +3,9 @@
 
 --a)
 -- SELECT bring_menu_up('rach');
+
+--b)
+-- SELECT update_count(1, 1);
+
+--c)
+SELECT generate_top_five()
