@@ -76,7 +76,7 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
   EXECUTE FUNCTION notify_user();
 
  --update order count
- CREATE OR REPLACE FUNCTION update_order_count(foodid INTEGER, currentorder INTEGER)
+ CREATE OR REPLACE FUNCTION update_order_count(foodid INTEGER, currentorder INTEGER, orderid INTEGER)
  RETURNS void as $$
  DECLARE
     orderedcount INTEGER;
@@ -94,6 +94,9 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
         SET availability_status = false
         WHERE foodid = FI.food_id;
       END IF;
+
+      INSERT INTO Orders(order_id,food_id)
+      VALUES (foodid, orderid);
  END
  $$ LANGUAGE PLPGSQL;
 
@@ -113,18 +116,28 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
 
  --g)
  -- insert food order & delivery, returns delivery_id
- CREATE OR REPLACE FUNCTION new_food_order(customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delievery_location VARCHAR(100))
- RETURNS INTEGER AS $$
+ CREATE TYPE orderdeliveryid AS (
+  order_id   integer,
+  delivery_id  integer
+);
+
+
+ CREATE OR REPLACE FUNCTION new_food_order(customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100))
+ RETURNS orderdeliveryid AS $$
  DECLARE
     orderid INTEGER;
+    deliveryid INTEGER;
  BEGIN
-      INSERT INTO FoodOrder(uid, rid, have_credit_card, total_cost, data_time, status)
+      INSERT INTO FoodOrder(uid, rid, have_credit_card, total_cost, date_time, status)
       VALUES (customer_uid, restaurant_id, have_credit, total_order_cost, current_timestamp, 'In Progress')
       RETURNING order_id into orderid;
 
-      INSERT INTO Delivery(order_id, rider_id, cost, delivery_start_time, location, ongoing)
-      VALUES (orderid, (SELECT R.rider_id FROM Riders R WHERE R.working = FALSE ORDER BY random() LIMIT 1), total_order_cost, current_timestamp, delivery_location, TRUE)
-      RETURNING delivery_id;
+      INSERT INTO Delivery(order_id, rider_id, delivery_cost, delivery_start_time, location, ongoing)
+      VALUES (orderid, (SELECT R.rider_id FROM Riders R WHERE R.working = FALSE ORDER BY random() LIMIT 1), 5.5, current_timestamp, delivery_location, TRUE) --flat fee of 5.5 for delivery cost
+      RETURNING delivery_id into deliveryid;
+
+      RETURN  (orderid,deliveryid);
+
   END
   $$ LANGUAGE PLPGSQL;
 

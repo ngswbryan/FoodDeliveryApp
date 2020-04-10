@@ -14,7 +14,7 @@ CREATE TABLE Riders (
     rider_id INTEGER REFERENCES Users(uid)
         ON DELETE CASCADE,
     rating DECIMAL,
-    working INTEGER, --to know if he's free or not
+    working BOOLEAN, --to know if he's free or not
     base_salary FLOAT, --in terms of monthly
     rider_type BOOLEAN, --pt or ft
     UNIQUE(rider_id)
@@ -147,6 +147,13 @@ CREATE TABLE Sells (
     PRIMARY KEY(rid, food_id)
 );
 
+
+CREATE TABLE Orders (
+    order_id INTEGER REFERENCES FoodOrder(order_id),
+    food_id INTEGER REFERENCES FoodItem(food_id),
+    PRIMARY KEY(order_id,food_id)
+);
+
 CREATE TABLE Receives (
     order_id INTEGER REFERENCES FoodOrder(order_id),
     promo_id INTEGER REFERENCES PromotionalCampaign(promo_id)
@@ -156,7 +163,7 @@ CREATE TABLE Delivery (
     delivery_id SERIAL NOT NULL,
     order_id INTEGER REFERENCES FoodOrder(order_id),
     rider_id INTEGER REFERENCES Riders(rider_id),
-    cost DECIMAL NOT NULL,
+    delivery_cost DECIMAL NOT NULL,
     delivery_start_time TIMESTAMP NOT NULL,
     delivery_end_time TIMESTAMP,
     time_for_one_delivery INTEGER, --in minutes
