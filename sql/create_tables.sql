@@ -15,6 +15,7 @@ CREATE TABLE Riders (
         ON DELETE CASCADE,
     rating DECIMAL,
     working BOOLEAN, --to know if he's free or not
+    is_delivering BOOLEAN,
     base_salary FLOAT, --in terms of monthly
     rider_type BOOLEAN, --pt or ft
     UNIQUE(rider_id)
@@ -169,7 +170,7 @@ CREATE TABLE Delivery (
     delivery_cost DECIMAL NOT NULL,
     delivery_start_time TIMESTAMP NOT NULL,
     delivery_end_time TIMESTAMP,
-    time_for_one_delivery INTEGER, --in minutes
+    time_for_one_delivery DECIMAL, --in minutes
     location VARCHAR(100),
     delivery_rating INTEGER, 
     food_review varchar(100),

@@ -38,15 +38,21 @@
 -- SELECT list_of_fooditems(1);
 
 --(e)
-BEGIN;
-SELECT update_order_count(2,1,16);
-SELECT new_food_order(1, 2, false, 59.3, 'nus');
-COMMIT;
+SELECT update_order_count(ARRAY[ [1,1],[3,1] ], 1, 2, false, 59.3, 'korea');
 
---(f)
+--(f)AND R.is_delivering = FALSE
 --SELECT reward_balance(1);
 
 --(g)
---SELECT new_food_order(1, 2, false, 59.3, 'nus');
+--SELECT rider_name(52);
+--SELECT location(52);
+--SELECT rider_rating(52);
+
+--(h)
+--SELECT update_done_status(5);
 
 
+--i)
+--SELECT delivery_endtime(5);
+--SELECT food_review_update('very good', 5);
+--SELECT update_delivery_rating(10,5);

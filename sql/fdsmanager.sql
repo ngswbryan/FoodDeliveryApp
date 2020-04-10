@@ -90,30 +90,36 @@
  $$ LANGUAGE PLPGSQL;
 
 -- g) statistics of riders 
- CREATE OR REPLACE FUNCTION riders_table(rider_type BOOLEAN)
+ CREATE OR REPLACE FUNCTION riders_table(ridertype BOOLEAN)
  RETURNS TABLE (
      order_month BIGINT,
      order_year BIGINT,
      rider_id INTEGER,
      count BIGINT,
-     total_hours_worked BIGINT,
-     total_salary BIGINT,
-     average_delivery_time BIGINT,
+     total_hours_worked NUMERIC,
+     total_salary NUMERIC,
+     average_delivery_time NUMERIC,
      total_number_ratings BIGINT,
-     average_ratings DECIMAL
+     average_ratings NUMERIC
  ) AS $$
-     SELECT ( EXTRACT(MONTH FROM FO.date_time)::BIGINT) as order_month, ( EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, 
-     D.rider_id as rider_id, count(*) as count, SUM(D.time_for_one_delivery) as total_hours_worked, 
-     CASE WHEN rider_type THEN SUM(D.time_for_one_delivery) *  + count(*) * 15
+ BEGIN
+ RETURN QUERY
+     SELECT ( EXTRACT(MONTH FROM FO.date_time)::BIGINT) as order_month,
+     ( EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, 
+     D.rider_id as rider_id,
+     count(*) as count, SUM(D.time_for_one_delivery) as total_hours_worked,
+
+     CASE WHEN ridertype THEN SUM(D.time_for_one_delivery) *  + count(*) * 15
           ELSE (sum(D.time_for_one_delivery) * 10 + count(*) * 10)
      END as total_salary,
 
      sum(D.time_for_one_delivery)/count(*) as average_delivery_time,
      count(D.delivery_rating) as total_number_ratings, 
-     (sum(D.delivery_rating)/count(D.delivery_rating))::DECIMAL as average_ratings
+     sum(D.delivery_rating)::DECIMAL/count(D.delivery_rating) as average_ratings
      FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id join Riders R on R.rider_id = D.rider_id
      GROUP BY order_month, D.rider_id, order_year, rider_type;
- $$ LANGUAGE SQL;
+  END
+ $$ LANGUAGE PLPGSQL;
 
  --h) statistic of location
  CREATE OR REPLACE FUNCTION location_table()
