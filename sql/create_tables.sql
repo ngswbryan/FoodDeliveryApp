@@ -152,7 +152,6 @@ CREATE TABLE Sells (
     PRIMARY KEY(rid, food_id)
 );
 
-
 CREATE TABLE Orders (
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
