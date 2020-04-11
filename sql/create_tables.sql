@@ -14,8 +14,8 @@ CREATE TABLE Riders (
     rider_id INTEGER REFERENCES Users(uid)
         ON DELETE CASCADE,
     rating DECIMAL,
-    working BOOLEAN, --to know if he's free or not
-    is_delivering BOOLEAN,
+    working BOOLEAN, --to know if he's working now or not
+    is_delivering BOOLEAN,--to know if he's free or not
     base_salary FLOAT, --in terms of monthly
     rider_type BOOLEAN, --pt or ft
     UNIQUE(rider_id)
@@ -94,7 +94,8 @@ CREATE TABLE WeeklyWorkSchedule (
     end_hour INTEGER,
     day INTEGER,
     week INTEGER,
-    month INTEGER
+    month INTEGER,
+    shift INTEGER --for full timers
     -- CHECK(end_hour - start_hour <= 4),
     -- CHECK(start_hour <= 22),
     -- CHECK(start_hour >= 10),
@@ -105,10 +106,10 @@ CREATE TABLE WeeklyWorkSchedule (
 CREATE TABLE MonthlyWorkSchedule (
     mws_id INTEGER PRIMARY KEY,
     rider_id INTEGER REFERENCES Riders(rider_id), 
-    firstWWS INTEGER,
-    secondWWS INTEGER,
-    thirdWWS INTEGER,
-    fourthWWS INTEGER 
+    firstWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),
+    secondWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),
+    thirdWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),
+    fourthWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id)
 );
 
 -- for WWS
