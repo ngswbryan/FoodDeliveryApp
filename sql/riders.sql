@@ -1,22 +1,22 @@
 --a)
--- -- get current job
--- CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
--- RETURNS TABLE (
---     order_id INTEGER,
---     location VARCHAR(100),
---     recipient VARCHAR(100),
---     food_name VARCHAR(100),
---     total_cost DECIMAL
--- ) AS $$
---     SELECT D.order_id, D.location, U.username, FI.food_name, D.delivery_cost + FO.order_cost
---     FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
---     join Users U on FO.uid = U.uid 
---     join Orders O on FO.order_id = O.order_id
---     join FoodItem FI on FI.food_id = O.food_id
---     WHERE input_rider_id = D.rider_id
---     AND D.ongoing = TRUE;
+ -- get current job
+ CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
+ RETURNS TABLE (
+     order_id INTEGER,
+     location VARCHAR(100),
+     recipient VARCHAR(100),
+     food_name VARCHAR(100),
+     total_cost DECIMAL
+ ) AS $$
+     SELECT D.order_id, D.location, U.username, FI.food_name, D.delivery_cost + FO.order_cost
+     FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
+     join Users U on FO.uid = U.uid 
+     join Orders O on FO.order_id = O.order_id
+     join FoodItem FI on FI.food_id = O.food_id
+     WHERE input_rider_id = D.rider_id
+     AND D.ongoing = TRUE;
 
--- $$ LANGUAGE SQL;
+ $$ LANGUAGE SQL;
 
 --b)
 -- get work schedule
@@ -31,14 +31,13 @@ RETURNS TABLE (
     base_salary DECIMAL,
     total_commission BIGINT
 ) AS $$
-    SELECT input_week, input_month, input_year, R.base_salary, (count(delivery_id) * R.commission)
-    FROM Riders R join WeeklyWorkSchedule WWS on R.rider_id = WWS.rider_id
-    join Delivery D on D.rider_id = WWS.rider_id
-    WHERE input_rider_id = WWS.rider_id
-    AND (SELECT EXTRACT(WEEK FROM D.delivery_end_time)) = input_week --take in user do manipulation
+    SELECT input_week, input_month, input_year, R.base_salary, (count(D.delivery_end_time) * R.commission )
+    FROM Riders R join Delivery D on D.rider_id = R.rider_id
+    WHERE input_rider_id = R.rider_id
+    AND (SELECT EXTRACT('day' from date_trunc('week', D.delivery_end_time) - date_trunc('week', date_trunc('month',  D.delivery_end_time))) / 7 + 1 ) = input_week --take in user do manipulation
     AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
     AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
-    GROUP BY WWS.rider_id, R.rider_id;
+    GROUP BY R.rider_id;
 $$ LANGUAGE SQL;
 
 -- manipulation to calculate week
