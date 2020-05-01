@@ -31,13 +31,10 @@ RETURNS TABLE (
     base_salary DECIMAL,
     total_commission BIGINT
 ) AS $$
-    SELECT WWS.week, WWS.month, WWS.year, R.base_salary, (count(delivery_id) * R.commission)
+    SELECT input_week, input_month, input_year, R.base_salary, (count(delivery_id) * R.commission)
     FROM Riders R join WeeklyWorkSchedule WWS on R.rider_id = WWS.rider_id
     join Delivery D on D.rider_id = WWS.rider_id
     WHERE input_rider_id = WWS.rider_id
-    AND WWS.week = input_week
-    AND WWS.month = input_month
-    AND WWS.year = input_year
     AND (SELECT EXTRACT(WEEK FROM D.delivery_end_time)) = input_week --take in user do manipulation
     AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
     AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
@@ -48,15 +45,17 @@ $$ LANGUAGE SQL;
 -- CREATE OR REPLACE FUNCTION convert_to_week(input_week INTEGER, input_month INTEGER)
 -- RETURNS INTEGER AS
 -- $$
+-- BEGIN
 --     IF input_month = 1 THEN
 --         RETURN input_week;
 --     ELSE 
 --         RETURN input_month*4 + input_week;
 --     END IF;
+-- END 
 -- $$ LANGUAGE PLPGSQL;
 
 -- --d)
--- -- get previous monthly salaries
+-- -- get previous monthly salaries DOESNT WORK 
 -- CREATE OR REPLACE FUNCTION get_monthly_salaries(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
 -- RETURNS TABLE (
 --     month INTEGER,
@@ -80,17 +79,17 @@ $$ LANGUAGE SQL;
  --when rider clicks completed
  --foodorder status change to done
   --change ongoing to false in Delivery
- CREATE OR REPLACE FUNCTION update_done_status(deliveryid INTEGER)
- RETURNS VOID AS $$
- BEGIN 
-     UPDATE FoodOrder
-     SET completion_status = TRUE
-     WHERE order_id = ( SELECT D.order_id FROM Delivery D WHERE D.delivery_id = deliveryid);
+--  CREATE OR REPLACE FUNCTION update_done_status(deliveryid INTEGER)
+--  RETURNS VOID AS $$
+--  BEGIN 
+--      UPDATE FoodOrder
+--      SET completion_status = TRUE
+--      WHERE order_id = ( SELECT D.order_id FROM Delivery D WHERE D.delivery_id = deliveryid);
  
-     UPDATE Delivery
-     SET ongoing = FALSE,
-         delivery_end_time = current_timestamp,
-         time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = deliveryid)/60::DECIMAL
-     WHERE delivery_id = deliveryid;
- END
- $$ LANGUAGE PLPGSQL;
+--      UPDATE Delivery
+--      SET ongoing = FALSE,
+--          delivery_end_time = current_timestamp,
+--          time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = deliveryid)/60::DECIMAL
+--      WHERE delivery_id = deliveryid;
+--  END
+--  $$ LANGUAGE PLPGSQL;
