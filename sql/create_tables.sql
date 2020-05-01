@@ -16,8 +16,10 @@ CREATE TABLE Riders (
     rating DECIMAL,
     working BOOLEAN, --to know if he's working now or not
     is_delivering BOOLEAN,--to know if he's free or not
-    base_salary FLOAT, --in terms of monthly
-    rider_type BOOLEAN, --pt or ft
+    base_salary DECIMAL, --in terms of per month
+    rider_type BOOLEAN, --pt f or ft t
+    commission INTEGER, --PT is $2, FT is $3
+    PRIMARY KEY(rider_id),
     UNIQUE(rider_id)
 );
 
@@ -96,17 +98,14 @@ CREATE TABLE WeeklyWorkSchedule (
     week INTEGER,
     month INTEGER,
     year INTEGER,
-    shift INTEGER --for full timers
-    -- CHECK(end_hour - start_hour <= 4),
-    -- CHECK(start_hour <= 22),
-    -- CHECK(start_hour >= 10),
-    -- CHECK(end_hour <= 22),
-    -- CHECK(end_hour >= 10)
+    shift INTEGER
 );
 
 CREATE TABLE MonthlyWorkSchedule (
-    mws_id INTEGER PRIMARY KEY,
+    mws_id SERIAL PRIMARY KEY,
     rider_id INTEGER REFERENCES Riders(rider_id), 
+    month INTEGER,
+    year INTEGER,
     firstWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),
     secondWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),
     thirdWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),

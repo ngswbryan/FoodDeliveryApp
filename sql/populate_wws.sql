@@ -1,0 +1,4 @@
+INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 2, 11, 15, 2, 2, 5, 2018, 2);
+INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 2, 16, 20, 2, 2, 5, 2018, 2);
+INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 7, 10, 14, 3, 3, 5, 2018, 1);
+INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 7, 15, 19, 3, 3, 5, 2018, 1);
