@@ -110,7 +110,7 @@ CREATE TYPE orderdeliveryid AS (
     foodquantity INTEGER;
     item INTEGER[];
  BEGIN
-      INSERT INTO FoodOrder(uid, rid, have_credit_card, total_cost, date_time, completion_status)
+      INSERT INTO FoodOrder(uid, rid, have_credit_card, order_cost, date_time, completion_status)
       VALUES (customer_uid, restaurant_id, have_credit, total_order_cost, current_timestamp, FALSE)
       RETURNING order_id into orderid;
 
