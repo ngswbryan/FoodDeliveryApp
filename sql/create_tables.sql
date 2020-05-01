@@ -16,8 +16,10 @@ CREATE TABLE Riders (
     rating DECIMAL,
     working BOOLEAN, --to know if he's working now or not
     is_delivering BOOLEAN,--to know if he's free or not
-    base_salary FLOAT, --in terms of monthly
-    rider_type BOOLEAN, --pt or ft
+    base_salary DECIMAL, --in terms of per month
+    rider_type BOOLEAN, --pt f or ft t
+    commission INTEGER, --PT is $2, FT is $3
+    PRIMARY KEY(rider_id),
     UNIQUE(rider_id)
 );
 
@@ -57,7 +59,7 @@ CREATE TABLE FoodOrder (
     uid INTEGER REFERENCES Users NOT NULL,
     rid INTEGER REFERENCES Restaurants NOT NULL,
     have_credit_card BOOLEAN,
-    total_cost DECIMAL NOT NULL,
+    order_cost DECIMAL NOT NULL,
     date_time TIMESTAMP NOT NULL,
     completion_status BOOLEAN,
     UNIQUE(order_id)
@@ -95,17 +97,15 @@ CREATE TABLE WeeklyWorkSchedule (
     day INTEGER,
     week INTEGER,
     month INTEGER,
-    shift INTEGER --for full timers
-    -- CHECK(end_hour - start_hour <= 4),
-    -- CHECK(start_hour <= 22),
-    -- CHECK(start_hour >= 10),
-    -- CHECK(end_hour <= 22),
-    -- CHECK(end_hour >= 10)
+    year INTEGER,
+    shift INTEGER
 );
 
 CREATE TABLE MonthlyWorkSchedule (
-    mws_id INTEGER PRIMARY KEY,
+    mws_id SERIAL PRIMARY KEY,
     rider_id INTEGER REFERENCES Riders(rider_id), 
+    month INTEGER,
+    year INTEGER,
     firstWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),
     secondWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),
     thirdWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),
@@ -113,21 +113,21 @@ CREATE TABLE MonthlyWorkSchedule (
 );
 
 -- for WWS
-CREATE OR REPLACE FUNCTION checkWWS()
-  RETURNS trigger AS $$
-BEGIN
-   IF (NEW.start_hour > 22 OR NEW.start_hour < 10) AND (NEW.end_hour > 22 AND NEW.end_hour < 10) THEN
-       RAISE EXCEPTION 'Time interval has to be between 1000 - 2200';
-   END IF;
-   RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION checkWWS()
+--   RETURNS trigger AS $$
+-- BEGIN
+--    IF (NEW.start_hour > 22 OR NEW.start_hour < 10) AND (NEW.end_hour > 22 AND NEW.end_hour < 10) THEN
+--        RAISE EXCEPTION 'Time interval has to be between 1000 - 2200';
+--    END IF;
+--    RETURN NULL;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_WWS
-  BEFORE UPDATE OF start_hour, end_hour OR INSERT
-  ON WeeklyWorkSchedule
-  FOR EACH ROW
-  EXECUTE PROCEDURE checkWWS();
+-- CREATE TRIGGER update_WWS
+--   BEFORE UPDATE OF start_hour, end_hour OR INSERT
+--   ON WeeklyWorkSchedule
+--   FOR EACH ROW
+--   EXECUTE PROCEDURE checkWWS();
 -- for WWS
 
 
