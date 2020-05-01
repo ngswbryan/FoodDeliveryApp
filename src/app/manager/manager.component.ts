@@ -1,11 +1,12 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Data, Params, Router } from "@angular/router";
 import { LoadingService } from "../loading.service";
+import { ApiService } from "../api.service";
 
 @Component({
   selector: "app-manager",
   templateUrl: "./manager.component.html",
-  styleUrls: ["./manager.component.css"]
+  styleUrls: ["./manager.component.css"],
 })
 export class ManagerComponent implements OnInit {
   username;
@@ -15,13 +16,19 @@ export class ManagerComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private apiService: ApiService
   ) {}
 
   ngOnInit() {
     this.loadingService.loading.next(true);
     this.route.params.subscribe((params: Params) => {
       this.username = params.username;
+      this.apiService
+        .getUserByUsername(this.username)
+        .subscribe((test: any) => {
+          console.log(test);
+        });
     });
     this.loadingService.loading.next(false);
   }
