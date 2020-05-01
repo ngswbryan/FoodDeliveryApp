@@ -33,12 +33,15 @@ const addUser = (request, response) => {
   })
 }
 
+
 app
   .route('/users')
   // GET endpoint
   .get(getUsers)
   // POST endpoint
   .post(addUser)
+  //GET endpoint 
+
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {
