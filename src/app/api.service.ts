@@ -8,18 +8,18 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   getUsers() {
-    return this.http.get("http://localhost:3002/users");
+    return this.http.get("/users");
   }
 
   addUser(user) {
-    return this.http.post("http://localhost:3002/users", user);
+    return this.http.post("/users", user);
   }
 
   getUserByUsername(username) {
-    return this.http.get(`http://localhost:3002/users/${username}`);
+    return this.http.get(`/users/${username}`);
   }
 
   getRestaurants() {
-    return this.http.get("http://localhost:3002/restaurants");
+    return this.http.get("/restaurants");
   }
 }
