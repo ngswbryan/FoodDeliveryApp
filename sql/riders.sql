@@ -43,8 +43,8 @@ RETURNS TABLE (
     year INTEGER,
     base_salary DECIMAL,
     total_commission BIGINT,
-    total_num_orders INTEGER,
-    total_num_hours_worked INTEGER
+    total_num_orders BIGINT,
+    total_num_hours_worked BIGINT
 ) AS $$
 declare 
     salary_base DECIMAL;
@@ -61,13 +61,14 @@ begin
     INTO initial_commission;
 
     RETURN QUERY(
-        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission), count(*), 
+        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission), count(*), SUM(end_hour - start_hour)
         FROM Riders R join Delivery D on D.rider_id = R.rider_id
+        join WeeklyWorkSchedule WWS on WWS.rider_id = D.rider_id
         WHERE input_rider_id = D.rider_id
         AND (SELECT EXTRACT('day' from date_trunc('week', D.delivery_end_time) - date_trunc('week', date_trunc('month',  D.delivery_end_time))) / 7 + 1 ) = input_week --take in user do manipulation
         AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
         AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
-        AND D.ongoing = False;
+        AND D.ongoing = False
     );
 end
 $$ LANGUAGE PLPGSQL;
@@ -80,12 +81,13 @@ RETURNS TABLE (
     year INTEGER,
     base_salary DECIMAL,
     total_commission BIGINT,
-    total_num_orders INTEGER,
-    total_num_hours_worked INTEGER
+    total_num_orders BIGINT,
+    total_num_hours_worked BIGINT
 ) AS $$
-    SELECT input_month, input_year, R.base_salary, count(delivery_id) * R.commission, count(*), 
+    SELECT input_month, input_year, R.base_salary * 4, count(delivery_id) * R.commission, count(*), SUM(end_hour - start_hour)
     FROM Riders R join MonthlyWorkSchedule MWS on R.rider_id = MWS.rider_id
     join Delivery D on D.rider_id = MWS.rider_id
+    join WeeklyWorkSchedule WWS on WWS.rider_id = MWS.rider_id
     WHERE input_rider_id = D.rider_id
     AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
     AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
