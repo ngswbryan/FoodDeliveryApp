@@ -35,13 +35,13 @@
  $$ LANGUAGE PLPGSQL;
 
 -- --c)
--- -- get previous weekly salaries --for part-time
+-- -- get previous weekly salaries --for weekly
 CREATE OR REPLACE FUNCTION get_weekly_statistics(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     week INTEGER,
     month INTEGER,
     year INTEGER,
-    base_salary DECIMAL,
+    base_salary DECIMAL, --weekly
     total_commission BIGINT,
     total_num_orders BIGINT,
     total_num_hours_worked BIGINT
@@ -74,12 +74,12 @@ end
 $$ LANGUAGE PLPGSQL;
 
 -- -- --d)
--- -- -- get previous monthly salaries  --for full-time
+-- -- -- get previous monthly salaries  --for month
 CREATE OR REPLACE FUNCTION get_monthly_statistics(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     month INTEGER,
     year INTEGER,
-    base_salary DECIMAL,
+    base_salary DECIMAL, --weekly
     total_commission BIGINT,
     total_num_orders BIGINT,
     total_num_hours_worked BIGINT

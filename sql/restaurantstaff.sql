@@ -147,3 +147,5 @@ RETURNS VOID
 AS $$
     INSERT INTO PromotionalCampaign VALUES(DEFAULT, current_rid, discount, description, start_date, end_date);
 $$ LANGUAGE SQL;
+
+-- apply promo through the menu
