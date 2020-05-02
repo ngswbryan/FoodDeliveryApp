@@ -228,6 +228,8 @@ INSERT INTO FoodOrder VALUES(DEFAULT, 11, 3, TRUE, 30.0,'2019-05-22 04:00:06', T
 INSERT INTO FoodOrder VALUES(DEFAULT, 1, 4, FALSE, 20.0,'2019-08-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,'2019-05-22 04:00:06', TRUE);
 
+
+
 INSERT INTO Sells VALUES (1,1,5.5);
 INSERT INTO Sells VALUES (2,2,4.5);
 INSERT INTO Sells VALUES (3,3,2.5);
@@ -695,8 +697,8 @@ $$ LANGUAGE PLPGSQL;
 -- FDS Manager
 --a)
  CREATE OR REPLACE FUNCTION new_customers(input_month INTEGER, input_year INTEGER)
- RETURNS INTEGER AS $$
-     SELECT C.uid 
+ RETURNS setof record AS $$
+     SELECT C.uid, U.username 
      FROM Customers C join Users U on C.uid = U.uid
      WHERE (SELECT EXTRACT(MONTH FROM U.date_joined)) = input_month
      AND (SELECT EXTRACT(YEAR FROM U.date_joined)) = input_year;
@@ -704,8 +706,8 @@ $$ LANGUAGE PLPGSQL;
 
  --b)
  CREATE OR REPLACE FUNCTION total_orders(input_month INTEGER, input_year INTEGER)
- RETURNS BIGINT AS $$
-     SELECT count(*) AS total_order_numbers
+ RETURNS setof record AS $$
+     SELECT *
      FROM FoodOrder FO
      WHERE (SELECT EXTRACT(MONTH FROM FO.date_time)) = input_month
      AND (SELECT EXTRACT(YEAR FROM FO.date_time)) = input_year

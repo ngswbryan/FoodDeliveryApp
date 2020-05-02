@@ -4,7 +4,7 @@
 >
   <div class="row">
     <div class="col-md-12" style="text-align: center;">
-      <h1>Welcome to FoodHub, {{ username }}</h1>
+      <h1>Welcome to FoodHub, {{ username }} 😎</h1>
     </div>
   </div>
 
@@ -15,19 +15,34 @@
 
     <div class="col-md-8" style="text-align: center;">
       <h5>View data for the month of</h5>
-      <select id="cars" name="cars">
-        <option value="volvo">January</option>
-        <option value="saab">February</option>
-        <option value="fiat">March</option>
-        <option value="audi">April</option>
-        <option value="audi">May</option>
-        <option value="audi">June</option>
-        <option value="audi">July</option>
-        <option value="audi">blah</option>
-        <option value="audi">blahhh</option>
+      <select
+        id="month"
+        name="month"
+        [(ngModel)]="selectedMonth"
+        (change)="handlePeriodChange()"
+      >
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
       </select>
-      <select id="cars" name="cars">
-        <option value="volvo">year</option>
+      <select
+        id="year"
+        name="year"
+        [(ngModel)]="selectedYear"
+        (change)="handlePeriodChange()"
+      >
+        <option value="2020">2020</option>
+        <option value="2021">2021</option>
+        <option value="2022">2022</option>
       </select>
     </div>
 
@@ -37,30 +52,98 @@
   <br />
 
   <div class="row">
-    <div class="col-md-1"></div>
-    <div class="col-md-10">
-      <div class="row">
-        <div class="col-md-4 box">
-          <div class="inner">
-            <h5>New Customers</h5>
-            <span>Number</span>
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+      <accordion [isAnimated]="true">
+        <accordion-group heading="View New Customers">
+          Total new customers: {{ newCustomers.length }}
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="isCollapsed = !isCollapsed"
+            [attr.aria-expanded]="!isCollapsed"
+            aria-controls="collapseBasic"
+            style="float: right;"
+          >
+            Show new users
+          </button>
+          <hr />
+          <div id="collapseBasic" [collapse]="isCollapsed" [isAnimated]="true">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Customer ID</th>
+                  <th scope="col">Username</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let customer of newCustomers; index as i">
+                  <th scope="row">{{ i + 1 }}</th>
+                  <td>
+                    {{ customer[0] }}
+                  </td>
+                  <td>{{ customer[1] }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
-        <div class="col-md-4 box">
-          <div class="inner">
-            <h5>Total Orders</h5>
-            <span>Number</span>
+        </accordion-group>
+        <accordion-group heading="View Total Orders">
+          Total orders: {{ totalOrders.length }}
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="isCollapsedOrders = !isCollapsedOrders"
+            [attr.aria-expanded]="!isCollapsedOrders"
+            aria-controls="collapseBasic"
+            style="float: right;"
+          >
+            Show order details
+          </button>
+          <hr />
+          <div
+            id="collapseBasic"
+            [collapse]="isCollapsedOrders"
+            [isAnimated]="true"
+          >
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Order ID</th>
+                  <th scope="col">Customer ID</th>
+                  <th scope="col">Rider ID</th>
+                  <th scope="col">Order Cost</th>
+                  <th scope="col">Order Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let order of totalOrders; index as i">
+                  <th scope="row">{{ i + 1 }}</th>
+                  <td>
+                    {{ order[0] }}
+                  </td>
+                  <td>{{ order[1] }}</td>
+                  <td>{{ order[2] }}</td>
+                  <td>{{ order[4] }}</td>
+                  <td>{{ order[5] }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
-        <div class="col-md-4 box">
-          <div class="inner">
-            <h5>Total Cost of Orders</h5>
-            <span>Number</span>
+        </accordion-group>
+        <accordion-group heading="View Total Order Cost">
+          <div *ngIf="totalCost[0].total_cost != null">
+            Total orders cost: <b>${{ totalCost[0].total_cost }}</b> 😄
           </div>
-        </div>
-      </div>
+          <div *ngIf="totalCost[0].total_cost == null">
+            There were zero orders for this month! 😞
+          </div>
+        </accordion-group>
+      </accordion>
     </div>
-    <div class="col-md-1"></div>
+    <div class="col-md-2"></div>
   </div>
   <br />
   <div class="row">
@@ -116,7 +199,7 @@
                   country.flag
                 "
                 class="mr-2"
-                style="width: 20px"
+                style="width: 20px;"
               />
               {{ country.name }}
             </td>
@@ -137,27 +220,20 @@
       <table class="table table-striped">
         <thead>
           <tr>
+            <th scope="col">#</th>
             <th scope="col">Location</th>
             <th scope="col">Time</th>
             <th scope="col">Total Orders</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let country of countries; index as i">
+          <tr *ngFor="let location of location; index as i">
             <th scope="row">{{ i + 1 }}</th>
             <td>
-              <img
-                [src]="
-                  'https://upload.wikimedia.org/wikipedia/commons/' +
-                  country.flag
-                "
-                class="mr-2"
-                style="width: 20px"
-              />
-              {{ country.name }}
+              {{ location[0] }}
             </td>
-            <td>{{ country.area | number }}</td>
-            <td>{{ country.population | number }}</td>
+            <td>{{ location[2] }}</td>
+            <td>{{ location[1] }}</td>
           </tr>
         </tbody>
       </table>
@@ -191,7 +267,7 @@
                   country.flag
                 "
                 class="mr-2"
-                style="width: 20px"
+                style="width: 20px;"
               />
               {{ country.name }}
             </td>
