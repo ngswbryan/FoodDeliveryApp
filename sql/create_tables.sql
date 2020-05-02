@@ -113,6 +113,7 @@ CREATE TABLE MonthlyWorkSchedule (
 );
 
 -- for WWS
+-- add button
 CREATE OR REPLACE FUNCTION checkWWS()
   RETURNS trigger AS $$
 DECLARE
@@ -134,6 +135,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- for each insert query
 CREATE OR REPLACE FUNCTION checktotalhourwws()
   RETURNS trigger as $$
 DECLARE
@@ -209,7 +211,7 @@ CREATE TABLE Delivery (
     location VARCHAR(100),
     delivery_rating INTEGER, 
     food_review varchar(100),
-    ongoing BOOLEAN,
+    ongoing BOOLEAN, --true means delivering, false means done
     PRIMARY KEY(delivery_id),
     UNIQUE(delivery_id)
 );

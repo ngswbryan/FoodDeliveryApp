@@ -1,44 +1,25 @@
 --a)
  -- get current job
- CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
- RETURNS TABLE (
-     order_id INTEGER,
-     location VARCHAR(100),
-     recipient VARCHAR(100),
-     food_name VARCHAR(100),
-     total_cost DECIMAL
- ) AS $$
-     SELECT D.order_id, D.location, U.username, FI.food_name, D.delivery_cost + FO.order_cost
-     FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
-     join Users U on FO.uid = U.uid 
-     join Orders O on FO.order_id = O.order_id
-     join FoodItem FI on FI.food_id = O.food_id
-     WHERE input_rider_id = D.rider_id
-     AND D.ongoing = TRUE;
+--  CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
+--  RETURNS TABLE (
+--      order_id INTEGER,
+--      location VARCHAR(100),
+--      recipient VARCHAR(100),
+--      food_name VARCHAR(100),
+--      total_cost DECIMAL
+--  ) AS $$
+--      SELECT D.order_id, D.location, U.username, FI.food_name, D.delivery_cost + FO.order_cost
+--      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
+--      join Users U on FO.uid = U.uid 
+--      join Orders O on FO.order_id = O.order_id
+--      join FoodItem FI on FI.food_id = O.food_id
+--      WHERE input_rider_id = D.rider_id
+--      AND D.ongoing = TRUE;
 
- $$ LANGUAGE SQL;
+--  $$ LANGUAGE SQL;
 
 --b)
 -- get work schedule
-
---c)
--- get previous weekly salaries
-CREATE OR REPLACE FUNCTION get_weekly_salaries(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
-RETURNS TABLE (
-    week INTEGER,
-    month INTEGER,
-    year INTEGER,
-    base_salary DECIMAL,
-    total_commission BIGINT
-) AS $$
-    SELECT input_week, input_month, input_year, R.base_salary, (count(D.delivery_end_time) * R.commission )
-    FROM Riders R join Delivery D on D.rider_id = R.rider_id
-    WHERE input_rider_id = R.rider_id
-    AND (SELECT EXTRACT('day' from date_trunc('week', D.delivery_end_time) - date_trunc('week', date_trunc('month',  D.delivery_end_time))) / 7 + 1 ) = input_week --take in user do manipulation
-    AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
-    AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
-    GROUP BY R.rider_id;
-$$ LANGUAGE SQL;
 
 -- manipulation to calculate week
 -- CREATE OR REPLACE FUNCTION convert_to_week(input_week INTEGER, input_month INTEGER)
@@ -53,28 +34,62 @@ $$ LANGUAGE SQL;
 -- END 
 -- $$ LANGUAGE PLPGSQL;
 
+--c)
+-- get previous weekly salaries
+CREATE OR REPLACE FUNCTION get_weekly_salaries(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
+RETURNS TABLE (
+    week INTEGER,
+    month INTEGER,
+    year INTEGER,
+    base_salary DECIMAL,
+    total_commission BIGINT
+) AS $$
+declare 
+    salary_base DECIMAL;
+    initial_commission BIGINT;
+begin
+    SELECT R.base_salary
+    FROM Riders R
+    WHERE R.rider_id = input_rider_id
+    INTO salary_base;
+
+    SELECT R.commission
+    FROM Riders R
+    WHERE R.rider_id = input_rider_id
+    INTO initial_commission;
+
+    RETURN QUERY(
+        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission)
+        FROM Riders R join Delivery D on D.rider_id = R.rider_id
+        WHERE input_rider_id = D.rider_id
+        AND (SELECT EXTRACT('day' from date_trunc('week', D.delivery_end_time) - date_trunc('week', date_trunc('month',  D.delivery_end_time))) / 7 + 1 ) = input_week --take in user do manipulation
+        AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
+        AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
+    );
+end
+$$ LANGUAGE PLPGSQL;
+
 -- --d)
 -- -- get previous monthly salaries DOESNT WORK 
--- CREATE OR REPLACE FUNCTION get_monthly_salaries(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
--- RETURNS TABLE (
---     month INTEGER,
---     year INTEGER,
---     base_salary DECIMAL,
---     total_commission BIGINT
--- ) AS $$
---     SELECT MWS.month, MWS.year, R.base_salary, count(delivery_id) * R.commission
---     FROM Riders R join MonthlyWorkSchedule MWS on R.rider_id = MWS.rider_id
---     join Delivery D on D.rider_id = MWS.rider_id
---     WHERE input_rider_id = MWS.rider_id
---     AND MWS.month = input_month
---     AND MWS.year = input_year
---     AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
---     AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
---     GROUP BY MWS.rider_id, MWS.month, MWS.year, R.base_salary, R.commission;
--- $$ LANGUAGE SQL;
+CREATE OR REPLACE FUNCTION get_monthly_salaries(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
+RETURNS TABLE (
+    month INTEGER,
+    year INTEGER,
+    base_salary DECIMAL,
+    total_commission BIGINT
+) AS $$
+    SELECT input_month, input_year, R.base_salary, count(delivery_id) * R.commission
+    FROM Riders R join MonthlyWorkSchedule MWS on R.rider_id = MWS.rider_id
+    join Delivery D on D.rider_id = MWS.rider_id
+    WHERE input_rider_id = D.rider_id
+    AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
+    AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
+    AND D.ongoing = False
+    GROUP BY R.rider_id;
+$$ LANGUAGE SQL;
 
 
- --E)
+ --e)
  --when rider clicks completed
  --foodorder status change to done
   --change ongoing to false in Delivery
