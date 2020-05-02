@@ -21,7 +21,7 @@ export class ApiService {
   }
 
   getRestaurants() {
-    return this.http.get("/restaurants");
+    return this.http.get("http://localhost:3002/restaurants");
   }
 }
 
