@@ -24,3 +24,9 @@
 -- SELECT update_collected_time(2, 1);
 -- SELECT update_delivery_start(2, 1);
 SELECT update_done_status(2, 1);
+
+
+
+--e)
+--SELECT get_WWS(2,1,7,2020);
+

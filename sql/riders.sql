@@ -34,87 +34,110 @@
  END 
  $$ LANGUAGE PLPGSQL;
 
---c)
--- get previous weekly salaries --for part-time
---CREATE OR REPLACE FUNCTION get_weekly_statistics(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
---RETURNS TABLE (
---    week INTEGER,
---    month INTEGER,
---    year INTEGER,
---    base_salary DECIMAL,
---    total_commission BIGINT,
---    total_num_orders INTEGER,
---    total_num_hours_worked INTEGER
---) AS $$
---declare 
---    salary_base DECIMAL;
---    initial_commission BIGINT;
---begin
---    SELECT R.base_salary
---    FROM Riders R
---    WHERE R.rider_id = input_rider_id
---    INTO salary_base;
+-- for WWS
+-- --c)
+-- -- get previous weekly salaries --for weekly
+CREATE OR REPLACE FUNCTION get_weekly_statistics(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
+RETURNS TABLE (
+    week INTEGER,
+    month INTEGER,
+    year INTEGER,
+    base_salary DECIMAL, --weekly
+    total_commission BIGINT,
+    total_num_orders BIGINT,
+    total_num_hours_worked BIGINT
+) AS $$
+declare 
+    salary_base DECIMAL;
+    initial_commission BIGINT;
+begin
+    SELECT R.base_salary
+    FROM Riders R
+    WHERE R.rider_id = input_rider_id
+    INTO salary_base;
 
---    SELECT R.commission
---    FROM Riders R
---    WHERE R.rider_id = input_rider_id
---    INTO initial_commission;
+    SELECT R.commission
+    FROM Riders R
+    WHERE R.rider_id = input_rider_id
+    INTO initial_commission;
 
---    RETURN QUERY(
---        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission), count(*), 
---        FROM Riders R join Delivery D on D.rider_id = R.rider_id
---        WHERE input_rider_id = D.rider_id
---        AND (SELECT EXTRACT('day' from date_trunc('week', D.delivery_end_time) - date_trunc('week', date_trunc('month',  D.delivery_end_time))) / 7 + 1 ) = input_week --take in user do manipulation
---        AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
---        AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
---        AND D.ongoing = False;
---    );
---end
---$$ LANGUAGE PLPGSQL;
+    RETURN QUERY(
+        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission), count(*), SUM(end_hour - start_hour)
+        FROM Riders R join Delivery D on D.rider_id = R.rider_id
+        join WeeklyWorkSchedule WWS on WWS.rider_id = D.rider_id
+        WHERE input_rider_id = D.rider_id
+        AND (SELECT EXTRACT('day' from date_trunc('week', D.delivery_end_time) - date_trunc('week', date_trunc('month',  D.delivery_end_time))) / 7 + 1 ) = input_week --take in user do manipulation
+        AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
+        AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
+        AND D.ongoing = False
+    );
+end
+$$ LANGUAGE PLPGSQL;
 
----- --d)
----- -- get previous monthly salaries  --for full-time
---CREATE OR REPLACE FUNCTION get_monthly_statistics(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
---RETURNS TABLE (
---    month INTEGER,
---    year INTEGER,
---    base_salary DECIMAL,
---    total_commission BIGINT,
---    total_num_orders INTEGER,
---    total_num_hours_worked INTEGER
---) AS $$
---    SELECT input_month, input_year, R.base_salary, count(delivery_id) * R.commission, count(*), 
---    FROM Riders R join MonthlyWorkSchedule MWS on R.rider_id = MWS.rider_id
---    join Delivery D on D.rider_id = MWS.rider_id
---    WHERE input_rider_id = D.rider_id
---    AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
---    AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
---    AND D.ongoing = False
---    GROUP BY R.rider_id;
---$$ LANGUAGE SQL;
+-- -- --d)
+-- -- -- get previous monthly salaries  --for month
+CREATE OR REPLACE FUNCTION get_monthly_statistics(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
+RETURNS TABLE (
+    month INTEGER,
+    year INTEGER,
+    base_salary DECIMAL, --weekly
+    total_commission BIGINT,
+    total_num_orders BIGINT,
+    total_num_hours_worked BIGINT
+) AS $$
+    SELECT input_month, input_year, R.base_salary * 4, count(delivery_id) * R.commission, count(*), SUM(end_hour - start_hour)
+    FROM Riders R join MonthlyWorkSchedule MWS on R.rider_id = MWS.rider_id
+    join Delivery D on D.rider_id = MWS.rider_id
+    join WeeklyWorkSchedule WWS on WWS.rider_id = MWS.rider_id
+    WHERE input_rider_id = D.rider_id
+    AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
+    AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
+    AND D.ongoing = False
+    GROUP BY R.rider_id;
+$$ LANGUAGE SQL;
 
 
--- --e)
--- --when rider clicks completed
--- --foodorder status change to done
---  --change ongoing to false in Delivery
---  CREATE OR REPLACE FUNCTION update_done_status(deliveryid INTEGER)
---  RETURNS VOID AS $$
---  BEGIN 
---      UPDATE FoodOrder
---      SET completion_status = TRUE
---      WHERE order_id = ( SELECT D.order_id FROM Delivery D WHERE D.delivery_id = deliveryid);
+
+--e)
+-- Allow Part Time riders to see their weekly work schedule
+CREATE OR REPLACE FUNCTION get_WWS(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
+RETURNS TABLE (
+    day INTEGER,
+    week INTEGER,
+    month INTEGER,
+    year INTEGER,
+    starthour INTEGER,
+    endhour INTEGER
+) AS $$
+    SELECT day, week, month, year, start_hour, end_hour
+    FROM WeeklyWorkSchedule WWS
+    WHERE WWS.rider_id = input_rider_id
+    AND WWS.week = input_week
+    AND WWS.month = input_month
+    AND WWS.year = input_year;
+$$ LANGUAGE SQL;
  
---      UPDATE Delivery
---      SET ongoing = FALSE,
---          delivery_end_time = current_timestamp,
---          time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = deliveryid)/60::DECIMAL
---      WHERE delivery_id = deliveryid;
---  END
---  $$ LANGUAGE PLPGSQL;
+ --f)
+ -- Allow FULL TIME RIDERS to see their monthly work schedule
+CREATE OR REPLACE FUNCTION get_MWS(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
+RETURNS TABLE (
+    day INTEGER,
+    week INTEGER,
+    month INTEGER,
+    year INTEGER,
+    starthour INTEGER,
+    endhour INTEGER
+) AS $$
+    SELECT day, week, month, year, start_hour, end_hour
+    FROM WeeklyWorkSchedule WWS
+    WHERE WWS.rider_id = input_rider_id
+    AND WWS.month = input_month
+    AND WWS.year = input_year;
+$$ LANGUAGE SQL;
 
 
-  --f)
+
+  --g)
   --Update WWS and MWS for full timer
  --Shift 1: 10am to 2pm and 3pm to 7pm.
  --Shift 2: 11am to 3pm and 4pm to 8pm.
@@ -364,67 +387,7 @@
 
 
 
--- for WWS
--- --c)
--- -- get previous weekly salaries --for weekly
-CREATE OR REPLACE FUNCTION get_weekly_statistics(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
-RETURNS TABLE (
-    week INTEGER,
-    month INTEGER,
-    year INTEGER,
-    base_salary DECIMAL, --weekly
-    total_commission BIGINT,
-    total_num_orders BIGINT,
-    total_num_hours_worked BIGINT
-) AS $$
-declare 
-    salary_base DECIMAL;
-    initial_commission BIGINT;
-begin
-    SELECT R.base_salary
-    FROM Riders R
-    WHERE R.rider_id = input_rider_id
-    INTO salary_base;
 
-    SELECT R.commission
-    FROM Riders R
-    WHERE R.rider_id = input_rider_id
-    INTO initial_commission;
-
-    RETURN QUERY(
-        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission), count(*), SUM(end_hour - start_hour)
-        FROM Riders R join Delivery D on D.rider_id = R.rider_id
-        join WeeklyWorkSchedule WWS on WWS.rider_id = D.rider_id
-        WHERE input_rider_id = D.rider_id
-        AND (SELECT EXTRACT('day' from date_trunc('week', D.delivery_end_time) - date_trunc('week', date_trunc('month',  D.delivery_end_time))) / 7 + 1 ) = input_week --take in user do manipulation
-        AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
-        AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
-        AND D.ongoing = False
-    );
-end
-$$ LANGUAGE PLPGSQL;
-
--- -- --d)
--- -- -- get previous monthly salaries  --for month
-CREATE OR REPLACE FUNCTION get_monthly_statistics(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
-RETURNS TABLE (
-    month INTEGER,
-    year INTEGER,
-    base_salary DECIMAL, --weekly
-    total_commission BIGINT,
-    total_num_orders BIGINT,
-    total_num_hours_worked BIGINT
-) AS $$
-    SELECT input_month, input_year, R.base_salary * 4, count(delivery_id) * R.commission, count(*), SUM(end_hour - start_hour)
-    FROM Riders R join MonthlyWorkSchedule MWS on R.rider_id = MWS.rider_id
-    join Delivery D on D.rider_id = MWS.rider_id
-    join WeeklyWorkSchedule WWS on WWS.rider_id = MWS.rider_id
-    WHERE input_rider_id = D.rider_id
-    AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
-    AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
-    AND D.ongoing = False
-    GROUP BY R.rider_id;
-$$ LANGUAGE SQL;
 
 -- -- for WWS
 CREATE OR REPLACE FUNCTION checkWWS()
@@ -482,6 +445,9 @@ $$ LANGUAGE plpgsql;
   FOR EACH ROW
   EXECUTE FUNCTION checktotalhourwws();
 
+
+
+
 -- to determine which is the delivery that needs to be found now
 
 -------------- rider delivery process ----------------
@@ -493,7 +459,7 @@ RETURNS VOID AS $$
     AND D.delivery_id = input_delivery_id;
 $$ LANGUAGE SQL;
 
--- reached restaurant
+-- reached restaurant button
 CREATE OR REPLACE FUNCTION update_collected_time(input_rider_id INTEGER, input_delivery_id INTEGER)
 RETURNS VOID AS $$
     UPDATE Delivery D SET collected_time = CURRENT_TIMESTAMP
@@ -501,7 +467,7 @@ RETURNS VOID AS $$
     AND D.delivery_id = input_delivery_id;
 $$ LANGUAGE SQL;
 
--- delivery start-time
+-- delivery start-time button
 CREATE OR REPLACE FUNCTION update_delivery_start(input_rider_id INTEGER, input_delivery_id INTEGER)
 RETURNS VOID AS $$
     UPDATE Delivery D SET delivery_start_time = CURRENT_TIMESTAMP
@@ -509,8 +475,7 @@ RETURNS VOID AS $$
     AND D.delivery_id = input_delivery_id;
 $$ LANGUAGE SQL;
 
---e)
- --when rider clicks completed
+ --when rider clicks completed button
  --foodorder status change to done
   --change ongoing to false in Delivery
   CREATE OR REPLACE FUNCTION update_done_status(input_rider_id INTEGER, input_delivery_id INTEGER)
@@ -531,4 +496,3 @@ $$ LANGUAGE SQL;
 
 -------------- rider delivery process ----------------
 
- 
