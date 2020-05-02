@@ -30,6 +30,74 @@ const getRestaurants = (request, response) => {
   });
 };
 
+const getManagerStats = (request, response) => {
+  const month = request.query.month;
+  const year = request.query.year;
+  pool.query(
+    "select new_customers($1, $2);",
+    [month, year],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const getManagerStatsOrder = (request, response) => {
+  const month = request.query.month;
+  const year = request.query.year;
+  pool.query(
+    "select total_orders($1, $2);",
+    [month, year],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const getManagerStatsCost = (request, response) => {
+  const month = request.query.month;
+  const year = request.query.year;
+  pool.query("select total_cost($1, $2);", [month, year], (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
+const getLocation = (request, response) => {
+  pool.query("select location_table();", (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
+const getRiders = (request, response) => {
+  pool.query("select location_table();", (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
+const getCustomers = (request, response) => {
+  pool.query("select customers_table();", (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
 const getUserByUsername = (request, response) => {
   const username = request.params.username;
   pool.query(
@@ -75,6 +143,18 @@ app
 app.route("/users/:username").get(getUserByUsername);
 
 app.route("/restaurants").get(getRestaurants);
+
+app.route("/manager").get(getManagerStats);
+
+app.route("/manager/orders").get(getManagerStatsOrder);
+
+app.route("/manager/cost").get(getManagerStatsCost);
+
+app.route("/manager/location").get(getLocation);
+
+app.route("/manager/riders").get(getRiders);
+
+app.route("/manager/customers").get(getCustomers);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {
