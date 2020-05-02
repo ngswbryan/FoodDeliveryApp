@@ -31,7 +31,7 @@
  RETURNS TABLE (
      order_month BIGINT,
      order_year BIGINT,
-     delivery_uid INTEGER,
+     order_user_uid INTEGER,
      count BIGINT,
      sum DECIMAL
  ) AS $$
