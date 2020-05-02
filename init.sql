@@ -222,6 +222,11 @@ INSERT INTO FoodOrder VALUES(DEFAULT, 6, 2, FALSE, 46.0,'2018-05-22 04:00:06', T
 INSERT INTO FoodOrder VALUES(DEFAULT, 11, 3, TRUE, 30.0,'2018-05-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 1, 4, FALSE, 20.0,'2018-08-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,'2018-05-22 04:00:06', TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 1, 1, TRUE, 50.0,'2019-06-22 04:00:06', TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 6, 2, FALSE, 46.0,'2019-05-22 04:00:06', TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 11, 3, TRUE, 30.0,'2019-05-22 04:00:06', TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 1, 4, FALSE, 20.0,'2019-08-22 04:00:06', TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,'2019-05-22 04:00:06', TRUE);
 
 INSERT INTO Sells VALUES (1,1,5.5);
 INSERT INTO Sells VALUES (2,2,4.5);
@@ -267,6 +272,39 @@ INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 7, 15, 19, 3, 3, 5, 2018, 1);
 INSERT INTO MonthlyWorkSchedule VALUES (DEFAULT, 2, 5, 2018, 1, 2, NULL, NULL);
 
 -------- POPULATION -------------
+
+
+------- USERS ----------
+
+
+create or replace function create_user(new_name VARCHAR, new_username VARCHAR, new_password VARCHAR, new_role_type VARCHAR, rider_type VARCHAR, restaurant_name VARCHAR)
+returns void as $$
+declare
+uid integer;
+rid integer;
+begin
+INSERT INTO users (name, username, password, role_type, date_joined) VALUES (new_name, new_username, new_password, new_role_type, current_timestamp);
+select U.uid into uid from users U where U.username = new_username;
+if new_role_type = 'rider' then
+    if rider_type = 'part' then
+        INSERT INTO RIDERS VALUES (uid, 0.0, FALSE, FALSE, 0, FALSE, 2);
+    else 
+        INSERT INTO RIDERS VALUES (uid, 0.0, FALSE, FALSE, 10, TRUE, 3);
+    end if;
+end if;
+if new_role_type = 'customer' then
+    INSERT INTO customers (uid, points, credit_card) VALUES (uid, 0, '0');
+end if;
+if new_role_type = 'manager' then
+ INSERT INTO fdsmanager (uid) VALUES (uid);
+end if;
+if new_role_type = 'staff' then
+select R.rid into rid from restaurants R where R.rname = restaurant_name;
+ INSERT INTO RestaurantStaff (uid, rid) VALUES (uid, rid);
+end if;
+end;
+$$ language plpgsql;
+
 
 
 ------ CUSTOMERS ------
