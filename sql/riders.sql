@@ -1,38 +1,38 @@
 --a)
  -- get current job
---  CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
---  RETURNS TABLE (
---      order_id INTEGER,
---      location VARCHAR(100),
---      recipient VARCHAR(100),
---      food_name VARCHAR(100),
---      total_cost DECIMAL
---  ) AS $$
---      SELECT D.order_id, D.location, U.username, FI.food_name, D.delivery_cost + FO.order_cost
---      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
---      join Users U on FO.uid = U.uid 
---      join Orders O on FO.order_id = O.order_id
---      join FoodItem FI on FI.food_id = O.food_id
---      WHERE input_rider_id = D.rider_id
---      AND D.ongoing = TRUE;
+  CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
+  RETURNS TABLE (
+      order_id INTEGER,
+      location VARCHAR(100),
+      recipient VARCHAR(100),
+      food_name VARCHAR(100),
+      total_cost DECIMAL
+  ) AS $$
+      SELECT D.order_id, D.location, U.username, FI.food_name, D.delivery_cost + FO.order_cost
+      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
+      join Users U on FO.uid = U.uid 
+      join Orders O on FO.order_id = O.order_id
+      join FoodItem FI on FI.food_id = O.food_id
+      WHERE input_rider_id = D.rider_id
+      AND D.ongoing = TRUE;
 
---  $$ LANGUAGE SQL;
+  $$ LANGUAGE SQL;
 
 --b)
 -- get work schedule
 
 -- manipulation to calculate week
--- CREATE OR REPLACE FUNCTION convert_to_week(input_week INTEGER, input_month INTEGER)
--- RETURNS INTEGER AS
--- $$
--- BEGIN
---     IF input_month = 1 THEN
---         RETURN input_week;
---     ELSE 
---         RETURN input_month*4 + input_week;
---     END IF;
--- END 
--- $$ LANGUAGE PLPGSQL;
+ CREATE OR REPLACE FUNCTION convert_to_week(input_week INTEGER, input_month INTEGER)
+ RETURNS INTEGER AS
+ $$
+ BEGIN
+     IF input_month = 1 THEN
+         RETURN input_week;
+     ELSE 
+         RETURN input_month*4 + input_week;
+     END IF;
+ END 
+ $$ LANGUAGE PLPGSQL;
 
 --c)
 -- get previous weekly salaries
