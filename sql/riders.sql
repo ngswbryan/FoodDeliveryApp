@@ -92,3 +92,63 @@ $$ LANGUAGE SQL;
 --      WHERE delivery_id = deliveryid;
 --  END
 --  $$ LANGUAGE PLPGSQL;
+
+
+
+
+
+
+
+-- for WWS
+CREATE OR REPLACE FUNCTION checkWWS()
+  RETURNS trigger AS $$
+DECLARE
+   insufficientbreak integer;
+BEGIN
+   IF (NEW.start_hour > 22 OR NEW.start_hour < 10) OR (NEW.end_hour > 22 AND NEW.end_hour < 10) THEN
+       RAISE EXCEPTION 'Time interval has to be between 1000 - 2200';
+   END IF;
+   IF (NEW.end_hour - NEW.start_hour > 4) THEN
+       RAISE EXCEPTION 'Time Interval cannot exceed 4 hours';
+   END IF;
+   SELECT 1 INTO insufficientbreak
+   FROM WeeklyWorkSchedule WWS
+   WHERE NEW.rider_id = WWS.rider_id AND NEW.day = WWS.day AND NEW.week = WWS.week AND NEW.month = WWS.month  AND NEW.year = WWS.year AND (WWS.end_hour > NEW.start_hour - 1 AND NEW.end_hour + 1 > WWS.start_hour); --at least 1 hour of break between consecutive hour interval
+   IF (insufficientbreak = 1) THEN
+       RAISE EXCEPTION 'There must be at least one hour break between consective hour intervals';
+   END IF;
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION checktotalhourwws()
+  RETURNS trigger as $$
+DECLARE
+  totalhours integer;
+BEGIN
+   SELECT SUM(WWS.end_hour - WWS.start_hour) INTO totalhours
+   FROM WeeklyWorkSchedule WWS
+   WHERE WWS.week = NEW.week AND NEW.rider_id = WWS.rider_id  AND NEW.month = WWS.month  AND NEW.year = WWS.year
+   GROUP BY WWS.week;
+   IF (totalhours < 10 OR totalhours > 48) THEN
+       RAISE EXCEPTION 'The total number of hours in each WWS must be at least 10 and at most 48.';
+   END IF;
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+ DROP TRIGGER IF EXISTS update_wws_trigger ON WeeklyWorkSchedule CASCADE;
+ CREATE TRIGGER update_wws_trigger
+  BEFORE UPDATE OR INSERT
+  ON WeeklyWorkSchedule
+  FOR EACH ROW
+  EXECUTE FUNCTION checkWWS();
+
+  DROP TRIGGER IF EXISTS check_wws_hours_trigger ON WeeklyWorkSchedule CASCADE;
+  CREATE CONSTRAINT TRIGGER check_wws_hours_trigger
+  AFTER UPDATE OR INSERT OR DELETE
+  ON WeeklyWorkSchedule
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW
+  EXECUTE FUNCTION checktotalhourwws();
+
