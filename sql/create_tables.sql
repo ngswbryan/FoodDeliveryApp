@@ -167,20 +167,9 @@ $$ LANGUAGE plpgsql;
   FOR EACH ROW
   EXECUTE FUNCTION checktotalhourwws();
 
-
-
 --ENTITIES
 
-
 --RELATIONSHIPS
-
--- CREATE TABLE PTFollows (
-
--- )
-
--- CREATE TABLE FTFollows (
-
--- )
 
 CREATE TABLE Sells (
     rid INTEGER REFERENCES Restaurants(rid) NOT NULL, 
