@@ -19,6 +19,8 @@ import { ToastrModule } from "ngx-toastr";
 import { RegisterComponent } from "./register/register.component";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { TabsModule } from "ngx-bootstrap/tabs";
+import { AccordionModule } from "ngx-bootstrap/accordion";
+import { AlertModule } from "ngx-bootstrap/alert";
 
 @NgModule({
   declarations: [
@@ -43,6 +45,8 @@ import { TabsModule } from "ngx-bootstrap/tabs";
     FormsModule,
     ReactiveFormsModule,
     TabsModule.forRoot(),
+    AccordionModule.forRoot(),
+    AlertModule.forRoot(),
   ],
   providers: [ApiService, LoadingService],
   bootstrap: [AppComponent],

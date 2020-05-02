@@ -1,1 +1,163 @@
-<p>staff works!</p>
+<div
+  class="container-fluid"
+  style="align-content: center; background-color: #f3f5f8;"
+>
+  <div class="row">
+    <div class="col-md-12" style="text-align: center;">
+      <h1>Welcome to FoodHub, {{ username }}</h1>
+    </div>
+  </div>
+
+  <br />
+
+  <div class="row">
+    <div class="col-md-2" style="text-align: center;"></div>
+    <div class="col-md-8" style="text-align: center;">
+      <tabset>
+        <tab heading="Menu" (selectTab)="console.log('ok')">
+          <br />
+          <accordion [isAnimated]="true">
+            <accordion-group
+              *ngFor="let food of menu; index as i"
+              [heading]="food.name"
+            >
+              {{ food.id }}
+              {{ food.cuisine_type }}
+              {{ food.rating }}
+              {{ food.availability }}
+              {{ food.daily_limit }}
+              <br />
+              <br />
+              <button class="btn btn-danger" (click)="delete(i)">
+                Delete
+              </button>
+            </accordion-group>
+          </accordion>
+          <br />
+          <button class="btn btn-success" (click)="showAdd()">
+            Add Menu Item
+          </button>
+          <div *ngIf="add">
+            <form [formGroup]="createFoodForm">
+              <br />
+
+              <div class="container-fluid">
+                <div class="row">
+                  <div class="col-12">
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      formControlName="name"
+                      class="form-control form-input"
+                    />
+                  </div>
+
+                  <div class="col-12">
+                    <input
+                      type="text"
+                      placeholder="Cuisine Type"
+                      formControlName="cuisine_type"
+                      class="form-control form-input"
+                    />
+                  </div>
+
+                  <div class="col-12">
+                    <input
+                      type="text"
+                      placeholder="Daily Limit"
+                      formControlName="daily_limit"
+                      class="form-control form-input"
+                    />
+                  </div>
+
+                  <div class="col-12">
+                    <select
+                      placeholder="Availability"
+                      class="form-control form-input"
+                      formControlName="availability"
+                    >
+                      <option value="available">Available</option>
+                      <option value="unavailable">Unavailable</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12">
+                    <button
+                      (click)="submitForm()"
+                      class="btn btn-block btn-primary"
+                    >
+                      Confirm
+                    </button>
+                    <br />
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </tab>
+
+        <tab heading="Reports" (selectTab)="console.log('ok')">
+          <br />
+          <h5>Generate report for the month of</h5>
+          <select id="cars" name="cars">
+            <option value="volvo">January</option>
+            <option value="saab">February</option>
+            <option value="fiat">March</option>
+            <option value="audi">April</option>
+            <option value="audi">May</option>
+            <option value="audi">June</option>
+            <option value="audi">July</option>
+            <option value="audi">blah</option>
+            <option value="audi">blahhh</option>
+          </select>
+          <select id="cars" name="cars">
+            <option value="volvo">year</option>
+          </select>
+          <br />
+          <br />
+          <button class="btn btn-success" (click)="generateReport()">
+            Generate
+          </button>
+          <br />
+          <br />
+          <div *ngIf="showReport">
+            <alert type="success">
+              <strong>Total Completed Orders:</strong> 2000
+            </alert>
+            <alert type="success">
+              <strong>Total Cost of Completed Orders:</strong> $3000
+            </alert>
+            <alert type="success">
+              <strong>Top 5 Popular Food:</strong> Pizza, Burger, Fries, Ice
+              Cream, Nuggets
+            </alert>
+          </div>
+        </tab>
+
+        <tab heading="Campaigns" (selectTab)="console.log('ok')">
+          <br />
+          <h5>Current Promotional Campaigns</h5>
+          <ul class="list-group">
+            <li class="list-group-item" *ngFor="let campaign of campaigns">
+              {{ campaign }}
+            </li>
+          </ul>
+          <br />
+          <br />
+          <textarea
+            class="form-control"
+            id="newCampaign"
+            placeholder="New Campaign"
+            [(ngModel)]="newCampaign"
+            [ngModelOptions]="{ standalone: true }"
+          ></textarea>
+          <br />
+          <button class="btn btn-success" (click)="addCampaign()">
+            Add new campaign
+          </button>
+        </tab>
+      </tabset>
+    </div>
+    <div class="col-md-2" style="text-align: center;"></div>
+  </div>
+</div>
