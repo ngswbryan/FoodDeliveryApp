@@ -150,7 +150,21 @@ CREATE TYPE orderdeliveryid AS (
  END
  $$ LANGUAGE PLPGSQL;
 
----- apply delivery promo IF HAVE REWARD POINTS, USE TO OFFSET
+
+ -- 5 most recent Location
+ CREATE OR REPLACE FUNCTION most_recent_location(input_customer_id INTEGER)
+ RETURNS TABLE (
+  recentlocations VARCHAR
+ ) AS $$
+     SELECT D.location
+     FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
+     WHERE FO.uid = input_customer_id
+     ORDER BY D.delivery_end_time desc
+     LIMIT 5;
+ $$ LANGUAGE SQL;
+
+
+---- apply delivery promo IF HAVE REWARD POINTS, USE TO OFFSET (USE REWARD BUTTON)
 CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, input_delivery_id INTEGER)
 RETURNS VOID AS $$
 declare 
