@@ -275,13 +275,12 @@ INSERT INTO MonthlyWorkSchedule VALUES (DEFAULT, 2, 5, 2018, 1, 2, NULL, NULL);
 
 
 ------- USERS ----------
-
-
+-- for user creation
 create or replace function create_user(new_name VARCHAR, new_username VARCHAR, new_password VARCHAR, new_role_type VARCHAR, rider_type VARCHAR, restaurant_name VARCHAR)
 returns void as $$
 declare
-uid integer;
-rid integer;
+    uid integer;
+    rid integer;
 begin
 INSERT INTO users (name, username, password, role_type, date_joined) VALUES (new_name, new_username, new_password, new_role_type, current_timestamp);
 select U.uid into uid from users U where U.username = new_username;
@@ -296,16 +295,14 @@ if new_role_type = 'customer' then
     INSERT INTO customers (uid, points, credit_card) VALUES (uid, 0, '0');
 end if;
 if new_role_type = 'manager' then
- INSERT INTO fdsmanager (uid) VALUES (uid);
+    INSERT INTO fdsmanager (uid) VALUES (uid);
 end if;
 if new_role_type = 'staff' then
-select R.rid into rid from restaurants R where R.rname = restaurant_name;
- INSERT INTO RestaurantStaff (uid, rid) VALUES (uid, rid);
+    select R.rid into rid from restaurants R where R.rname = restaurant_name;
+    INSERT INTO RestaurantStaff (uid, rid) VALUES (uid, rid);
 end if;
 end;
 $$ language plpgsql;
-
-
 
 ------ CUSTOMERS ------
 --a)
