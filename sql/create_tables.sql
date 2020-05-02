@@ -75,7 +75,7 @@ CREATE TABLE FoodItem (
 );
 
 CREATE TABLE PromotionalCampaign (
-    promo_id INTEGER PRIMARY KEY,
+    promo_id SERIAL PRIMARY KEY,
     rid INTEGER REFERENCES Restaurants 
         ON DELETE CASCADE,
     discount INTEGER,
@@ -139,7 +139,7 @@ CREATE TABLE Delivery (
     collected_time TIMESTAMP NOT NULL,
     delivery_start_time TIMESTAMP NOT NULL, --start delivering to customer
     delivery_end_time TIMESTAMP,
-    time_for_one_delivery DECIMAL, --in minutes
+    time_for_one_delivery DECIMAL, --in hours
     location VARCHAR(100),
     delivery_rating INTEGER, 
     food_review varchar(100),

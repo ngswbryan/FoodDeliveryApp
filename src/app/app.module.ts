@@ -21,6 +21,8 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { TabsModule } from "ngx-bootstrap/tabs";
 import { AccordionModule } from "ngx-bootstrap/accordion";
 import { AlertModule } from "ngx-bootstrap/alert";
+import { CollapseModule } from "ngx-bootstrap/collapse";
+import { ProgressbarModule } from "ngx-bootstrap/progressbar";
 
 @NgModule({
   declarations: [
@@ -47,6 +49,8 @@ import { AlertModule } from "ngx-bootstrap/alert";
     TabsModule.forRoot(),
     AccordionModule.forRoot(),
     AlertModule.forRoot(),
+    CollapseModule.forRoot(),
+    ProgressbarModule.forRoot(),
   ],
   providers: [ApiService, LoadingService],
   bootstrap: [AppComponent],
