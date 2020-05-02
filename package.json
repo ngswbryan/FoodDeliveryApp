@@ -17,6 +17,7 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^8.2.14",
+    "@angular/cdk": "^9.2.2",
     "@angular/cli": "^8.3.25",
     "@angular/common": "~8.2.3",
     "@angular/compiler": "~8.2.3",
@@ -34,6 +35,7 @@
     "express": "^4.17.1",
     "jquery": "^3.4.1",
     "ngx-bootstrap": "^5.5.0",
+    "ngx-bootstrap-navbar": "0.0.5",
     "ngx-loading": "^8.0.0",
     "ngx-toastr": "10.0.4",
     "pg": "^7.18.2",

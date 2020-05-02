@@ -109,6 +109,9 @@ CREATE TYPE orderdeliveryid AS (
       VALUES (customer_uid, restaurant_id, have_credit, total_order_cost, current_timestamp, FALSE)
       RETURNING order_id into orderid;
 
+      --check for promo
+
+
       INSERT INTO Delivery(order_id, rider_id, delivery_cost, delivery_start_time, location, ongoing)
       VALUES (orderid,
               (SELECT CASE WHEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE ORDER BY random() LIMIT 1) IS NOT NULL
@@ -147,8 +150,51 @@ CREATE TYPE orderdeliveryid AS (
  END
  $$ LANGUAGE PLPGSQL;
 
+---- apply delivery promo IF HAVE REWARD POINTS, USE TO OFFSET
+CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, input_delivery_id INTEGER)
+RETURNS VOID AS $$
+declare 
+    points_check INTEGER;
+    delivery_cost_from_d INTEGER;
+begin
+    SELECT points
+    FROM Customers C 
+    WHERE C.uid = customer_id
+    INTO points_check;
 
+    IF (points_check = 0) THEN 
+        RAISE EXCEPTION 'You have no points to be deducted';
+    END IF;
+    IF (points_check >= delivery_cost) THEN
+        UPDATE Delivery 
+        SET delivery_cost = 0
+        WHERE delivery_id = input_delivery_id;
 
+        SELECT delivery_cost 
+        FROM Delivery
+        WHERE delivery_id = input_delivery_id
+        INTO delivery_cost_from_d; 
+
+        UPDATE Customers
+        SET points = (points - delivery_cost_from_d)
+        WHERE uid = input_customer_id;
+    END IF;
+    IF (points_check < delivery_cost) THEN 
+        UPDATE Delivery 
+        SET delivery_cost = (delivery_cost - points)
+        WHERE delivery_id = input_delivery_id;
+
+        SELECT delivery_cost 
+        FROM Delivery
+        WHERE delivery_id = input_delivery_id
+        INTO delivery_cost_from_d; 
+
+        UPDATE Customers
+        SET points = (points - delivery_cost_from_d)
+        WHERE uid = input_customer_id;
+    END IF;
+end
+$$ LANGUAGE PLPGSQL;
 
  --f)
  -- reward balance
@@ -232,7 +278,8 @@ CREATE TYPE orderdeliveryid AS (
     FOR EACH ROW
     EXECUTE FUNCTION update_rider_ratings();
 
---Update delivery rating which triggers rider rating update
+-- Update delivery rating which triggers rider rating update
+-- this is a button
   CREATE OR REPLACE FUNCTION update_delivery_rating(deliveryid INTEGER, deliveryrating INTEGER)
   RETURNS VOID AS $$
       UPDATE Delivery

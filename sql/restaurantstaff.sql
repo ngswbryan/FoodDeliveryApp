@@ -95,7 +95,7 @@ RETURNS DECIMAL AS $$
 $$ LANGUAGE SQL;
 
 
---- PROMOTIONAL CAMPAIGN
+--- PROMOTIONAL CAMPAIGN past promos
 CREATE OR REPLACE FUNCTION generate_all_my_promos(current_rid INTEGER)
 RETURNS TABLE (
     promo_id INTEGER,
@@ -139,3 +139,13 @@ AS $$
         );
     end
 $$ LANGUAGE PLPGSQL;
+
+
+-- CREATING PROMOS
+CREATE OR REPLACE FUNCTION add_promos(current_rid INTEGER, discount DECIMAL, description VARCHAR(100), start_date TIMESTAMP, end_date TIMESTAMP) 
+RETURNS VOID 
+AS $$
+    INSERT INTO PromotionalCampaign VALUES(DEFAULT, current_rid, discount, description, start_date, end_date);
+$$ LANGUAGE SQL;
+
+-- apply promo through the menu
