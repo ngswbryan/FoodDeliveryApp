@@ -64,9 +64,10 @@ $$ LANGUAGE SQL;
 --generates top five based on highest rating
 CREATE OR REPLACE FUNCTION generate_top_five(current_rid INTEGER)
 RETURNS TABLE (
-    top_few VARCHAR
+    top_few VARCHAR,
+    overall_rating DECIMAL
 ) AS $$
-    SELECT DISTINCT food_name
+    SELECT DISTINCT food_name, FO.overall_rating
     FROM FoodItem FO
     WHERE FO.rid = current_rid
     ORDER BY FO.overall_rating DESC
@@ -85,7 +86,7 @@ $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION generate_total_cost_of_orders(input_month INTEGER, input_year INTEGER, current_rid INTEGER)
 RETURNS DECIMAL AS $$
-    SELECT SUM(FO.total_cost)
+    SELECT SUM(FO.order_cost)
     FROM FoodOrder FO 
     WHERE FO.rid = current_rid
     AND (SELECT(EXTRACT(MONTH FROM FO.date_time))) = input_month
