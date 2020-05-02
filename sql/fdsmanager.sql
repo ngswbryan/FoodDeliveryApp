@@ -20,7 +20,7 @@
  --c)
  CREATE OR REPLACE FUNCTION total_cost(input_month INTEGER, input_year INTEGER)
  RETURNS FLOAT AS $$
-     SELECT SUM(FO.total_cost)::FLOAT
+     SELECT SUM(FO.order_cost)::FLOAT
      FROM FoodOrder FO
      WHERE (SELECT EXTRACT(MONTH FROM FO.date_time)) = input_month
      AND (SELECT EXTRACT(YEAR FROM FO.date_time)) = input_year;
@@ -35,7 +35,7 @@
      count BIGINT,
      sum DECIMAL
  ) AS $$
-     SELECT (SELECT EXTRACT(MONTH FROM FO.date_time)::BIGINT) as order_month, (SELECT EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, FO.uid, count(*), SUM(FO.total_cost)
+     SELECT (SELECT EXTRACT(MONTH FROM FO.date_time)::BIGINT) as order_month, (SELECT EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, FO.uid, count(*), SUM(FO.order_cost)
      FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id
      GROUP BY order_month, order_year, FO.uid;
  $$ LANGUAGE SQL;
@@ -51,7 +51,7 @@
  ) AS $$
      SELECT * 
      FROM (
-         SELECT (SELECT EXTRACT(MONTH FROM FO.date_time)::BIGINT) AS order_month, (SELECT EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, FO.uid, count(*), SUM(FO.total_cost)
+         SELECT (SELECT EXTRACT(MONTH FROM FO.date_time)::BIGINT) AS order_month, (SELECT EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, FO.uid, count(*), SUM(FO.order_cost)
          FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id
          GROUP BY order_month, order_year, FO.uid
      ) AS CTE
@@ -81,7 +81,7 @@
 
      RETURN QUERY( SELECT * 
      FROM (
-         SELECT (SELECT EXTRACT(MONTH FROM FO.date_time)::BIGINT) AS order_month, (SELECT EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, FO.uid as uid, count(*), SUM(FO.total_cost)
+         SELECT (SELECT EXTRACT(MONTH FROM FO.date_time)::BIGINT) AS order_month, (SELECT EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, FO.uid as uid, count(*), SUM(FO.order_cost)
          FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id
          GROUP BY order_month, order_year, FO.uid
      ) AS CTE
