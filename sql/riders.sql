@@ -35,14 +35,16 @@
  $$ LANGUAGE PLPGSQL;
 
 --c)
--- get previous weekly salaries
-CREATE OR REPLACE FUNCTION get_weekly_salaries(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
+-- get previous weekly salaries --for part-time
+CREATE OR REPLACE FUNCTION get_weekly_statistics(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     week INTEGER,
     month INTEGER,
     year INTEGER,
     base_salary DECIMAL,
-    total_commission BIGINT
+    total_commission BIGINT,
+    total_num_orders INTEGER,
+    total_num_hours_worked INTEGER
 ) AS $$
 declare 
     salary_base DECIMAL;
@@ -59,26 +61,29 @@ begin
     INTO initial_commission;
 
     RETURN QUERY(
-        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission)
+        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission), count(*), 
         FROM Riders R join Delivery D on D.rider_id = R.rider_id
         WHERE input_rider_id = D.rider_id
         AND (SELECT EXTRACT('day' from date_trunc('week', D.delivery_end_time) - date_trunc('week', date_trunc('month',  D.delivery_end_time))) / 7 + 1 ) = input_week --take in user do manipulation
         AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
         AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
+        AND D.ongoing = False;
     );
 end
 $$ LANGUAGE PLPGSQL;
 
 -- --d)
--- -- get previous monthly salaries DOESNT WORK 
-CREATE OR REPLACE FUNCTION get_monthly_salaries(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
+-- -- get previous monthly salaries  --for full-time
+CREATE OR REPLACE FUNCTION get_monthly_statistics(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     month INTEGER,
     year INTEGER,
     base_salary DECIMAL,
-    total_commission BIGINT
+    total_commission BIGINT,
+    total_num_orders INTEGER,
+    total_num_hours_worked INTEGER
 ) AS $$
-    SELECT input_month, input_year, R.base_salary, count(delivery_id) * R.commission
+    SELECT input_month, input_year, R.base_salary, count(delivery_id) * R.commission, count(*), 
     FROM Riders R join MonthlyWorkSchedule MWS on R.rider_id = MWS.rider_id
     join Delivery D on D.rider_id = MWS.rider_id
     WHERE input_rider_id = D.rider_id
@@ -107,12 +112,6 @@ $$ LANGUAGE SQL;
       WHERE delivery_id = deliveryid;
   END
   $$ LANGUAGE PLPGSQL;
-
-
-
-
-
-
 
 -- for WWS
 CREATE OR REPLACE FUNCTION checkWWS()

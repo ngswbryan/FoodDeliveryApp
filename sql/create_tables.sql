@@ -47,11 +47,6 @@ CREATE TABLE Customers (
         ON DELETE CASCADE PRIMARY KEY,
     points INTEGER,
     credit_card VARCHAR(100)
-    -- recentFirst VARCHAR(100),
-    -- recentSecond VARCHAR(100),
-    -- recentThird VARCHAR(100),
-    -- recentFourth VARCHAR(100),
-    -- recentFIfth VARCHAR(100)
 );
 
 CREATE TABLE FoodOrder (
@@ -171,20 +166,20 @@ $$ LANGUAGE plpgsql;
 
 --RELATIONSHIPS
 
-CREATE TABLE Sells (
+CREATE TABLE Sells ( --rid, food_id -> price 
     rid INTEGER REFERENCES Restaurants(rid) NOT NULL, 
     food_id INTEGER REFERENCES FoodItem(food_id) NOT NULL,
     price DECIMAL NOT NULL,
     PRIMARY KEY(rid, food_id)
 );
 
-CREATE TABLE Orders (
+CREATE TABLE Orders ( --2 attributes thus BCNF
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
     PRIMARY KEY(order_id,food_id)
 );
 
-CREATE TABLE Receives (
+CREATE TABLE Receives ( --2 attributes thus BCNF
     order_id INTEGER REFERENCES FoodOrder(order_id),
     promo_id INTEGER REFERENCES PromotionalCampaign(promo_id)
 );
@@ -194,7 +189,9 @@ CREATE TABLE Delivery (
     order_id INTEGER REFERENCES FoodOrder(order_id),
     rider_id INTEGER REFERENCES Riders(rider_id),
     delivery_cost DECIMAL NOT NULL,
-    delivery_start_time TIMESTAMP NOT NULL,
+    departure_time TIMESTAMP NOT NULL,
+    collected_time TIMESTAMP NOT NULL,
+    delivery_start_time TIMESTAMP NOT NULL, --start delivering to customer
     delivery_end_time TIMESTAMP,
     time_for_one_delivery DECIMAL, --in minutes
     location VARCHAR(100),
@@ -205,7 +202,7 @@ CREATE TABLE Delivery (
     UNIQUE(delivery_id)
 );
 
-CREATE TABLE Contain (
+CREATE TABLE Contain ( --2 attributes thus BCNF
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
     PRIMARY KEY(order_id, food_id),
