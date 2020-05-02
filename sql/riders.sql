@@ -1,5 +1,5 @@
---a)
- -- get current job
+-- --a)
+--  -- get current job
   CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
   RETURNS TABLE (
       order_id INTEGER,
@@ -18,10 +18,10 @@
 
   $$ LANGUAGE SQL;
 
---b)
--- get work schedule
+-- --b)
+-- -- get work schedule
 
--- manipulation to calculate week
+-- -- manipulation to calculate week
  CREATE OR REPLACE FUNCTION convert_to_week(input_week INTEGER, input_month INTEGER)
  RETURNS INTEGER AS
  $$
@@ -34,8 +34,8 @@
  END 
  $$ LANGUAGE PLPGSQL;
 
---c)
--- get previous weekly salaries --for part-time
+-- --c)
+-- -- get previous weekly salaries --for part-time
 CREATE OR REPLACE FUNCTION get_weekly_statistics(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     week INTEGER,
@@ -73,8 +73,8 @@ begin
 end
 $$ LANGUAGE PLPGSQL;
 
--- --d)
--- -- get previous monthly salaries  --for full-time
+-- -- --d)
+-- -- -- get previous monthly salaries  --for full-time
 CREATE OR REPLACE FUNCTION get_monthly_statistics(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     month INTEGER,
@@ -95,27 +95,7 @@ RETURNS TABLE (
     GROUP BY R.rider_id;
 $$ LANGUAGE SQL;
 
-
- --e)
- --when rider clicks completed
- --foodorder status change to done
-  --change ongoing to false in Delivery
-  CREATE OR REPLACE FUNCTION update_done_status(deliveryid INTEGER)
-  RETURNS VOID AS $$
-  BEGIN 
-      UPDATE FoodOrder
-      SET completion_status = TRUE
-      WHERE order_id = ( SELECT D.order_id FROM Delivery D WHERE D.delivery_id = deliveryid);
- 
-      UPDATE Delivery
-      SET ongoing = FALSE,
-          delivery_end_time = current_timestamp,
-          time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = deliveryid)/60::DECIMAL
-      WHERE delivery_id = deliveryid;
-  END
-  $$ LANGUAGE PLPGSQL;
-
--- for WWS
+-- -- for WWS
 CREATE OR REPLACE FUNCTION checkWWS()
   RETURNS trigger AS $$
 DECLARE
@@ -171,3 +151,53 @@ $$ LANGUAGE plpgsql;
   FOR EACH ROW
   EXECUTE FUNCTION checktotalhourwws();
 
+-- to determine which is the delivery that needs to be found now
+
+-------------- rider delivery process ----------------
+-- departing to pick food button
+CREATE OR REPLACE FUNCTION update_departure_time(input_rider_id INTEGER, input_delivery_id INTEGER)
+RETURNS VOID AS $$
+    UPDATE Delivery D SET departure_time = CURRENT_TIMESTAMP, ongoing = TRUE
+    WHERE D.rider_id = input_rider_id
+    AND D.delivery_id = input_delivery_id;
+$$ LANGUAGE SQL;
+
+-- reached restaurant
+CREATE OR REPLACE FUNCTION update_collected_time(input_rider_id INTEGER, input_delivery_id INTEGER)
+RETURNS VOID AS $$
+    UPDATE Delivery D SET collected_time = CURRENT_TIMESTAMP
+    WHERE D.rider_id = input_rider_id
+    AND D.delivery_id = input_delivery_id;
+$$ LANGUAGE SQL;
+
+-- delivery start-time
+CREATE OR REPLACE FUNCTION update_delivery_start(input_rider_id INTEGER, input_delivery_id INTEGER)
+RETURNS VOID AS $$
+    UPDATE Delivery D SET delivery_start_time = CURRENT_TIMESTAMP
+    WHERE D.rider_id = input_rider_id
+    AND D.delivery_id = input_delivery_id;
+$$ LANGUAGE SQL;
+
+--e)
+ --when rider clicks completed
+ --foodorder status change to done
+  --change ongoing to false in Delivery
+  CREATE OR REPLACE FUNCTION update_done_status(input_rider_id INTEGER, input_delivery_id INTEGER)
+  RETURNS VOID AS $$
+  BEGIN 
+      UPDATE FoodOrder
+      SET completion_status = TRUE
+      WHERE order_id = ( SELECT D.order_id FROM Delivery D WHERE D.delivery_id = input_delivery_id AND D.rider_id = input_rider_id);
+ 
+      UPDATE Delivery
+      SET ongoing = FALSE,
+          delivery_end_time = CURRENT_TIMESTAMP,
+          time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = input_delivery_id)/60::DECIMAL
+      WHERE delivery_id = input_delivery_id
+      AND rider_id = input_rider_id;
+  END
+  $$ LANGUAGE PLPGSQL;
+
+-------------- rider delivery process ----------------
+
+ 

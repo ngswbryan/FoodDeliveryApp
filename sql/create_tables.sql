@@ -75,7 +75,7 @@ CREATE TABLE FoodItem (
 );
 
 CREATE TABLE PromotionalCampaign (
-    promo_id INTEGER PRIMARY KEY,
+    promo_id SERIAL PRIMARY KEY,
     rid INTEGER REFERENCES Restaurants 
         ON DELETE CASCADE,
     discount INTEGER,
