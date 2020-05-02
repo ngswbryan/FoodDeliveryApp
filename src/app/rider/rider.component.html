@@ -1,1 +1,74 @@
-<p>rider works!</p>
+<div
+  class="container-fluid"
+  style="align-content: center; background-color: #f3f5f8;"
+>
+  <div class="row">
+    <div class="col-md-12" style="text-align: center;">
+      <h1>Welcome to FoodHub, {{ username }}</h1>
+    </div>
+  </div>
+
+  <br />
+
+  <div class="row">
+    <div class="col-md-2" style="text-align: center;"></div>
+    <div class="col-md-8" style="text-align: center;">
+      <tabset>
+        <tab heading="Current Ongoing Job" (selectTab)="console.log('ok')">
+          to john at pasir ris from rest timing started delivery price items etc
+        </tab>
+
+        <tab heading="Work Schedule" (selectTab)="console.log('ok')">
+          hi
+        </tab>
+
+        <tab heading="Weekly Salary" (selectTab)="console.log('ok')">
+          hi
+        </tab>
+        <tab heading="Commision" (selectTab)="console.log('ok')">
+          hi
+        </tab>
+        <tab heading="WWS Update Submission" (selectTab)="console.log('ok')">
+          <div *ngIf="this.rider_type == 'part'">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">Time</th>
+                  <th *ngFor="let day of days" scope="col">{{ day }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let timing of timing; index as i">
+                  <th scope="row">{{ timing }}</th>
+                  <td *ngFor="let day of days; index as j">
+                    <input (change)="handle(i, j)" type="checkbox" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div *ngIf="this.rider_type == 'full'">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">Time</th>
+                  <th *ngFor="let day of days" scope="col">{{ day }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let timing of timing; index as i">
+                  <th scope="row">{{ timing }}</th>
+                  <td *ngFor="let day of days; index as j">
+                    <input (change)="handle(i, j)" type="checkbox" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button>Submit WWS</button>
+        </tab>
+      </tabset>
+    </div>
+    <div class="col-md-2" style="text-align: center;"></div>
+  </div>
+</div>

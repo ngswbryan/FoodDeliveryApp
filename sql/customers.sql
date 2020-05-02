@@ -54,11 +54,6 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
      WHERE FI.rid = restaurant_id
  $$ LANGUAGE SQL;
 
-
-
-
-
-
  --trigger when choosen quantity > available quantity
  CREATE OR REPLACE FUNCTION notify_user() RETURNS TRIGGER AS $$
  BEGIN
@@ -203,25 +198,6 @@ CREATE TYPE orderdeliveryid AS (
      WHERE D.delivery_id = deliveryid;
  $$ LANGUAGE SQL;
 
- --h)
- --when rider clicks completed
- --foodorder status change to done
-  --change ongoing to false in Delivery
- CREATE OR REPLACE FUNCTION update_done_status(deliveryid INTEGER)
- RETURNS VOID AS $$
- BEGIN 
-     UPDATE FoodOrder
-     SET completion_status = TRUE
-     WHERE order_id = ( SELECT D.order_id FROM Delivery D WHERE D.delivery_id = deliveryid);
- 
-     UPDATE Delivery
-     SET ongoing = FALSE,
-         delivery_end_time = current_timestamp,
-         time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = deliveryid)/60::DECIMAL
-     WHERE delivery_id = deliveryid;
- END
- $$ LANGUAGE PLPGSQL;
-
 
  --i)
  --delivery end time
@@ -239,11 +215,6 @@ CREATE TYPE orderdeliveryid AS (
     SET food_review = foodreview
     WHERE delivery_id = deliveryid;
  $$ LANGUAGE SQL;
-
-
-
-
-
 
  --trigger rating update
  CREATE OR REPLACE FUNCTION update_rider_ratings() RETURNS TRIGGER AS $$

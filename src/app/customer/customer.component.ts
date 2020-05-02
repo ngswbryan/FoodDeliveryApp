@@ -10,9 +10,7 @@ import { LoadingService } from "../loading.service";
 })
 export class CustomerComponent implements OnInit {
 
-  user;
   username;
-  password;
   
   constructor(
     private apiService : ApiService, 
@@ -22,21 +20,16 @@ export class CustomerComponent implements OnInit {
 
   ngOnInit() {
 
-    // this.apiService.getUsers().subscribe((users : any) => {
-    //   //loop through users find the user u want then set the user to the declared variable on top
-    //   this.users = users;
-    // })
-
     this.loadingService.loading.next(true);
     this.router.params.subscribe((params: Params) => {
       this.username = params.username;
     })
-    this.apiService.getUserInfo(this.username).subscribe((user : any) => {
-      this.user = user;
-      console.log(this.user);
-    })
     this.loadingService.loading.next(false);
 
+  }
+
+  openMenu() {
+    console.log("buttons works");
   }
 
 }

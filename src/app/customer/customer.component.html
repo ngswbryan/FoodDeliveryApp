@@ -1,4 +1,78 @@
-<div class="container">
-    <h1> Welcome to FoodHub, {{ password }}</h1>
-    <p>This is some text.</p>
+<div class="container-fluid" 
+style="align-content: center; background-color:#f3f5f8 ;">
+  <div class="row"> 
+    <div class="col-md-12" style="text-align: center;">
+      <h1> Welcome to FoodHub, {{ username }}</h1>
+    </div>
+  </div>  
+        <br />
+
+  
+  <div class="container"> 
+  <div class="row"> 
+      <h5>Past Delivery Ratings</h5>
+  </div>
+
+  
+          <div class="col-md-12">
+            <table class="table table-striped"> 
+              <thead> 
+                <tr>
+                  <th scope="col"> # </th>
+                  <th scope="col"> Order ID </th>
+                  <th scope="col"> Rating </th>
+                  <th scope="col"> Location </th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+  <div>
+  <br />
+  <div class="row"> 
+      <h5>Past Food Reviews</h5>
+  </div>
+       
+          <div class="col-md-12">
+            <table class="table table-striped"> 
+              <thead> 
+                <tr>
+                  <th scope="col"> # </th>
+                  <th scope="col"> Order ID </th>
+                  <th scope="col"> Restaurant name </th>
+                  <th scope="col"> Review </th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+
+          <br />
+
+  <div class="row"> 
+    <h5> List of Menus </h5>
+  </div>
+      <div class="col-md-12">
+        <table class="table table-striped"> 
+          <thead> 
+            <tr>
+              <th scope="col"> # </th>
+              <th scope="col"> Restaurant ID </th>
+              <th scope="col"> Restaurant name </th>
+              <th scope="col"> Min Order ($) </th>
+            </tr>
+          </thead>
+          <tbody> 
+            <tr class="clickable-row" (click)="openMenu()">  
+              <th scope="row"> 1 </th>
+              <td> 1234 </td>
+              <td> Macdonalds </td>
+              <td> 20 </td>
+            </tr>
+          
+          </tbody>
+        </table>
+      </div>
+
+  </div>
+</div>
+
   </div>
