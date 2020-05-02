@@ -21,6 +21,15 @@ const getUsers = (request, response) => {
   });
 };
 
+const getRestaurants = (request, response) => {
+  pool.query("SELECT * FROM restaurants", (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
 const getUserByUsername = (request, response) => {
   const username = request.params.username;
   pool.query(
@@ -35,11 +44,18 @@ const getUserByUsername = (request, response) => {
 };
 
 const addUser = (request, response) => {
-  const { name, username, password, user_role } = request.body;
+  const {
+    name,
+    username,
+    password,
+    user_role,
+    rider_type,
+    restaurant_name,
+  } = request.body;
 
   pool.query(
-    "INSERT INTO users (name, username, password, user_role) VALUES ($1, $2, $3, $4)",
-    [name, username, password, user_role],
+    "select create_user($1, $2, $3, $4, $5, $6);",
+    [name, username, password, user_role, rider_type, restaurant_name],
     (error) => {
       if (error) {
         throw error;
@@ -58,6 +74,8 @@ app
   .post(addUser);
 
 app.route("/users/:username").get(getUserByUsername);
+
+app.route("/restaurants").get(getRestaurants);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {

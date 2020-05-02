@@ -19,5 +19,9 @@ export class ApiService {
   getUserByUsername(username) {
     return this.http.get(`http://localhost:3002/users/${username}`);
   }
+
+  getRestaurants() {
+    return this.http.get("/restaurants");
+  }
 }
 

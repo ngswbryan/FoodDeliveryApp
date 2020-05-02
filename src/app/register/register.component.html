@@ -70,7 +70,11 @@
                 class="form-control form-input"
                 formControlName="restaurant_name"
               >
-                <option value="rider">test rest</option>
+                <option
+                  *ngFor="let restaurant of restaurants"
+                  [value]="restaurant.rname"
+                  >{{ restaurant.rname }}</option
+                >
               </select>
             </div>
 

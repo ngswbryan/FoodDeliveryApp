@@ -1,28 +1,28 @@
-import { Component, OnInit } from '@angular/core';
-import { ApiService } from '../api.service';
-import { LoadingService } from '../loading.service';
-import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
+import { Component, OnInit } from "@angular/core";
+import { ApiService } from "../api.service";
+import { LoadingService } from "../loading.service";
+import { Router } from "@angular/router";
+import { ToastrService } from "ngx-toastr";
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  selector: "app-login",
+  templateUrl: "./login.component.html",
+  styleUrls: ["./login.component.css"],
 })
 export class LoginComponent implements OnInit {
-
   users = [];
 
-  constructor(private ApiService: ApiService,
+  constructor(
+    private ApiService: ApiService,
     private loadingService: LoadingService,
     public router: Router,
-    public toastr: ToastrService) { }
+    public toastr: ToastrService
+  ) {}
 
   ngOnInit() {
     this.loadingService.loading.next(true);
-    this.ApiService.getUsers().subscribe((users : any) => {
+    this.ApiService.getUsers().subscribe((users: any) => {
       this.users = users;
-      console.log(this.users);
     });
     this.loadingService.loading.next(false);
   }
@@ -34,11 +34,11 @@ export class LoginComponent implements OnInit {
       if (this.users[i].username === inputuser) {
         if (this.users[i].password === inputpassword) {
           loggedin = true;
-          if (this.users[i].user_role === 'rider') {
+          if (this.users[i].role_type === "rider") {
             this.router.navigate([`/rider/${this.users[i].username}`]);
-          } else if (this.users[i].user_role === 'staff') {
+          } else if (this.users[i].role_type === "staff") {
             this.router.navigate([`/staff/${this.users[i].username}`]);
-          } else if (this.users[i].user_role === 'customer') {
+          } else if (this.users[i].role_type === "customer") {
             this.router.navigate([`/customer/${this.users[i].username}`]);
           } else {
             this.router.navigate([`/manager/${this.users[i].username}`]);
@@ -61,7 +61,6 @@ export class LoginComponent implements OnInit {
   }
 
   register() {
-    this.router.navigate(['/register']);
+    this.router.navigate(["/register"]);
   }
-
 }

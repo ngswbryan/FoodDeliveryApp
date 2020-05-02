@@ -29,43 +29,177 @@
           hi
         </tab>
         <tab heading="WWS Update Submission" (selectTab)="console.log('ok')">
-          <div *ngIf="this.rider_type == 'part'">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th scope="col">Time</th>
-                  <th *ngFor="let day of days" scope="col">{{ day }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let timing of timing; index as i">
-                  <th scope="row">{{ timing }}</th>
-                  <td *ngFor="let day of days; index as j">
-                    <input (change)="handle(i, j)" type="checkbox" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <br />
+          <div>
+            <form [formGroup]="WWSForm">
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  Start Hour
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="start_hour"
+                    class="form-control form-input"
+                    formControlName="start_hour"
+                  >
+                    <option *ngFor="let hour of timing" [value]="hour">{{
+                      hour
+                    }}</option>
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  End Hour
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="end_hour"
+                    class="form-control form-input"
+                    formControlName="end_hour"
+                  >
+                    <option *ngFor="let hour of timing" [value]="hour">{{
+                      hour
+                    }}</option>
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  Day
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="day"
+                    class="form-control form-input"
+                    formControlName="day"
+                  >
+                    <option *ngFor="let day of days" [value]="day">{{
+                      day
+                    }}</option>
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  Week
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="week"
+                    class="form-control form-input"
+                    formControlName="week"
+                  >
+                    <option *ngFor="let week of weeks" [value]="week">{{
+                      week
+                    }}</option>
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  Month
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="month"
+                    class="form-control form-input"
+                    formControlName="month"
+                  >
+                    <option *ngFor="let month of month" [value]="month">{{
+                      month
+                    }}</option>
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  Year
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="year"
+                    class="form-control form-input"
+                    formControlName="year"
+                  >
+                    <option value="2020">2020</option>
+                    <option value="2021">2021</option>
+                    <option value="2022">2022</option>
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+            </form>
+            <br />
+            <button class="btn btn-success" (click)="addDraft()">
+              Add to draft
+            </button>
           </div>
-          <div *ngIf="this.rider_type == 'full'">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th scope="col">Time</th>
-                  <th *ngFor="let day of days" scope="col">{{ day }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let timing of timing; index as i">
-                  <th scope="row">{{ timing }}</th>
-                  <td *ngFor="let day of days; index as j">
-                    <input (change)="handle(i, j)" type="checkbox" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <br />
+          <div>
+            <h4>
+              Current WWS Draft
+            </h4>
+            <div *ngIf="drafts.length > 0" [hidden]="!show">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Start Hour</th>
+                    <th scope="col">End Hour</th>
+                    <th scope="col">Day</th>
+                    <th scope="col">Week</th>
+                    <th scope="col">Month</th>
+                    <th scope="col">Year</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let draft of drafts; index as i">
+                    <th scope="row">{{ i + 1 }}</th>
+                    <td>
+                      {{ draft.start_hour }}
+                    </td>
+                    <td>
+                      {{ draft.end_hour }}
+                    </td>
+                    <td>
+                      {{ draft.day }}
+                    </td>
+                    <td>
+                      {{ draft.week }}
+                    </td>
+                    <td>
+                      {{ draft.month }}
+                    </td>
+                    <td>
+                      {{ draft.year }}
+                    </td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+              <button class="btn btn-success">Confirm</button>
+              &nbsp;
+              <button class="btn btn-danger" (click)="reset()">
+                Reset
+              </button>
+            </div>
+            <div *ngIf="drafts.length == 0">
+              You have not added any items to your draft schedule!
+            </div>
           </div>
-          <button>Submit WWS</button>
         </tab>
       </tabset>
     </div>
