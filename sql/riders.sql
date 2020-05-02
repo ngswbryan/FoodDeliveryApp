@@ -122,6 +122,9 @@ BEGIN
    IF (NEW.start_hour > 22 OR NEW.start_hour < 10) OR (NEW.end_hour > 22 AND NEW.end_hour < 10) THEN
        RAISE EXCEPTION 'Time interval has to be between 1000 - 2200';
    END IF;
+   IF (NEW.start_hour > NEW.end_hour) THEN
+       RAISE EXCEPTION 'Start time cannot be later than end time';
+   END IF;
    IF (NEW.end_hour - NEW.start_hour > 4) THEN
        RAISE EXCEPTION 'Time Interval cannot exceed 4 hours';
    END IF;

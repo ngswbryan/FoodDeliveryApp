@@ -18,4 +18,8 @@ export class ApiService {
   getUserByUsername(username) {
     return this.http.get(`/users/${username}`);
   }
+
+  getRestaurants() {
+    return this.http.get("/restaurants");
+  }
 }
