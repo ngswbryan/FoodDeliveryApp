@@ -93,20 +93,20 @@ $$ LANGUAGE SQL;
  --when rider clicks completed
  --foodorder status change to done
   --change ongoing to false in Delivery
---  CREATE OR REPLACE FUNCTION update_done_status(deliveryid INTEGER)
---  RETURNS VOID AS $$
---  BEGIN 
---      UPDATE FoodOrder
---      SET completion_status = TRUE
---      WHERE order_id = ( SELECT D.order_id FROM Delivery D WHERE D.delivery_id = deliveryid);
+  CREATE OR REPLACE FUNCTION update_done_status(deliveryid INTEGER)
+  RETURNS VOID AS $$
+  BEGIN 
+      UPDATE FoodOrder
+      SET completion_status = TRUE
+      WHERE order_id = ( SELECT D.order_id FROM Delivery D WHERE D.delivery_id = deliveryid);
  
---      UPDATE Delivery
---      SET ongoing = FALSE,
---          delivery_end_time = current_timestamp,
---          time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = deliveryid)/60::DECIMAL
---      WHERE delivery_id = deliveryid;
---  END
---  $$ LANGUAGE PLPGSQL;
+      UPDATE Delivery
+      SET ongoing = FALSE,
+          delivery_end_time = current_timestamp,
+          time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = deliveryid)/60::DECIMAL
+      WHERE delivery_id = deliveryid;
+  END
+  $$ LANGUAGE PLPGSQL;
 
 
 
