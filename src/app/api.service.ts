@@ -41,12 +41,16 @@ export class ApiService {
     );
   }
 
-  getLocation() {
-    return this.http.get(`${this.url}/manager/location`);
+  getLocation(month, year, location) {
+    return this.http.get(
+      `${this.url}/manager/location?month=${month}&year=${year}&location=${location}`
+    );
   }
 
-  getRiders() {
-    return this.http.get(`${this.url}/manager/riders`);
+  getRiders(month, year, role) {
+    return this.http.get(
+      `${this.url}/manager/riders?month=${month}&year=${year}&role=${role}`
+    );
   }
 
   getCustomers(month, year) {

@@ -156,24 +156,31 @@
     <div class="col-md-1"></div>
     <div class="col-md-10">
       <div class="row">
-        <div class="col-md-4 box">
+        <div class="col-md-3 box">
           <div style="background-color: transparent;" class="inner">
             <button class="btn btn-primary" (click)="seeLocation()">
               See Statistics By Location
             </button>
           </div>
         </div>
-        <div class="col-md-4 box">
+        <div class="col-md-3 box">
           <div style="background-color: transparent;" class="inner">
             <button class="btn btn-primary" (click)="seeCustomers()">
               See Statistics Of All Customer
             </button>
           </div>
         </div>
-        <div class="col-md-4 box">
+        <div class="col-md-3 box">
           <div style="background-color: transparent;" class="inner">
-            <button class="btn btn-primary" (click)="seeRiders()">
-              See Statistics For All Riders
+            <button class="btn btn-primary" (click)="seeFTRiders()">
+              See Statistics For Full Time Riders
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3 box">
+          <div style="background-color: transparent;" class="inner">
+            <button class="btn btn-primary" (click)="seePTRiders()">
+              See Statistics For Part Time Riders
             </button>
           </div>
         </div>
@@ -222,6 +229,17 @@
 
     <div class="col-md-8">
       <h4>Location Statistics for {{ selectedMonth }}/{{ selectedYear }}</h4>
+      <h4 style="float: right;">
+        Filter By Location:
+        <select (change)="changeLocation()" [(ngModel)]="currLocation">
+          <option value="all" selected="selected">
+            All
+          </option>
+          <option *ngFor="let location of availableLocations">{{
+            location
+          }}</option>
+        </select>
+      </h4>
       <table *ngIf="location.length > 0" class="table table-striped">
         <!-- Statistics by location for
         {{
@@ -243,8 +261,8 @@
             <td>
               {{ location[0] }}
             </td>
-            <td>{{ location[2] }}</td>
-            <td>{{ location[1] }}</td>
+            <td>{{ location[4] }}</td>
+            <td>{{ location[3] }}</td>
           </tr>
         </tbody>
       </table>
@@ -261,7 +279,12 @@
   <div class="row" *ngIf="showRiders">
     <div class="col-md-2"></div>
     <div class="col-md-8">
-      <h4>Rider Statistics for {{ selectedMonth }}/{{ selectedYear }}</h4>
+      <h4 *ngIf="riderRole">
+        Full Time Rider Statistics for {{ selectedMonth }}/{{ selectedYear }}
+      </h4>
+      <h4 *ngIf="!riderRole">
+        Part Time Rider Statistics for {{ selectedMonth }}/{{ selectedYear }}
+      </h4>
       <table *ngIf="riders.length > 0" class="table table-striped">
         <thead>
           <tr>
@@ -303,3 +326,4 @@
     <div class="col-md-2"></div>
   </div>
 </div>
+<br />

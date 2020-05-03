@@ -72,21 +72,35 @@ const getManagerStatsCost = (request, response) => {
 };
 
 const getLocation = (request, response) => {
-  pool.query("select location_table();", (error, results) => {
-    if (error) {
-      throw error;
+  const month = request.query.month;
+  const year = request.query.year;
+  const location = request.query.location;
+  pool.query(
+    "select filter_location_table_by_month($1, $2, $3);",
+    [month, year, location],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
     }
-    response.status(200).json(results.rows);
-  });
+  );
 };
 
 const getRiders = (request, response) => {
-  pool.query("select location_table();", (error, results) => {
-    if (error) {
-      throw error;
+  const month = request.query.month;
+  const role = request.query.role;
+  const year = request.query.year;
+  pool.query(
+    "select filter_riders_table_by_month($1, $2, $3);",
+    [month, year, role],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
     }
-    response.status(200).json(results.rows);
-  });
+  );
 };
 
 const getCustomers = (request, response) => {
