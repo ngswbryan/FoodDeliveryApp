@@ -90,12 +90,18 @@ const getRiders = (request, response) => {
 };
 
 const getCustomers = (request, response) => {
-  pool.query("select customers_table();", (error, results) => {
-    if (error) {
-      throw error;
+  const month = request.query.month;
+  const year = request.query.year;
+  pool.query(
+    "select filterByMonth($1, $2);",
+    [month, year],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
     }
-    response.status(200).json(results.rows);
-  });
+  );
 };
 
 const getUserByUsername = (request, response) => {

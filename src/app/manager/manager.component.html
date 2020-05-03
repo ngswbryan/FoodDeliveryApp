@@ -69,7 +69,7 @@
           </button>
           <hr />
           <div id="collapseBasic" [collapse]="isCollapsed" [isAnimated]="true">
-            <table class="table table-striped">
+            <table *ngIf="newCustomers.length > 0" class="table table-striped">
               <thead>
                 <tr>
                   <th scope="col">#</th>
@@ -87,6 +87,9 @@
                 </tr>
               </tbody>
             </table>
+            <div *ngIf="newCustomers.length == 0">
+              No new users this month! 😭
+            </div>
           </div>
         </accordion-group>
         <accordion-group heading="View Total Orders">
@@ -107,7 +110,7 @@
             [collapse]="isCollapsedOrders"
             [isAnimated]="true"
           >
-            <table class="table table-striped">
+            <table *ngIf="totalOrders.length > 0" class="table table-striped">
               <thead>
                 <tr>
                   <th scope="col">#</th>
@@ -131,6 +134,9 @@
                 </tr>
               </tbody>
             </table>
+            <div *ngIf="totalOrders.length == 0">
+              No new orders this month! 😭
+            </div>
           </div>
         </accordion-group>
         <accordion-group heading="View Total Order Cost">
@@ -180,34 +186,32 @@
     <div class="col-md-2"></div>
 
     <div class="col-md-8">
-      <table class="table table-striped">
+      <h4>Customer Statistics for {{ selectedMonth }}/{{ selectedYear }}</h4>
+      <table *ngIf="customers.length > 0" class="table table-striped">
         <thead>
           <tr>
-            <th scope="col">Month</th>
+            <th scope="col">#</th>
             <th scope="col">Customer ID</th>
             <th scope="col">Total Orders</th>
             <th scope="col">Total Order Cost</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let country of countries; index as i">
-            <th scope="row">{{ i + 1 }}</th>
+          <tr *ngFor="let customer of customers; index as i">
+            <th>{{ i + 1 }}</th>
             <td>
-              <img
-                [src]="
-                  'https://upload.wikimedia.org/wikipedia/commons/' +
-                  country.flag
-                "
-                class="mr-2"
-                style="width: 20px;"
-              />
-              {{ country.name }}
+              {{ customer[2] }}
             </td>
-            <td>{{ country.area | number }}</td>
-            <td>{{ country.population | number }}</td>
+            <td>{{ customer[3] }}</td>
+            <td>{{ customer[4] }}</td>
           </tr>
         </tbody>
       </table>
+      <div *ngIf="customers.length == 0">
+        <alert type="danger">
+          <strong>Oh snap!</strong> No data to display for this month! 😢
+        </alert>
+      </div>
     </div>
 
     <div class="col-md-2"></div>
@@ -217,7 +221,14 @@
     <div class="col-md-2"></div>
 
     <div class="col-md-8">
-      <table class="table table-striped">
+      <h4>Location Statistics for {{ selectedMonth }}/{{ selectedYear }}</h4>
+      <table *ngIf="location.length > 0" class="table table-striped">
+        <!-- Statistics by location for
+        {{
+          customers[0][0]
+        }}/{{
+          customers[0][1]
+        }} -->
         <thead>
           <tr>
             <th scope="col">#</th>
@@ -237,17 +248,24 @@
           </tr>
         </tbody>
       </table>
+      <div *ngIf="location.length == 0">
+        <alert type="danger">
+          <strong>Oh snap!</strong> No data to display for this month! 😢
+        </alert>
+      </div>
     </div>
 
     <div class="col-md-2"></div>
   </div>
 
   <div class="row" *ngIf="showRiders">
-    <div class="col-md-12">
-      <table class="table table-striped">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+      <h4>Rider Statistics for {{ selectedMonth }}/{{ selectedYear }}</h4>
+      <table *ngIf="riders.length > 0" class="table table-striped">
         <thead>
           <tr>
-            <th scope="col">Month</th>
+            <th scope="col">#</th>
             <th scope="col">Rider ID</th>
             <th scope="col">Total Orders Delivered</th>
             <th scope="col">Total Hours Worked</th>
@@ -276,6 +294,12 @@
           </tr>
         </tbody>
       </table>
+      <div *ngIf="riders.length == 0">
+        <alert type="danger">
+          <strong>Oh snap!</strong> No data to display for this month! 😢
+        </alert>
+      </div>
     </div>
+    <div class="col-md-2"></div>
   </div>
 </div>

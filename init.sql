@@ -751,7 +751,8 @@ $$ LANGUAGE PLPGSQL;
          FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id
          GROUP BY order_month, order_year, FO.uid
      ) AS CTE
-     WHERE CTE.order_month = input_month;
+     WHERE CTE.order_month = input_month
+     AND CTE.order_year = input_year;
  $$ LANGUAGE SQL;
 
  CREATE OR REPLACE FUNCTION match_to_uid(input_name VARCHAR)

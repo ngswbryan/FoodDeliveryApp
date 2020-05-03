@@ -85,16 +85,18 @@ export class ManagerComponent implements OnInit {
     this.showLocation = false;
     this.showCustomers = true;
     this.showRiders = false;
-    this.apiService.getCustomers().subscribe((customer: any) => {
-      for (let i = 0; i < customer.length; i++) {
-        let tempString = customer[i].customers_table;
-        let result = tempString.substring(1, tempString.length - 1);
-        let arr = result.split(",");
-        this.customers.push(arr);
-      }
-      console.log(this.customers);
-      this.loadingService.loading.next(false);
-    });
+    this.apiService
+      .getCustomers(this.selectedMonth, this.selectedYear)
+      .subscribe((customer: any) => {
+        for (let i = 0; i < customer.length; i++) {
+          let tempString = customer[i].filterbymonth;
+          let result = tempString.substring(1, tempString.length - 1);
+          let arr = result.split(",");
+          this.customers.push(arr);
+        }
+        console.log(this.customers);
+        this.loadingService.loading.next(false);
+      });
   }
 
   handlePeriodChange() {
@@ -102,6 +104,12 @@ export class ManagerComponent implements OnInit {
     this.totalCost = [];
     this.totalOrders = [];
     this.loadingService.loading.next(true);
+    this.seeCustomers();
+    this.seeLocation();
+    this.seeRiders();
+    this.showLocation = false;
+    this.showCustomers = false;
+    this.showRiders = false;
     this.apiService
       .fetchMangerStatsByMonthAndYear(this.selectedMonth, this.selectedYear)
       .subscribe((stats: any) => {

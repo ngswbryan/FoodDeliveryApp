@@ -7,7 +7,7 @@ import { environment } from "../environments/environment";
 export class ApiService {
   constructor(private http: HttpClient) {}
 
-  url = "";
+  url = "http://localhost:3002";
 
   getUsers() {
     return this.http.get(`${this.url}/users`);
@@ -49,7 +49,9 @@ export class ApiService {
     return this.http.get(`${this.url}/manager/riders`);
   }
 
-  getCustomers() {
-    return this.http.get(`${this.url}/manager/customers`);
+  getCustomers(month, year) {
+    return this.http.get(
+      `${this.url}/manager/customers?month=${month}&year=${year}`
+    );
   }
 }
