@@ -133,6 +133,26 @@ CREATE TABLE Receives (
     promo_id INTEGER REFERENCES PromotionalCampaign(promo_id)
 );
 
+--new updated delivery table
+--CREATE TABLE Delivery (
+--    delivery_id SERIAL NOT NULL,
+--    order_id INTEGER REFERENCES FoodOrder(order_id),
+--    rider_id INTEGER REFERENCES Riders(rider_id),
+--    delivery_cost DECIMAL NOT NULL,
+--    departure_time TIMESTAMP,
+--    collected_time TIMESTAMP,
+--    delivery_start_time TIMESTAMP, --start delivering to customer
+--    delivery_end_time TIMESTAMP,
+--    time_for_one_delivery DECIMAL, --in hours
+--    location VARCHAR(100),
+--    delivery_rating INTEGER, 
+--    food_review varchar(100),
+--    ongoing BOOLEAN, --true means delivering, false means done
+--    PRIMARY KEY(delivery_id),
+--    UNIQUE(delivery_id)
+--);
+
+
 CREATE TABLE Delivery (
     delivery_id SERIAL NOT NULL,
     order_id INTEGER REFERENCES FoodOrder(order_id),
@@ -321,10 +341,11 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  RETURNS TABLE (
      order_id INTEGER,
      delivery_ratings INTEGER,
-     delivery_location VARCHAR
+     rider_name VARCHAR
  ) AS $$
-     SELECT D.order_id, D.delivery_rating, D.location
+     SELECT D.order_id, D.delivery_rating, U.name
      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
+     join Users U on D.rider_id = U.uid
      WHERE FO.uid = customers_uid;
  $$ LANGUAGE SQL;
 
@@ -387,6 +408,27 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
   FOR EACH ROW
   EXECUTE FUNCTION notify_user();
 
+    --trigger when choosen total order cost < min order
+ CREATE OR REPLACE FUNCTION notify_minorder_not_met() RETURNS TRIGGER AS $$
+ DECLARE
+    minorderprice DECIMAL;
+ BEGIN
+    SELECT R.min_order_price INTO minorderprice
+    FROM  Restaurants R
+    WHERE R.rid = NEW.rid;
+    IF  NEW.order_cost < minorderprice THEN
+        RAISE EXCEPTION 'ordered cost is less than minimum order cost of %', minorderprice;
+    END IF;
+    RETURN NEW;
+ END;
+ $$ LANGUAGE PLPGSQL;
+ DROP TRIGGER IF EXISTS notify_minorder_not_met ON FoodOrder CASCADE;
+ CREATE TRIGGER notify_minorder_not_met
+  BEFORE INSERT
+  ON FoodOrder
+  FOR EACH ROW
+  EXECUTE FUNCTION notify_minorder_not_met();
+
   --trigger to update isdelivering for the particular rider
  CREATE OR REPLACE FUNCTION update_rider_isdelivering() RETURNS TRIGGER AS $$
  BEGIN
@@ -426,16 +468,18 @@ CREATE TYPE orderdeliveryid AS (
       VALUES (customer_uid, restaurant_id, have_credit, total_order_cost, current_timestamp, FALSE)
       RETURNING order_id into orderid;
 
-      INSERT INTO Delivery(order_id, rider_id, delivery_cost, delivery_start_time, location, ongoing)
+      --check for promo
+
+
+      INSERT INTO Delivery(order_id, rider_id, delivery_cost, location, ongoing)
       VALUES (orderid,
               (SELECT CASE WHEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE ORDER BY random() LIMIT 1) IS NOT NULL
                        THEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE  ORDER BY random() LIMIT 1)
                        ELSE (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE ORDER BY random() LIMIT 1)
                        END),
-              5.5,
-              current_timestamp,
+              5,
               delivery_location,
-              TRUE) --flat fee of 5.5 for delivery cost
+              TRUE) --flat fee of 5 for delivery cost
       RETURNING delivery_id into deliveryid;
 
 
@@ -459,11 +503,26 @@ CREATE TYPE orderdeliveryid AS (
 
        END loop;
 
+       UPDATE Customers C
+       SET points = points + CAST(floor(total_order_cost/5) AS INTEGER) --Gain 1 reward point every $5 spent
+       WHERE C.uid = customer_uid;
+
        RETURN  (orderid,deliveryid);
 
  END
  $$ LANGUAGE PLPGSQL;
 
+  -- 5 most recent Location
+ CREATE OR REPLACE FUNCTION most_recent_location(input_customer_id INTEGER)
+ RETURNS TABLE (
+  recentlocations VARCHAR
+ ) AS $$
+     SELECT D.location
+     FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
+     WHERE FO.uid = input_customer_id
+     ORDER BY D.delivery_end_time desc
+     LIMIT 5;
+ $$ LANGUAGE SQL;
 
 
 
@@ -957,15 +1016,18 @@ $$ LANGUAGE PLPGSQL;
  END 
  $$ LANGUAGE PLPGSQL;
 
---c)
--- get previous weekly salaries
-CREATE OR REPLACE FUNCTION get_weekly_salaries(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
+-- for WWS
+-- --c)
+-- -- get previous weekly salaries --for weekly
+CREATE OR REPLACE FUNCTION get_weekly_statistics(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     week INTEGER,
     month INTEGER,
     year INTEGER,
-    base_salary DECIMAL,
-    total_commission BIGINT
+    base_salary DECIMAL, --weekly
+    total_commission BIGINT,
+    total_num_orders BIGINT,
+    total_num_hours_worked BIGINT
 ) AS $$
 declare 
     salary_base DECIMAL;
@@ -982,28 +1044,33 @@ begin
     INTO initial_commission;
 
     RETURN QUERY(
-        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission)
+        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission), count(*), SUM(end_hour - start_hour)
         FROM Riders R join Delivery D on D.rider_id = R.rider_id
+        join WeeklyWorkSchedule WWS on WWS.rider_id = D.rider_id
         WHERE input_rider_id = D.rider_id
         AND (SELECT EXTRACT('day' from date_trunc('week', D.delivery_end_time) - date_trunc('week', date_trunc('month',  D.delivery_end_time))) / 7 + 1 ) = input_week --take in user do manipulation
         AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
         AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
+        AND D.ongoing = False
     );
 end
 $$ LANGUAGE PLPGSQL;
 
--- --d)
--- -- get previous monthly salaries DOESNT WORK 
-CREATE OR REPLACE FUNCTION get_monthly_salaries(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
+-- -- --d)
+-- -- -- get previous monthly salaries  --for month
+CREATE OR REPLACE FUNCTION get_monthly_statistics(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     month INTEGER,
     year INTEGER,
-    base_salary DECIMAL,
-    total_commission BIGINT
+    base_salary DECIMAL, --weekly
+    total_commission BIGINT,
+    total_num_orders BIGINT,
+    total_num_hours_worked BIGINT
 ) AS $$
-    SELECT input_month, input_year, R.base_salary, count(delivery_id) * R.commission
+    SELECT input_month, input_year, R.base_salary * 4, count(delivery_id) * R.commission, count(*), SUM(end_hour - start_hour)
     FROM Riders R join MonthlyWorkSchedule MWS on R.rider_id = MWS.rider_id
     join Delivery D on D.rider_id = MWS.rider_id
+    join WeeklyWorkSchedule WWS on WWS.rider_id = MWS.rider_id
     WHERE input_rider_id = D.rider_id
     AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
     AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
@@ -1011,25 +1078,290 @@ RETURNS TABLE (
     GROUP BY R.rider_id;
 $$ LANGUAGE SQL;
 
-
- --e)
- --when rider clicks completed
- --foodorder status change to done
-  --change ongoing to false in Delivery
-  CREATE OR REPLACE FUNCTION update_done_status(deliveryid INTEGER)
-  RETURNS VOID AS $$
-  BEGIN 
-      UPDATE FoodOrder
-      SET completion_status = TRUE
-      WHERE order_id = ( SELECT D.order_id FROM Delivery D WHERE D.delivery_id = deliveryid);
+--e)
+-- Allow Part Time riders to see their weekly work schedule
+CREATE OR REPLACE FUNCTION get_WWS(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
+RETURNS TABLE (
+    day INTEGER,
+    week INTEGER,
+    month INTEGER,
+    year INTEGER,
+    starthour INTEGER,
+    endhour INTEGER
+) AS $$
+    SELECT day, week, month, year, start_hour, end_hour
+    FROM WeeklyWorkSchedule WWS
+    WHERE WWS.rider_id = input_rider_id
+    AND WWS.week = input_week
+    AND WWS.month = input_month
+    AND WWS.year = input_year;
+$$ LANGUAGE SQL;
  
-      UPDATE Delivery
-      SET ongoing = FALSE,
-          delivery_end_time = current_timestamp,
-          time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = deliveryid)/60::DECIMAL
-      WHERE delivery_id = deliveryid;
+ --f)
+ -- Allow FULL TIME RIDERS to see their monthly work schedule
+CREATE OR REPLACE FUNCTION get_MWS(input_rider_id INTEGER, input_month INTEGER, input_year INTEGER)
+RETURNS TABLE (
+    day INTEGER,
+    week INTEGER,
+    month INTEGER,
+    year INTEGER,
+    starthour INTEGER,
+    endhour INTEGER
+) AS $$
+    SELECT day, week, month, year, start_hour, end_hour
+    FROM WeeklyWorkSchedule WWS
+    WHERE WWS.rider_id = input_rider_id
+    AND WWS.month = input_month
+    AND WWS.year = input_year;
+$$ LANGUAGE SQL;
+
+--g)
+  --Update WWS and MWS for full timer
+ --Shift 1: 10am to 2pm and 3pm to 7pm.
+ --Shift 2: 11am to 3pm and 4pm to 8pm.
+ --Shift 3: 12pm to 4pm and 5pm to 9pm.
+ --Shift 4: 1pm to 5pm and 6pm to 10pm.
+  CREATE OR REPLACE FUNCTION update_fulltime_WWS(riderid INTEGER, WWSyear INTEGER, WWSmonth INTEGER, workingdays INTEGER, day1shift INTEGER, day2shift INTEGER, day3shift INTEGER, day4shift INTEGER, day5shift INTEGER)
+  RETURNS VOID AS $$
+  DECLARE
+    day1 INTEGER;
+    day2 INTEGER;
+    day3 INTEGER;
+    day4 INTEGER;
+    day5 INTEGER;
+  BEGIN
+    IF (workingdays = 1) THEN
+      day1 = 1;
+      day2 = 2;
+      day3 = 3;
+      day4 = 4;
+      day5 = 5;
+    ELSIF (workingdays = 2) THEN
+      day1 = 2;
+      day2 = 3;
+      day3 = 4;
+      day4 = 5;
+      day5 = 6;
+    ELSIF (workingdays = 3) THEN
+      day1 = 3;
+      day2 = 4;
+      day3 = 5;
+      day4 = 6;
+      day5 = 7;
+    ELSIF (workingdays = 4) THEN
+      day1 = 4;
+      day2 = 5;
+      day3 = 6;
+      day4 = 7;
+      day5 = 1;
+    ELSIF (workingdays = 5) THEN
+      day1 = 5;
+      day2 = 6;
+      day3 = 7;
+      day4 = 1;
+      day5 = 2;
+    ELSIF (workingdays = 6) THEN
+      day1 = 6;
+      day2 = 7;
+      day3 = 1;
+      day4 = 2;
+      day5 = 3;
+    ELSE
+      day1 = 7;
+      day2 = 1;
+      day3 = 2;
+      day4 = 3;
+      day5 = 4;
+    END IF;
+    IF (day1shift = 1) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day1, 1, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day1, 1, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day1, 2, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day1, 2, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day1, 3, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day1, 3, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day1, 4, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day1, 4, WWSmonth, WWSyear, 1);
+    ELSIF (day1shift = 2) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day1, 1, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day1, 1, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day1, 2, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day1, 2, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day1, 3, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day1, 3, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day1, 4, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day1, 4, WWSmonth, WWSyear, 2);
+    ELSIF (day1shift = 3) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day1, 1, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day1, 1, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day1, 2, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day1, 2, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day1, 3, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day1, 3, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day1, 4, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day1, 4, WWSmonth, WWSyear, 3);
+    ELSE
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day1, 1, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day1, 1, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day1, 2, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day1, 2, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day1, 3, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day1, 3, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day1, 4, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day1, 4, WWSmonth, WWSyear, 4);
+    END IF;
+    IF (day2shift = 1) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day2, 1, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day2, 1, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day2, 2, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day2, 2, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day2, 3, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day2, 3, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day2, 4, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day2, 4, WWSmonth, WWSyear, 1);
+    ELSIF (day2shift = 2) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day2, 1, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day2, 1, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day2, 2, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day2, 2, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day2, 3, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day2, 3, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day2, 4, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day2, 4, WWSmonth, WWSyear, 2);
+    ELSIF (day2shift = 3) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day2, 1, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day2, 1, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day2, 2, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day2, 2, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day2, 3, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day2, 3, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day2, 4, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day2, 4, WWSmonth, WWSyear, 3);
+    ELSE
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day2, 1, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day2, 1, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day2, 2, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day2, 2, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day2, 3, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day2, 3, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day2, 4, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day2, 4, WWSmonth, WWSyear, 4);
+    END IF;
+    IF (day3shift = 1) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day3, 1, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day3, 1, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day3, 2, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day3, 2, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day3, 3, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day3, 3, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day3, 4, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day3, 4, WWSmonth, WWSyear, 1);
+    ELSIF (day3shift = 2) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day3, 1, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day3, 1, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day3, 2, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day3, 2, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day3, 3, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day3, 3, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day3, 4, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day3, 4, WWSmonth, WWSyear, 2);
+    ELSIF (day3shift = 3) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day3, 1, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day3, 1, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day3, 2, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day3, 2, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day3, 3, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day3, 3, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day3, 4, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day3, 4, WWSmonth, WWSyear, 3);
+    ELSE
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day3, 1, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day3, 1, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day3, 2, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day3, 2, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day3, 3, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day3, 3, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day3, 4, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day3, 4, WWSmonth, WWSyear, 4);
+    END IF;
+        IF (day4shift = 1) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day4, 1, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day4, 1, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day4, 2, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day4, 2, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day4, 3, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day4, 3, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day4, 4, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day4, 4, WWSmonth, WWSyear, 1);
+    ELSIF (day4shift = 2) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day4, 1, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day4, 1, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day4, 2, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day4, 2, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day4, 3, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day4, 3, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day4, 4, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day4, 4, WWSmonth, WWSyear, 2);
+    ELSIF (day4shift = 3) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day4, 1, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day4, 1, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day4, 2, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day4, 2, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day4, 3, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day4, 3, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day4, 4, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day4, 4, WWSmonth, WWSyear, 3);
+    ELSE
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day4, 1, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day4, 1, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day4, 2, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day4, 2, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day4, 3, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day4, 3, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day4, 4, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day4, 4, WWSmonth, WWSyear, 4);
+    END IF;
+        IF (day5shift = 1) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day5, 1, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day5, 1, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day5, 2, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day5, 2, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day5, 3, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day5, 3, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day5, 4, WWSmonth, WWSyear, 1);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day5, 4, WWSmonth, WWSyear, 1);
+    ELSIF (day5shift = 2) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day5, 1, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day5, 1, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day5, 2, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day5, 2, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day5, 3, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day5, 3, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day5, 4, WWSmonth, WWSyear, 2);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day5, 4, WWSmonth, WWSyear, 2);
+    ELSIF (day5shift = 3) THEN
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day5, 1, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day5, 1, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day5, 2, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day5, 2, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day5, 3, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day5, 3, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day5, 4, WWSmonth, WWSyear, 3);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day5, 4, WWSmonth, WWSyear, 3);
+    ELSE
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day5, 1, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day5, 1, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day5, 2, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day5, 2, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day5, 3, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day5, 3, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day5, 4, WWSmonth, WWSyear, 4);
+      INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day5, 4, WWSmonth, WWSyear, 4);
+    END IF;
+
   END
   $$ LANGUAGE PLPGSQL;
+
 
 -- for WWS
 CREATE OR REPLACE FUNCTION checkWWS()
@@ -1087,5 +1419,54 @@ $$ LANGUAGE plpgsql;
   FOR EACH ROW
   EXECUTE FUNCTION checktotalhourwws();
 
+
+
+  -- to determine which is the delivery that needs to be found now
+
+-------------- rider delivery process ----------------
+-- departing to pick food button
+CREATE OR REPLACE FUNCTION update_departure_time(input_rider_id INTEGER, input_delivery_id INTEGER)
+RETURNS VOID AS $$
+    UPDATE Delivery D SET departure_time = CURRENT_TIMESTAMP, ongoing = TRUE
+    WHERE D.rider_id = input_rider_id
+    AND D.delivery_id = input_delivery_id;
+$$ LANGUAGE SQL;
+
+-- reached restaurant button
+CREATE OR REPLACE FUNCTION update_collected_time(input_rider_id INTEGER, input_delivery_id INTEGER)
+RETURNS VOID AS $$
+    UPDATE Delivery D SET collected_time = CURRENT_TIMESTAMP
+    WHERE D.rider_id = input_rider_id
+    AND D.delivery_id = input_delivery_id;
+$$ LANGUAGE SQL;
+
+-- delivery start-time button
+CREATE OR REPLACE FUNCTION update_delivery_start(input_rider_id INTEGER, input_delivery_id INTEGER)
+RETURNS VOID AS $$
+    UPDATE Delivery D SET delivery_start_time = CURRENT_TIMESTAMP
+    WHERE D.rider_id = input_rider_id
+    AND D.delivery_id = input_delivery_id;
+$$ LANGUAGE SQL;
+
+ --when rider clicks completed button
+ --foodorder status change to done
+  --change ongoing to false in Delivery
+  CREATE OR REPLACE FUNCTION update_done_status(input_rider_id INTEGER, input_delivery_id INTEGER)
+  RETURNS VOID AS $$
+  BEGIN 
+      UPDATE FoodOrder
+      SET completion_status = TRUE
+      WHERE order_id = ( SELECT D.order_id FROM Delivery D WHERE D.delivery_id = input_delivery_id AND D.rider_id = input_rider_id);
+ 
+      UPDATE Delivery
+      SET ongoing = FALSE,
+          delivery_end_time = CURRENT_TIMESTAMP,
+          time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = input_delivery_id)/60::DECIMAL
+      WHERE delivery_id = input_delivery_id
+      AND rider_id = input_rider_id;
+  END
+  $$ LANGUAGE PLPGSQL;
+
+-------------- rider delivery process ----------------
 
 ------ RIDERS ------

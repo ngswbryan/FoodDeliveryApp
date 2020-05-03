@@ -135,9 +135,9 @@ CREATE TABLE Delivery (
     order_id INTEGER REFERENCES FoodOrder(order_id),
     rider_id INTEGER REFERENCES Riders(rider_id),
     delivery_cost DECIMAL NOT NULL,
-    departure_time TIMESTAMP NOT NULL,
-    collected_time TIMESTAMP NOT NULL,
-    delivery_start_time TIMESTAMP NOT NULL, --start delivering to customer
+    departure_time TIMESTAMP,
+    collected_time TIMESTAMP,
+    delivery_start_time TIMESTAMP, --start delivering to customer
     delivery_end_time TIMESTAMP,
     time_for_one_delivery DECIMAL, --in hours
     location VARCHAR(100),

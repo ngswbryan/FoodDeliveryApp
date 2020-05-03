@@ -4,10 +4,11 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  RETURNS TABLE (
      order_id INTEGER,
      delivery_ratings INTEGER,
-     delivery_location VARCHAR
+     rider_name VARCHAR
  ) AS $$
-     SELECT D.order_id, D.delivery_rating, D.location
+     SELECT D.order_id, D.delivery_rating, U.name
      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
+     join Users U on D.rider_id = U.uid
      WHERE FO.uid = customers_uid;
  $$ LANGUAGE SQL;
 
@@ -133,16 +134,15 @@ CREATE TYPE orderdeliveryid AS (
       --check for promo
 
 
-      INSERT INTO Delivery(order_id, rider_id, delivery_cost, delivery_start_time, location, ongoing)
+      INSERT INTO Delivery(order_id, rider_id, delivery_cost, location, ongoing)
       VALUES (orderid,
               (SELECT CASE WHEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE ORDER BY random() LIMIT 1) IS NOT NULL
                        THEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE  ORDER BY random() LIMIT 1)
                        ELSE (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE ORDER BY random() LIMIT 1)
                        END),
-              5.5,
-              current_timestamp,
+              5,
               delivery_location,
-              TRUE) --flat fee of 5.5 for delivery cost
+              TRUE) --flat fee of 5 for delivery cost
       RETURNING delivery_id into deliveryid;
 
 
@@ -165,6 +165,10 @@ CREATE TYPE orderdeliveryid AS (
             VALUES (orderid,item[1]);
 
        END loop;
+
+       UPDATE Customers C
+       SET points = points + CAST(floor(total_order_cost/5) AS INTEGER) --Gain 1 reward point every $5 spent
+       WHERE C.uid = customer_uid;
 
        RETURN  (orderid,deliveryid);
 
