@@ -227,6 +227,10 @@ INSERT INTO FoodOrder VALUES(DEFAULT, 6, 2, FALSE, 46.0,'2019-05-22 04:00:06', T
 INSERT INTO FoodOrder VALUES(DEFAULT, 11, 3, TRUE, 30.0,'2019-05-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 1, 4, FALSE, 20.0,'2019-08-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,'2019-05-22 04:00:06', TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,current_timestamp, TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,current_timestamp, TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
 
 
 
@@ -254,6 +258,10 @@ INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-25 04:00:06', '2018-06-25 05:00:06', 1, 'kovan', 4.0, 'nice', TRUE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-26 04:00:06', '2018-06-26 05:00:06', 1, 'kovan', 4.0, 'nice', TRUE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-27 04:00:06', '2018-06-27 05:00:06', 1, 'kovan', 4.0, 'nice', TRUE);
+INSERT INTO Delivery VALUES(DEFAULT, 11, 2, 5.0, current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 12, 2, 5.0, current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 13, 2, 5.0,'2020-04-22 04:00:06','2020-04-22 04:00:06', 1, 'yishun', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 14, 2, 5.0, '2020-04-22 04:00:06', '2020-04-22 04:00:06', 1, 'khatib', 4.0, 'nice', FALSE);
 
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
@@ -696,8 +704,8 @@ $$ LANGUAGE PLPGSQL;
 -- FDS Manager
 --a)
  CREATE OR REPLACE FUNCTION new_customers(input_month INTEGER, input_year INTEGER)
- RETURNS INTEGER AS $$
-     SELECT C.uid 
+ RETURNS setof record AS $$
+     SELECT C.uid, U.username
      FROM Customers C join Users U on C.uid = U.uid
      WHERE (SELECT EXTRACT(MONTH FROM U.date_joined)) = input_month
      AND (SELECT EXTRACT(YEAR FROM U.date_joined)) = input_year;
@@ -705,8 +713,8 @@ $$ LANGUAGE PLPGSQL;
 
  --b)
  CREATE OR REPLACE FUNCTION total_orders(input_month INTEGER, input_year INTEGER)
- RETURNS BIGINT AS $$
-     SELECT count(*) AS total_order_numbers
+ RETURNS setof record AS $$
+     SELECT *
      FROM FoodOrder FO
      WHERE (SELECT EXTRACT(MONTH FROM FO.date_time)) = input_month
      AND (SELECT EXTRACT(YEAR FROM FO.date_time)) = input_year
@@ -886,7 +894,7 @@ BEGIN
 END;
 $$ LANGUAGE PLPGSQL;
 
-CREATE OR REPLACE FUNCTION filter_location_table_by_month(input_month INTEGER, input_year INTEGER)
+CREATE OR REPLACE FUNCTION filter_location_table_by_month(input_month INTEGER, input_year INTEGER, input_location VARCHAR)
 RETURNS TABLE (
     delivery_location VARCHAR,
     month INTEGER,
@@ -895,11 +903,20 @@ RETURNS TABLE (
     hour VARCHAR
 ) AS $$
 BEGIN
+    IF input_location = 'all' THEN
     RETURN QUERY
     SELECT * 
     FROM location_table() as curr_table
     WHERE curr_table.month = input_month
     AND curr_table.year = input_year;
+    ELSE 
+    RETURN QUERY
+    SELECT * 
+    FROM location_table() as curr_table
+    WHERE curr_table.month = input_month
+    AND curr_table.year = input_year
+    AND curr_table.delivery_location = input_location;
+    END IF;
 END;
 $$ LANGUAGE PLPGSQL;
 ------ FDS MANAGER -------

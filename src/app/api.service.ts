@@ -21,6 +21,18 @@ export class ApiService {
     return this.http.get(`${this.url}/users/${username}`);
   }
 
+  getPastDeliveryRating(uid) {
+    return this.http.get(`${this.url}/users/rating/${uid}`);
+  }
+
+  getPastFoodReviews(uid) {
+    return this.http.get(`${this.url}/users/reviews/${uid}`);
+  }
+
+  getListOfFoodItem(rid) {
+    return this.http.get(`${this.url}/users/restaurant/${rid}`);
+  }
+
   getRestaurants() {
     return this.http.get(`${this.url}/restaurants`);
   }
@@ -41,15 +53,21 @@ export class ApiService {
     );
   }
 
-  getLocation() {
-    return this.http.get(`${this.url}/manager/location`);
+  getLocation(month, year, location) {
+    return this.http.get(
+      `${this.url}/manager/location?month=${month}&year=${year}&location=${location}`
+    );
   }
 
-  getRiders() {
-    return this.http.get(`${this.url}/manager/riders`);
+  getRiders(month, year, role) {
+    return this.http.get(
+      `${this.url}/manager/riders?month=${month}&year=${year}&role=${role}`
+    );
   }
 
-  getCustomers() {
-    return this.http.get(`${this.url}/manager/customers`);
+  getCustomers(month, year) {
+    return this.http.get(
+      `${this.url}/manager/customers?month=${month}&year=${year}`
+    );
   }
 }
