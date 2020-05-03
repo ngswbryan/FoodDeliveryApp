@@ -21,6 +21,18 @@ export class ApiService {
     return this.http.get(`${this.url}/users/${username}`);
   }
 
+  getPastDeliveryRating(uid) {
+    return this.http.get(`${this.url}/users/rating/${uid}`);
+  }
+
+  getPastFoodReviews(uid) {
+    return this.http.get(`${this.url}/users/reviews/${uid}`);
+  }
+
+  getListOfFoodItem(rid) {
+    return this.http.get(`${this.url}/users/restaurant/${rid}`);
+  }
+  
   getRestaurants() {
     return this.http.get(`${this.url}/restaurants`);
   }
@@ -59,3 +71,4 @@ export class ApiService {
     );
   }
 }
+
