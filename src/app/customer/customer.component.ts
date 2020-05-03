@@ -84,10 +84,19 @@ export class CustomerComponent implements OnInit {
 
   showYourModal(i) {
     const rid = i+1;
-
+    const min = this.restaurants[i][2];
     var initialState = {
       list: [
         rid
+      ],
+      orderList: [
+      ],
+      minOrder: [
+        min
+      ],
+      foodItems: [
+      ],
+      confirmedList: [
       ],
       title:'List of food items'
     };

@@ -1,53 +1,57 @@
-<div class="modal-header">
-    <h4 class="modal-title pull-left">{{title}}</h4>
-    <button type="button" class="close pull-right" aria-label="Close" (click)="close()">
-        <span aria-hidden="true">&times;</span>
-    </button>
+<div class="modal-lg"> 
+<div class="modal-content modal-lg"> 
+        <div class="modal-header">
+            <h4 class="modal-title pull-left">{{title}}</h4>
+            <button type="button" class="close pull-right" aria-label="Close" (click)="close()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="modal-body" style="overflow-y: auto;">
+
+            <div class="col-md-12">
+                <table class="table table-striped"> 
+                <thead> 
+                    <tr>
+                    <th scope="col"> # </th>
+                    <th scope="col"> Food name </th>
+                    <th scope="col"> Food Price  </th>
+                    <th scope="col"> Cuisine type </th>
+                    <th scope="col"> Overall Rating </th>
+                    <th scope="col"> Available </th>
+                    <th scope="col"> Quantity </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let food of foodItems; index as i" class="clickable-row" (click) = "addOrder(i)" (click) = "calculateTotal()">
+                    <th scope="row">{{ i + 1 }}</th>
+                    <td>
+                        {{ food[0] }}
+                    </td>
+                    <td>{{ food[1] }}</td>
+                    <td>{{ food[2] }}</td>
+                    <td>{{ food[3] }}</td>
+                    <td>{{ food[4] }}</td>
+                    <td>{{ orderList[i] }}</td>
+                    </tr>
+                </tbody>
+                </table>
+            </div>
+
+            <div> 
+                <h1> Total : {{total}}</h1>
+            </div>
+            <div class="ibox-row-padding">
+                <hr class="hr-line"/>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 m-b-xs">
+                    <button *ngIf="total > minOrder" type="button" class="btn btn-primary btn-block" (click)="confirm()">{{ ' Confirm Order '}}</button>
+                </div>
+                <div class="col-sm-6">
+                    <button class="btn btn-dark btn-block" type="button" (click)="close()">{{ 'Cancel' }}</button>
+                </div>
+            </div>
+        </div>
 </div>
-
-<div class="modal-body">
-
-    <div class="col-md-12">
-        <table class="table table-striped"> 
-          <thead> 
-            <tr>
-              <th scope="col"> # </th>
-              <th scope="col"> Food name </th>
-              <th scope="col"> Food Price  </th>
-              <th scope="col"> Cuisine type </th>
-              <th scope="col"> Overall Rating </th>
-              <th scope="col"> Available </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let food of foodItems; index as i">
-              <th scope="row">{{ i + 1 }}</th>
-              <td>
-                {{ food[0] }}
-              </td>
-              <td>{{ food[1] }}</td>
-              <td>{{ food[2] }}</td>
-              <td>{{ food[3] }}</td>
-              <td>{{ food[4] }}</td>
-            
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    <!-- <ul *ngIf="list.length">
-        <li *ngFor="let item of list">{{item}}</li>
-      </ul> -->
-
-
-    <div class="ibox-row-padding">
-        <hr class="hr-line"/>
-    </div>
-    <div class="row">
-        <div class="col-sm-6 m-b-xs">
-            <button type="button" class="btn btn-primary btn-block" (click)="confirm()">{{ 'Add to order '}}</button>
-        </div>
-        <div class="col-sm-6">
-            <button class="btn btn-dark btn-block" type="button" (click)="close()">{{ 'Cancel' }}</button>
-        </div>
-    </div>
 </div>

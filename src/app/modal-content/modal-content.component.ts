@@ -10,7 +10,11 @@ import { ApiService } from "../api.service";
 export class ModalContentComponent implements OnInit {
   title: string;
   list: any[] = []; //this list is connected to the parent component 
-  foodItems = [];
+  minOrder: any[] = []; //this list is connected to the parent component 
+  confirmedList: any[] = []; //this list is connected to the parent component 
+  foodItems: any[] = []; //this list is connected to the parent component 
+  orderList;
+  total; 
 
   constructor(
     private bsModalRef: BsModalRef,
@@ -18,8 +22,9 @@ export class ModalContentComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.total = 0; 
     this.apiService.getListOfFoodItem(this.list).subscribe((fooditem: any) => {
-      console.log("testing testing food item" + fooditem);
+      this.orderList = Array(fooditem.length).fill(0);
       for (let i = 0; i < fooditem.length; i++) {
         let current = fooditem[i]["list_of_fooditems"];
         let result = current.substring(1, current.length-1);
@@ -27,13 +32,28 @@ export class ModalContentComponent implements OnInit {
         this.foodItems.push(arr);
       }
     });
+    
   }
+
   confirm() {
-    // do stuff
+    this.confirmedList = this.orderList; 
     this.close();
   }
+
   close() {
     this.bsModalRef.hide();
+  }
+
+  addOrder(i) {
+    this.orderList[i]++; 
+  }
+
+  calculateTotal() {
+    let amount = 0; 
+    for (let i=0; i<this.orderList.length; i++) {
+      amount += this.orderList[i] * this.foodItems[i][1]
+    }
+    this.total = amount; 
   }
 
 }
