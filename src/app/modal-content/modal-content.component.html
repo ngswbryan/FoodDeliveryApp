@@ -1,20 +1,50 @@
 <div class="modal-header">
+    <h4 class="modal-title pull-left">{{title}}</h4>
     <button type="button" class="close pull-right" aria-label="Close" (click)="close()">
         <span aria-hidden="true">&times;</span>
     </button>
 </div>
+
 <div class="modal-body">
-    <div class="row">
-        <div class="col-12">
-        ... <!-- Some content -->    
-        </div>
-    </div>
+
+    <div class="col-md-12">
+        <table class="table table-striped"> 
+          <thead> 
+            <tr>
+              <th scope="col"> # </th>
+              <th scope="col"> Food name </th>
+              <th scope="col"> Food Price  </th>
+              <th scope="col"> Cuisine type </th>
+              <th scope="col"> Overall Rating </th>
+              <th scope="col"> Available </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let food of foodItems; index as i">
+              <th scope="row">{{ i + 1 }}</th>
+              <td>
+                {{ food[0] }}
+              </td>
+              <td>{{ food[1] }}</td>
+              <td>{{ food[2] }}</td>
+              <td>{{ food[3] }}</td>
+              <td>{{ food[4] }}</td>
+            
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    <!-- <ul *ngIf="list.length">
+        <li *ngFor="let item of list">{{item}}</li>
+      </ul> -->
+
+
     <div class="ibox-row-padding">
         <hr class="hr-line"/>
     </div>
     <div class="row">
         <div class="col-sm-6 m-b-xs">
-            <button type="button" class="btn btn-primary btn-block" (click)="confirm()">{{ 'Confirm'}}</button>
+            <button type="button" class="btn btn-primary btn-block" (click)="confirm()">{{ 'Add to order '}}</button>
         </div>
         <div class="col-sm-6">
             <button class="btn btn-dark btn-block" type="button" (click)="close()">{{ 'Cancel' }}</button>

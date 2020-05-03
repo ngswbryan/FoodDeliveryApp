@@ -24,6 +24,16 @@ style="align-content: center; background-color:#f3f5f8 ;">
                   <th scope="col"> Location </th>
                 </tr>
               </thead>
+              <tbody>
+                <tr *ngFor="let delivery of pastDeliveries; index as i">
+                  <th scope="row">{{ i + 1 }}</th>
+                  <td>
+                    {{ delivery[0] }}
+                  </td>
+                  <td>{{ delivery[1] }}</td>
+                  <td>{{ delivery[2] }}</td>
+                </tr>
+              </tbody>
             </table>
           </div>
   <div>
@@ -42,6 +52,16 @@ style="align-content: center; background-color:#f3f5f8 ;">
                   <th scope="col"> Review </th>
                 </tr>
               </thead>
+              <tbody>
+                <tr *ngFor="let review of pastReviews; index as i">
+                  <th scope="row">{{ i + 1 }}</th>
+                  <td>
+                    {{ review[0] }}
+                  </td>
+                  <td>{{ review[1] }}</td>
+                  <td>{{ review[2] }}</td>
+                </tr>
+              </tbody>
             </table>
           </div>
 
@@ -60,7 +80,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
               <th scope="col"> Min Order ($) </th>
             </tr>
           </thead>
-          <tbody> 
+          <!-- <tbody> 
             <tr class="clickable-row" (click)="showYourModal()">  
               <th scope="row"> 1 </th>
               <td> 1234 </td>
@@ -68,6 +88,16 @@ style="align-content: center; background-color:#f3f5f8 ;">
               <td> 20 </td>
             </tr>
           
+          </tbody> -->
+          <tbody>
+            <tr *ngFor="let restaurant of restaurants; index as i" class="clickable-row" (click)="showYourModal(i)">
+              <th scope="row">{{ i + 1 }}</th>
+              <td>
+                {{ restaurant[0] }}
+              </td>
+              <td>{{ restaurant[1] }}</td>
+              <td>{{ restaurant[2] }}</td>
+            </tr>
           </tbody>
         </table>
       </div>

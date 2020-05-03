@@ -22,7 +22,7 @@ const getUsers = (request, response) => {
 };
 
 const getRestaurants = (request, response) => {
-  pool.query("SELECT * FROM restaurants", (error, results) => {
+  pool.query("select list_of_restaurant()", (error, results) => {
     if (error) {
       throw error;
     }
@@ -111,6 +111,40 @@ const getUserByUsername = (request, response) => {
   );
 };
 
+const getPastDeliveryRating = (request, response) => {
+  const uid = request.params.uid;
+  console.log(uid);
+  pool.query("select past_delivery_ratings($1);", [uid], (error, results) => {
+    if (error){
+      throw error; 
+    }
+    response.status(200).json(results.rows);
+  })
+}
+
+const getPastFoodReviews = (request, response) => {
+  const uid = request.params.uid;
+  console.log(uid);
+  pool.query("select past_food_reviews($1);", [uid], (error, results) => {
+    if (error){
+      throw error; 
+    }
+    response.status(200).json(results.rows);
+  })
+}
+
+const getListOfFoodItem = (request, response) => {
+  const rid = request.params.rid;
+  console.log(rid);
+  pool.query("select list_of_fooditems($1);", [rid], (error, results) => {
+    if (error){
+      throw error; 
+    }
+    response.status(200).json(results.rows);
+  })
+}
+
+
 const addUser = (request, response) => {
   const {
     name,
@@ -156,6 +190,12 @@ app.route("/manager/location").get(getLocation);
 app.route("/manager/riders").get(getRiders);
 
 app.route("/manager/customers").get(getCustomers);
+
+app.route("/users/rating/:uid").get(getPastDeliveryRating);
+
+app.route("/users/reviews/:uid").get(getPastFoodReviews);
+
+app.route("/users/restaurant/:rid").get(getListOfFoodItem);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {
