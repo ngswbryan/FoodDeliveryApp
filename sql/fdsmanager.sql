@@ -207,3 +207,41 @@ BEGIN
     AND curr_table.year = input_year;
 END;
 $$ LANGUAGE PLPGSQL;
+
+---- function for fds-wide delivery cost discount
+CREATE OR REPLACE FUNCTION insert_delivery_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
+RETURNS VOID
+AS $$
+BEGIN 
+    INSERT INTO PromotionalCampaign VALUES(DEFAULT, null, discount, description, start_date, end_date);
+END
+$$ LANGUAGE PLPGSQL;
+
+---- button to apply delivery cost discount
+-- CREATE OR REPLACE FUNCTION apply_delivery_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
+-- RETURNS VOID
+-- AS $$
+-- BEGIN 
+--     UPDATE 
+-- END
+-- $$ LANGUAGE PLPGSQL;
+
+---- function for fds-wide food price discount
+CREATE OR REPLACE FUNCTION insert_food_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
+RETURNS VOID
+AS $$
+BEGIN 
+    INSERT INTO PromotionalCampaign VALUES(DEFAULT, null, discount, description, start_date, end_date);
+END
+$$ LANGUAGE PLPGSQL;
+
+----- button to apply food_discount 
+CREATE OR REPLACE FUNCTION apply_food_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
+RETURNS VOID
+AS $$
+BEGIN 
+    UPDATE Sells S
+    SET price = ROUND(price - (price * discount), 2);
+END
+$$ LANGUAGE PLPGSQL;
+
