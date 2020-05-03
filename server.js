@@ -22,7 +22,7 @@ const getUsers = (request, response) => {
 };
 
 const getRestaurants = (request, response) => {
-  pool.query("SELECT * FROM restaurants", (error, results) => {
+  pool.query("select list_of_restaurant()", (error, results) => {
     if (error) {
       throw error;
     }
@@ -72,30 +72,50 @@ const getManagerStatsCost = (request, response) => {
 };
 
 const getLocation = (request, response) => {
-  pool.query("select location_table();", (error, results) => {
-    if (error) {
-      throw error;
+  const month = request.query.month;
+  const year = request.query.year;
+  const location = request.query.location;
+  pool.query(
+    "select filter_location_table_by_month($1, $2, $3);",
+    [month, year, location],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
     }
-    response.status(200).json(results.rows);
-  });
+  );
 };
 
 const getRiders = (request, response) => {
-  pool.query("select location_table();", (error, results) => {
-    if (error) {
-      throw error;
+  const month = request.query.month;
+  const role = request.query.role;
+  const year = request.query.year;
+  pool.query(
+    "select filter_riders_table_by_month($1, $2, $3);",
+    [month, year, role],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
     }
-    response.status(200).json(results.rows);
-  });
+  );
 };
 
 const getCustomers = (request, response) => {
-  pool.query("select customers_table();", (error, results) => {
-    if (error) {
-      throw error;
+  const month = request.query.month;
+  const year = request.query.year;
+  pool.query(
+    "select filterByMonth($1, $2);",
+    [month, year],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
     }
-    response.status(200).json(results.rows);
-  });
+  );
 };
 
 const getUserByUsername = (request, response) => {
@@ -110,6 +130,40 @@ const getUserByUsername = (request, response) => {
     }
   );
 };
+
+const getPastDeliveryRating = (request, response) => {
+  const uid = request.params.uid;
+  console.log(uid);
+  pool.query("select past_delivery_ratings($1);", [uid], (error, results) => {
+    if (error){
+      throw error; 
+    }
+    response.status(200).json(results.rows);
+  })
+}
+
+const getPastFoodReviews = (request, response) => {
+  const uid = request.params.uid;
+  console.log(uid);
+  pool.query("select past_food_reviews($1);", [uid], (error, results) => {
+    if (error){
+      throw error; 
+    }
+    response.status(200).json(results.rows);
+  })
+}
+
+const getListOfFoodItem = (request, response) => {
+  const rid = request.params.rid;
+  console.log(rid);
+  pool.query("select list_of_fooditems($1);", [rid], (error, results) => {
+    if (error){
+      throw error; 
+    }
+    response.status(200).json(results.rows);
+  })
+}
+
 
 const addUser = (request, response) => {
   const {
@@ -133,6 +187,7 @@ const addUser = (request, response) => {
   );
 };
 
+
 app
   .route("/users")
   // GET endpoint
@@ -155,6 +210,12 @@ app.route("/manager/location").get(getLocation);
 app.route("/manager/riders").get(getRiders);
 
 app.route("/manager/customers").get(getCustomers);
+
+app.route("/users/rating/:uid").get(getPastDeliveryRating);
+
+app.route("/users/reviews/:uid").get(getPastFoodReviews);
+
+app.route("/users/restaurant/:rid").get(getListOfFoodItem);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {

@@ -20,4 +20,7 @@
 -- SELECT generate_all_my_promos(1);
 
 --g)
-SELECT average_orders_during_promo(1, '2018-06-22 04:00:06', '2018-12-19 04:00:06');
+-- SELECT average_orders_during_promo(1, '2018-06-22 04:00:06', '2018-12-19 04:00:06');
+
+--test promo
+SELECT add_promo(2, 0.2, 'annual sale','2018-06-22 04:00:06', '2018-12-19 04:00:06');

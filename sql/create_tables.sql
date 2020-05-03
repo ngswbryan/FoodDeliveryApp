@@ -26,7 +26,7 @@ CREATE TABLE Riders (
 CREATE TABLE Restaurants (
     rid INTEGER PRIMARY KEY,
     rname VARCHAR(100),
-    min_order_price DECIMAL,
+    min_order_price MONEY NOT NULL,
     unique(rid)
 );
 
@@ -115,7 +115,7 @@ CREATE TABLE WeeklyWorkSchedule (
 CREATE TABLE Sells ( --rid, food_id -> price 
     rid INTEGER REFERENCES Restaurants(rid) NOT NULL, 
     food_id INTEGER REFERENCES FoodItem(food_id) NOT NULL,
-    price DECIMAL NOT NULL,
+    price MONEY NOT NULL,
     PRIMARY KEY(rid, food_id)
 );
 
