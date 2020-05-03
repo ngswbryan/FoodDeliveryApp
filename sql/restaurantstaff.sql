@@ -149,7 +149,7 @@ BEGIN
     INSERT INTO PromotionalCampaign VALUES(DEFAULT, current_rid, discount, description, start_date, end_date);
 
     UPDATE Sells S
-    SET price = ROUND((price * discount), 3)
+    SET price = ROUND(price - (price * discount), 2)
     WHERE S.rid = current_rid;    
 END;
 $$ LANGUAGE PLPGSQL;
