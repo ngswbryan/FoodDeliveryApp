@@ -90,3 +90,6 @@
 --SELECT delivery_endtime(5);
 --SELECT food_review_update('very good', 5);
 --SELECT update_delivery_rating(10,5);
+
+
+SELECT most_recent_location(1);
