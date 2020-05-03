@@ -17,7 +17,6 @@
       join FoodItem FI on FI.food_id = O.food_id
       WHERE input_rider_id = D.rider_id
       AND D.ongoing = TRUE;
-
   $$ LANGUAGE SQL;
 
 -- --b)
