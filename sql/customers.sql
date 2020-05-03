@@ -70,6 +70,27 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
   FOR EACH ROW
   EXECUTE FUNCTION notify_user();
 
+  --trigger when choosen total order cost < min order
+ CREATE OR REPLACE FUNCTION notify_minorder_not_met() RETURNS TRIGGER AS $$
+ DECLARE
+    minorderprice DECIMAL;
+ BEGIN
+    SELECT R.min_order_price INTO minorderprice
+    FROM  Restaurants R
+    WHERE R.rid = NEW.rid;
+    IF  NEW.order_cost < minorderprice THEN
+        RAISE EXCEPTION 'ordered cost is less than minimum order cost of %', minorderprice;
+    END IF;
+    RETURN NEW;
+ END;
+ $$ LANGUAGE PLPGSQL;
+ DROP TRIGGER IF EXISTS notify_minorder_not_met ON FoodOrder CASCADE;
+ CREATE TRIGGER notify_minorder_not_met
+  BEFORE INSERT
+  ON FoodOrder
+  FOR EACH ROW
+  EXECUTE FUNCTION notify_minorder_not_met();
+
   --trigger to update isdelivering for the particular rider
  CREATE OR REPLACE FUNCTION update_rider_isdelivering() RETURNS TRIGGER AS $$
  BEGIN
