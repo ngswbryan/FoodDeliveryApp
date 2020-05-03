@@ -1,3 +1,20 @@
+--activate riders that are working NOW
+-- RUN THIS EVERYTIME RELOAD CUSTOMER PAGE
+CREATE OR REPLACE FUNCTION activate_riders()
+RETURNS void AS $$
+  UPDATE Riders R
+  SET working = TRUE
+  WHERE R.rider_id IN (SELECT WWS.rider_id
+                      FROM WeeklyWorkSchedule WWS
+                      WHERE WWS.start_hour = (SELECT EXTRACT(HOUR FROM current_timestamp))
+                      AND WWS.day%7 = (SELECT EXTRACT(DOW FROM current_timestamp))
+                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp) - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
+                      AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
+                      AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
+                      )
+  $$ LANGUAGE SQL;
+
+
 -- --a)
 --  -- get current job
   CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
