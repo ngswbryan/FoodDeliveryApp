@@ -61,7 +61,7 @@ CREATE TABLE FoodOrder (
 );
 
 CREATE TABLE FoodItem (
-    food_id INTEGER, 
+    food_id SERIAL NOT NULL, 
     rid INTEGER REFERENCES Restaurants
         ON DELETE CASCADE,
     cuisine_type VARCHAR(100),
@@ -70,6 +70,7 @@ CREATE TABLE FoodItem (
     overall_rating DECIMAL,
     ordered_count INTEGER,
     availability_status BOOLEAN,
+    is_deleted BOOLEAN,
     PRIMARY KEY(food_id, rid),
     UNIQUE(food_id)
 );
@@ -114,8 +115,8 @@ CREATE TABLE WeeklyWorkSchedule (
 
 CREATE TABLE Sells ( --rid, food_id -> price 
     rid INTEGER REFERENCES Restaurants(rid) NOT NULL, 
-    food_id INTEGER REFERENCES FoodItem(food_id) NOT NULL,
-    price MONEY NOT NULL,
+    food_id INTEGER REFERENCES FoodItem(food_id) ON DELETE CASCADE,
+    price DECIMAL NOT NULL check (price > 0),
     PRIMARY KEY(rid, food_id)
 );
 

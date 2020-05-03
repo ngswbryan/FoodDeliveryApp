@@ -17,22 +17,22 @@
         <tab heading="Menu" (selectTab)="console.log('ok')">
           <br />
           <accordion [isAnimated]="true">
-            <accordion-group
-              *ngFor="let food of menu; index as i"
-              [heading]="food.name"
-            >
-              {{ food.id }}
-              {{ food.cuisine_type }}
-              {{ food.rating }}
-              {{ food.availability }}
-              {{ food.daily_limit }}
-              <br />
-              <br />
-              <button class="btn btn-danger" (click)="delete(i)">
-                Delete
-              </button>
-            </accordion-group>
+            <ng-container *ngFor="let food of menu; index as i">
+              <accordion-group
+                *ngIf="!food.is_deleted"
+                [heading]="food.food_name"
+              >
+                <p><strong>Price:</strong> ${{ food.food_price }} 💵</p>
+                <p>Cuisine Type: {{ food.cuisine_type }}</p>
+                <p>Rating: {{ food.overall_rating }}</p>
+                <br />
+                <button class="btn btn-danger" (click)="delete(i)">
+                  Delete
+                </button>
+              </accordion-group>
+            </ng-container>
           </accordion>
+
           <br />
           <button class="btn btn-success" (click)="showAdd()">
             Add Menu Item
@@ -46,8 +46,17 @@
                   <div class="col-12">
                     <input
                       type="text"
-                      placeholder="Name"
+                      placeholder="Food Name"
                       formControlName="name"
+                      class="form-control form-input"
+                    />
+                  </div>
+
+                  <div class="col-12">
+                    <input
+                      type="text"
+                      placeholder="Price"
+                      formControlName="price"
                       class="form-control form-input"
                     />
                   </div>
@@ -64,8 +73,8 @@
                   <div class="col-12">
                     <input
                       type="text"
-                      placeholder="Daily Limit"
-                      formControlName="daily_limit"
+                      placeholder="Quantity"
+                      formControlName="quantity"
                       class="form-control form-input"
                     />
                   </div>
@@ -76,8 +85,8 @@
                       class="form-control form-input"
                       formControlName="availability"
                     >
-                      <option value="available">Available</option>
-                      <option value="unavailable">Unavailable</option>
+                      <option value="true">Available</option>
+                      <option value="false">Unavailable</option>
                     </select>
                   </div>
 

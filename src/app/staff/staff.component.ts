@@ -15,37 +15,14 @@ export class StaffComponent implements OnInit {
   add = false;
   showReport = false;
   campaigns = ["campaign1", "campaign2", "campaign3", "campaign4"];
-  menu = [
-    {
-      name: "burger",
-      id: 1,
-      cuisine_type: "western",
-      rating: 100,
-      daily_limit: 20,
-      availability: "available",
-    },
-    {
-      name: "pizza",
-      id: 2,
-      cuisine_type: "western",
-      rating: 100,
-      daily_limit: 20,
-      availability: "available",
-    },
-    {
-      name: "fries",
-      id: 3,
-      cuisine_type: "western",
-      rating: 100,
-      daily_limit: 20,
-      availability: "available",
-    },
-  ];
+  menu = [];
+  staff;
 
   createFoodForm = new FormGroup({
     name: new FormControl(""),
+    price: new FormControl(""),
     cuisine_type: new FormControl(""),
-    daily_limit: new FormControl(""),
+    quantity: new FormControl(""),
     availability: new FormControl(""),
   });
 
@@ -61,15 +38,36 @@ export class StaffComponent implements OnInit {
       this.username = params.username;
       this.apiService
         .getUserByUsername(this.username)
-        .subscribe((test: any) => {
-          console.log(test);
+        .subscribe((staff: any) => {
+          this.apiService
+            .getStaffByUsername(staff[0].uid)
+            .subscribe((staffDetails: any) => {
+              this.staff = staffDetails;
+              this.updateMenu();
+              this.loadingService.loading.next(false);
+            });
         });
     });
-    this.loadingService.loading.next(false);
+  }
+
+  updateMenu() {
+    this.menu = [];
+    this.apiService
+      .getListOfFoodItem(this.staff[0].rid)
+      .subscribe((rest: any) => {
+        this.menu = rest;
+        console.log(this.menu[0]);
+      });
   }
 
   delete(i) {
-    //delete //then get menu items again;
+    this.loadingService.loading.next(true);
+    this.apiService
+      .deleteMenuItem(this.menu[i].food_name, this.staff[0].rid)
+      .subscribe(() => {
+        this.updateMenu();
+        this.loadingService.loading.next(false);
+      });
   }
 
   showAdd() {
@@ -77,16 +75,21 @@ export class StaffComponent implements OnInit {
   }
 
   submitForm() {
+    this.loadingService.loading.next(true);
     this.add = false;
     let newFood = {
       name: this.createFoodForm.value.name,
-      id: 4,
+      price: Number(this.createFoodForm.value.price),
       cuisine_type: this.createFoodForm.value.cuisine_type,
-      rating: 100,
-      daily_limit: this.createFoodForm.value.daily_limit,
-      availability: this.createFoodForm.value.availability,
+      quantity: Number(this.createFoodForm.value.quantity),
+      availability: this.createFoodForm.value.availability == "true",
+      rid: Number(this.staff[0].rid),
     };
-    this.menu.push(newFood);
+    console.log(newFood);
+    this.apiService.addMenuItem(newFood).subscribe(() => {
+      this.updateMenu();
+      this.loadingService.loading.next(false);
+    });
   }
 
   generateReport() {
