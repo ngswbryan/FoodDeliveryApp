@@ -142,10 +142,16 @@ $$ LANGUAGE PLPGSQL;
 
 
 -- CREATING PROMOS
-CREATE OR REPLACE FUNCTION add_promos(current_rid INTEGER, discount DECIMAL, description VARCHAR(100), start_date TIMESTAMP, end_date TIMESTAMP) 
+CREATE OR REPLACE FUNCTION add_promo(current_rid INTEGER, discount NUMERIC, description VARCHAR(100), start_date TIMESTAMP, end_date TIMESTAMP) 
 RETURNS VOID 
 AS $$
+BEGIN
     INSERT INTO PromotionalCampaign VALUES(DEFAULT, current_rid, discount, description, start_date, end_date);
-$$ LANGUAGE SQL;
+
+    UPDATE Sells S
+    SET price = ROUND((price * discount), 3)
+    WHERE S.rid = current_rid;    
+END;
+$$ LANGUAGE PLPGSQL;
 
 -- apply promo through the menu

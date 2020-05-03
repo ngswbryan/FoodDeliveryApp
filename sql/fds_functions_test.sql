@@ -21,8 +21,12 @@
 
 --function test for g
 -- SELECT riders_table(true);
+-- SELECT filter_riders_table_by_month(5, 2018, TRUE);
 
 --function test for h
---SELECT location_table();
+-- SELECT location_table();
+
+-- SELECT filter_location_table_by_location('SENGKANG');
+select filter_location_table_by_month(5, 2018);
 
 
