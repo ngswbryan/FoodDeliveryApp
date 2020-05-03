@@ -4,10 +4,11 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  RETURNS TABLE (
      order_id INTEGER,
      delivery_ratings INTEGER,
-     delivery_location VARCHAR
+     rider_name VARCHAR
  ) AS $$
-     SELECT D.order_id, D.delivery_rating, D.location
+     SELECT D.order_id, D.delivery_rating, U.name
      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
+     join Users U on D.rider_id = U.uid
      WHERE FO.uid = customers_uid;
  $$ LANGUAGE SQL;
 
@@ -70,6 +71,27 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
   FOR EACH ROW
   EXECUTE FUNCTION notify_user();
 
+  --trigger when choosen total order cost < min order
+ CREATE OR REPLACE FUNCTION notify_minorder_not_met() RETURNS TRIGGER AS $$
+ DECLARE
+    minorderprice DECIMAL;
+ BEGIN
+    SELECT R.min_order_price INTO minorderprice
+    FROM  Restaurants R
+    WHERE R.rid = NEW.rid;
+    IF  NEW.order_cost < minorderprice THEN
+        RAISE EXCEPTION 'ordered cost is less than minimum order cost of %', minorderprice;
+    END IF;
+    RETURN NEW;
+ END;
+ $$ LANGUAGE PLPGSQL;
+ DROP TRIGGER IF EXISTS notify_minorder_not_met ON FoodOrder CASCADE;
+ CREATE TRIGGER notify_minorder_not_met
+  BEFORE INSERT
+  ON FoodOrder
+  FOR EACH ROW
+  EXECUTE FUNCTION notify_minorder_not_met();
+
   --trigger to update isdelivering for the particular rider
  CREATE OR REPLACE FUNCTION update_rider_isdelivering() RETURNS TRIGGER AS $$
  BEGIN
@@ -112,16 +134,15 @@ CREATE TYPE orderdeliveryid AS (
       --check for promo
 
 
-      INSERT INTO Delivery(order_id, rider_id, delivery_cost, delivery_start_time, location, ongoing)
+      INSERT INTO Delivery(order_id, rider_id, delivery_cost, location, ongoing)
       VALUES (orderid,
               (SELECT CASE WHEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE ORDER BY random() LIMIT 1) IS NOT NULL
                        THEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE  ORDER BY random() LIMIT 1)
                        ELSE (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE ORDER BY random() LIMIT 1)
                        END),
-              5.5,
-              current_timestamp,
+              5,
               delivery_location,
-              TRUE) --flat fee of 5.5 for delivery cost
+              TRUE) --flat fee of 5 for delivery cost
       RETURNING delivery_id into deliveryid;
 
 
@@ -144,6 +165,10 @@ CREATE TYPE orderdeliveryid AS (
             VALUES (orderid,item[1]);
 
        END loop;
+
+       UPDATE Customers C
+       SET points = points + CAST(floor(total_order_cost/5) AS INTEGER) --Gain 1 reward point every $5 spent
+       WHERE C.uid = customer_uid;
 
        RETURN  (orderid,deliveryid);
 
