@@ -1,5 +1,3 @@
-
-
 -- --a)
 --  -- get current job
   CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
