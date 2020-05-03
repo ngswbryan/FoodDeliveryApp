@@ -34,7 +34,14 @@ export class RegisterComponent implements OnInit {
     this.apiService.getUsers().subscribe((users: any) => {
       this.users = users;
       this.apiService.getRestaurants().subscribe((restaurants: any) => {
-        this.restaurants = restaurants;
+        for (let i = 0; i < restaurants.length; i++) {
+          let tempString = restaurants[i].list_of_restaurant;
+          let result = tempString.substring(1, tempString.length - 1);
+          let arr = result.split(",");
+
+          this.restaurants.push(arr[1]);
+        }
+        console.log(this.restaurants);
         this.loadingService.loading.next(false);
       });
     });

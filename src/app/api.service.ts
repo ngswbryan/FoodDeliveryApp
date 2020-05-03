@@ -7,7 +7,7 @@ import { environment } from "../environments/environment";
 export class ApiService {
   constructor(private http: HttpClient) {}
 
-  url = "";
+  url = "http://localhost:3002";
 
   getUsers() {
     return this.http.get(`${this.url}/users`);
@@ -19,6 +19,10 @@ export class ApiService {
 
   getUserByUsername(username) {
     return this.http.get(`${this.url}/users/${username}`);
+  }
+
+  getStaffByUsername(uid) {
+    return this.http.get(`${this.url}/staff/${uid}`);
   }
 
   getPastDeliveryRating(uid) {
@@ -69,5 +73,20 @@ export class ApiService {
     return this.http.get(
       `${this.url}/manager/customers?month=${month}&year=${year}`
     );
+  }
+
+  deleteMenuItem(fname, rid) {
+    return this.http.patch(
+      `${this.url}/staff/menu?fname=${fname}&rid=${rid}`,
+      {}
+    );
+  }
+
+  addMenuItem(food) {
+    return this.http.post(`${this.url}/staff/menu`, food);
+  }
+
+  getFoodItems() {
+    return this.http.get(`${this.url}/test`);
   }
 }

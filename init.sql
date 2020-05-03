@@ -66,7 +66,7 @@ CREATE TABLE FoodOrder (
 );
 
 CREATE TABLE FoodItem (
-    food_id INTEGER, 
+    food_id SERIAL NOT NULL, 
     rid INTEGER REFERENCES Restaurants
         ON DELETE CASCADE,
     cuisine_type VARCHAR(100),
@@ -75,6 +75,7 @@ CREATE TABLE FoodItem (
     overall_rating DECIMAL,
     ordered_count INTEGER,
     availability_status BOOLEAN,
+    is_deleted BOOLEAN,
     PRIMARY KEY(food_id, rid),
     UNIQUE(food_id)
 );
@@ -116,9 +117,9 @@ CREATE TABLE MonthlyWorkSchedule (
 --RELATIONSHIPS
 
 CREATE TABLE Sells (
-    rid INTEGER REFERENCES Restaurants(rid) NOT NULL, 
-    food_id INTEGER REFERENCES FoodItem(food_id) NOT NULL,
-    price DECIMAL NOT NULL,
+    rid INTEGER REFERENCES Restaurants(rid) NOT NULL,
+    food_id INTEGER REFERENCES FoodItem(food_id) ON DELETE CASCADE,
+    price DECIMAL NOT NULL check (price > 0),
     PRIMARY KEY(rid, food_id)
 );
 
@@ -202,20 +203,20 @@ INSERT INTO PromotionalCampaign values (100, 1, 20, 'this is discount 1', '2018-
 INSERT INTO PromotionalCampaign values (101, 2, 30, 'this is discount 2', '2018-04-22 04:00:06', '2018-12-20 04:00:06');  
 INSERT INTO PromotionalCampaign values (102, 3, 40, 'this is discount 3', '2018-05-22 04:00:06', '2018-12-21 04:00:06');  
 
-INSERT INTO FoodItem VALUES (1, 1, 'asian', 'chicken rice', 20, 0, 0, true);
-INSERT INTO FoodItem VALUES (2, 2, 'western', 'pork chop', 15, 0, 0, true);
-INSERT INTO FoodItem VALUES (3, 3, 'western', 'pork chop', 15, 0, 0, true);
-INSERT INTO FoodItem VALUES (4, 4, 'thai', 'pineapple rice', 12, 0, 0, true);
-INSERT INTO FoodItem VALUES (5, 5, 'western', 'pork chop', 12, 0, 0, true);
+INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken rice', 20, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'porkchop', 15, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 3, 'western', 'pork chop', 15, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'pineapple rice', 12, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 5, 'western', 'pork chop', 12, 0, 0, true, false);
 
-INSERT INTO FoodItem VALUES (6, 1, 'western', 'good stuff', 12, 2);
-INSERT INTO FoodItem VALUES (7, 1, 'western', 'stuff good', 12, 3);
-INSERT INTO FoodItem VALUES (8, 1, 'western', 'pork loin', 12, 5);
-INSERT INTO FoodItem VALUES (9, 1, 'western', 'pork bone', 12, 4);
-INSERT INTO FoodItem VALUES (10, 1, 'western', 'pork jizz', 12, 3.3);
+INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'good stuff', 12, 2,0,true,false);
+INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'stuff good', 12, 3,0,true,false);
+INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork loin', 12, 5,0,true,false);
+INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork bone', 12, 4,0,true,false);
+INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork jizz', 12, 3.3,0,true,false);
 
-INSERT INTO FoodItem VALUES (11, 1, 'western', 'dog chop', 12, 4.4);
-INSERT INTO FoodItem VALUES (12, 1, 'western', 'horse chop', 12, 1.9);
+INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'dog chop', 12, 4.4);
+INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'horse chop', 12, 1.9);
 
 INSERT INTO FoodOrder VALUES(DEFAULT, 1, 1, TRUE, 50.0,'2018-06-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 6, 2, FALSE, 46.0,'2018-05-22 04:00:06', TRUE);
@@ -364,9 +365,10 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
      food_price DECIMAL,
      cuisine_type VARCHAR,
      overall_rating DECIMAL,
-     availability_status BOOLEAN
+     availability_status BOOLEAN,
+     is_deleted BOOLEAN
  ) AS $$
-     SELECT FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status
+     SELECT FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted
      FROM FoodItem FI join Sells S on FI.food_id = S.food_id
      WHERE FI.rid = restaurant_id
  $$ LANGUAGE SQL;
@@ -564,6 +566,28 @@ RETURNS INTEGER AS $$
     FROM RestaurantStaff RS join Users U on U.uid = RS.uid
     WHERE input_username = U.username;
  $$ LANGUAGE SQL; 
+
+
+----- add menu item
+CREATE OR REPLACE FUNCTION add_menu_item(new_food_name VARCHAR, food_price DECIMAL, food_cuisine VARCHAR, restaurant_id INTEGER, food_quantity INTEGER, food_available BOOLEAN)
+RETURNS VOID AS $$
+declare 
+    fid INTEGER;
+begin 
+    INSERT into FoodItem VALUES(DEFAULT, restaurant_id, food_cuisine, new_food_name, food_quantity, 0, 0, food_available, false);
+    SELECT F.food_id into fid from FoodItem F where F.food_name = new_food_name and F.rid = restaurant_id;
+    INSERT into Sells VALUES(restaurant_id, fid, food_price);
+end
+$$ LANGUAGE PLPGSQL;
+
+----- delete menu item
+CREATE OR REPLACE FUNCTION delete_menu_item(delete_name VARCHAR, rest_id INTEGER)
+RETURNS VOID AS $$
+begin 
+    UPDATE FoodItem F SET is_deleted = true where F.rid = rest_id and F.food_name = delete_name; 
+end
+$$ LANGUAGE PLPGSQL;
+
  
 -- -- a) see menu items that belong to me
 CREATE OR REPLACE FUNCTION bring_menu_up(staff_username VARCHAR)
@@ -589,17 +613,10 @@ $$ LANGUAGE PLPGSQL;
 -- b) update menu items that belong -> can change count of food items, cuisine_type, food_name
 CREATE OR REPLACE FUNCTION update_count(food_item INTEGER, current_rid INTEGER, new_count INTEGER)
 RETURNS VOID AS $$
-BEGIN TRANSACTION;
     UPDATE FoodItem  
     SET quantity = new_count
     WHERE rid = current_rid
     AND food_id = food_item;
-
-    UPDATE FoodItem  
-    SET ordered_count = ordered_count + 1
-    WHERE rid = current_rid
-    AND food_id = food_item;
-COMMIT;
 $$ LANGUAGE SQL;
 
 --update cuisine_type
@@ -612,7 +629,7 @@ RETURNS VOID AS $$
 $$ LANGUAGE SQL;
 
 -- --update food_name
-CREATE OR REPLACE FUNCTION update_count(food_item INTEGER, current_rid INTEGER, new_name VARCHAR)
+CREATE OR REPLACE FUNCTION update_name(food_item INTEGER, current_rid INTEGER, new_name VARCHAR)
 RETURNS VOID AS $$
     UPDATE FoodItem  
     SET food_name = new_name
