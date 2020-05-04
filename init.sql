@@ -940,7 +940,7 @@ $$ LANGUAGE PLPGSQL;
 
 -- g) statistics of riders 
 -- input parameter to filter by month
- CREATE OR REPLACE FUNCTION riders_table(ridertype BOOLEAN)
+  CREATE OR REPLACE FUNCTION riders_table()
  RETURNS TABLE (
      order_month BIGINT,
      order_year BIGINT,
@@ -959,7 +959,7 @@ $$ LANGUAGE PLPGSQL;
      D.rider_id as rider_id,
      count(*) as count, ROUND((SUM(D.time_for_one_delivery)), 3) as total_hours_worked,
 
-     CASE WHEN ridertype THEN R.base_salary * 4 + count(*) * 6 --salary x 4 weeks + commission 6 for ft
+     CASE WHEN R.rider_type THEN R.base_salary * 4 + count(*) * 6 --salary x 4 weeks + commission 6 for ft
           ELSE R.base_salary * 4 + count(*) * 3 --salary * 4 weeks + commission 3 for pt
      END as total_salary,
 
@@ -971,7 +971,7 @@ $$ LANGUAGE PLPGSQL;
   END
  $$ LANGUAGE PLPGSQL;
 
-CREATE OR REPLACE FUNCTION filter_riders_table_by_month(input_month INTEGER, input_year INTEGER, ridertype BOOLEAN)
+CREATE OR REPLACE FUNCTION filter_riders_table_by_month(input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     order_month BIGINT,
      order_year BIGINT,
@@ -984,7 +984,7 @@ RETURNS TABLE (
      average_ratings NUMERIC
 ) AS $$
 SELECT * 
-FROM riders_table(ridertype) as curr_table
+FROM riders_table() as curr_table
 WHERE curr_table.order_month = input_month
 AND curr_table.order_year = input_year;
 $$ LANGUAGE SQL;

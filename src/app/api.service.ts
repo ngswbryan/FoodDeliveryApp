@@ -8,7 +8,7 @@ import { Router } from "@angular/router";
 export class ApiService {
   constructor(private http: HttpClient, public router: Router) {}
 
-  url = "";
+  url = "http://localhost:3002";
   public erMsg = new Subject();
 
   getError(): Observable<any> {
@@ -93,9 +93,9 @@ export class ApiService {
     );
   }
 
-  getRiders(month, year, role) {
+  getRiders(month, year) {
     return this.http.get(
-      `${this.url}/manager/riders?month=${month}&year=${year}&role=${role}`
+      `${this.url}/manager/riders?month=${month}&year=${year}`
     );
   }
 

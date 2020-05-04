@@ -54,13 +54,7 @@ export class ManagerComponent implements OnInit {
     this.apiService
       .getLocation(this.selectedMonth, this.selectedYear, this.currLocation)
       .subscribe((location: any) => {
-        for (let i = 0; i < location.length; i++) {
-          let tempString = location[i].filter_location_table_by_month;
-          let result = tempString.substring(1, tempString.length - 1);
-          let arr = result.split(",");
-          this.location.push(arr);
-        }
-        console.log(this.location);
+        this.location = location;
         this.loadingService.loading.next(false);
       });
   }
@@ -73,15 +67,10 @@ export class ManagerComponent implements OnInit {
     this.showCustomers = false;
     this.showRiders = false;
     this.apiService
-      .getLocation(this.selectedMonth, this.selectedYear, this.currLocation)
+      .getLocation(this.selectedMonth, this.selectedYear, "all")
       .subscribe((location: any) => {
-        for (let i = 0; i < location.length; i++) {
-          let tempString = location[i].filter_location_table_by_month;
-          let result = tempString.substring(1, tempString.length - 1);
-          let arr = result.split(",");
-          this.location.push(arr);
-          this.availableLocations.push(arr[0]);
-        }
+        this.location = location;
+        this.availableLocations = location;
         this.loadingService.loading.next(false);
       });
   }
@@ -93,27 +82,12 @@ export class ManagerComponent implements OnInit {
     this.showCustomers = false;
     this.showRiders = true;
     this.apiService
-      .getRiders(this.selectedMonth, this.selectedYear, this.riderRole)
+      .getRiders(this.selectedMonth, this.selectedYear)
       .subscribe((riders: any) => {
         console.log(riders);
-        for (let i = 0; i < riders.length; i++) {
-          let tempString = riders[i].filter_riders_table_by_month;
-          let result = tempString.substring(1, tempString.length - 1);
-          let arr = result.split(",");
-          this.riders.push(arr);
-        }
+        this.riders = riders;
         this.loadingService.loading.next(false);
       });
-  }
-
-  seeFTRiders() {
-    this.riderRole = true;
-    this.seeRiders();
-  }
-
-  seePTRiders() {
-    this.riderRole = false;
-    this.seeRiders();
   }
 
   seeCustomers() {
@@ -156,8 +130,6 @@ export class ManagerComponent implements OnInit {
           let arr = result.split(",");
           this.newCustomers.push(arr);
         }
-        console.log(this.newCustomers);
-        this.loadingService.loading.next(false);
         this.apiService
           .fetchMangerStatsByMonthAndYearOrders(
             this.selectedMonth,
