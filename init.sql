@@ -76,7 +76,7 @@ CREATE TABLE FoodItem (
 );
 
 CREATE TABLE PromotionalCampaign (
-    promo_id INTEGER PRIMARY KEY,
+    promo_id SERIAL PRIMARY KEY,
     rid INTEGER REFERENCES Restaurants 
         ON DELETE CASCADE,
     discount INTEGER,
@@ -214,9 +214,7 @@ INSERT INTO Customers VALUES(1, 0.0, '1234 5678 9432 1234');
 INSERT INTO Customers VALUES(6, 0.0, '4321 7777 9432 8888');
 INSERT INTO Customers VALUES(11, 0.0, '4222 5678 1243 9808');
 
-INSERT INTO PromotionalCampaign values (100, 1, 20, 'this is discount 1', '2018-06-22 04:00:06', '2018-12-19 04:00:06');  
-INSERT INTO PromotionalCampaign values (101, 2, 30, 'this is discount 2', '2018-04-22 04:00:06', '2018-12-20 04:00:06');  
-INSERT INTO PromotionalCampaign values (102, 3, 40, 'this is discount 3', '2018-05-22 04:00:06', '2018-12-21 04:00:06');  
+INSERT INTO PromotionalCampaign values (DEFAULT, 1, 20, 'this is discount 1', '2018-06-22 04:00:06', '2018-12-19 04:00:06'); 
 
 INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken rice', 20, 0, 2, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken noodles', 30, 0, 1, true, false);
@@ -259,7 +257,7 @@ INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,current_timestamp, TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,current_timestamp, TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
-
+INSERT INTO FoodOrder VALUES(DEFAULT, 3, 2, TRUE, 23.3,current_timestamp, TRUE);
 
 
 INSERT INTO Sells VALUES (1,1,5.5);
@@ -294,28 +292,24 @@ INSERT INTO Orders VALUES (8, 1);
 INSERT INTO Orders VALUES (9, 2);
 INSERT INTO Orders VALUES (10, 3);
 
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-23 04:00:06', '2018-06-23 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-25 04:00:06', '2018-06-25 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-26 04:00:06', '2018-06-26 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-27 04:00:06', '2018-06-27 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 11, 2, 5.0, current_timestamp, current_timestamp,null,null, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 12, 2, 5.0, current_timestamp, current_timestamp,null,null, 1, 'bishan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 13, 2, 5.0,'2020-04-22 04:00:06','2020-04-22 04:00:06',null,null, 1, 'yishun', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 14, 2, 5.0, '2020-04-22 04:00:06', '2020-04-22 04:00:06',null,null, 1, 'khatib', 4.0, 'nice', FALSE);
 
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-23 04:00:06', '2018-06-23 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-25 04:00:06', '2018-06-25 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-26 04:00:06', '2018-06-26 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-27 04:00:06', '2018-06-27 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 11, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 12, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 13, 2, 5.0,'2020-04-22 04:00:06','2020-04-22 04:00:06',current_timestamp, current_timestamp, 1, 'yishun', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 14, 2, 5.0, '2020-04-22 04:00:06', '2020-04-22 04:00:06',current_timestamp, current_timestamp, 1, 'khatib', 4.0, 'nice', FALSE);
 
-INSERT INTO Delivery VALUES(DEFAULT, 7, 5, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',null,null, 1, 'serangoon', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 8, 15, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',null,null, 1, 'little inda', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 15, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
+
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-23 04:00:06', '2018-06-23 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-25 04:00:06', '2018-06-25 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-26 04:00:06', '2018-06-26 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-27 04:00:06', '2018-06-27 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+
+INSERT INTO Delivery VALUES(DEFAULT, 7, 5, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'serangoon', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 8, 15, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'little inda', 4.0, 'nice', FALSE);
 
 INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 2, 11, 15, 2, 2, 5, 2018, 2);
 INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 2, 16, 20, 2, 2, 5, 2018, 2);
@@ -406,14 +400,16 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  --List of available food items
  CREATE OR REPLACE FUNCTION list_of_fooditems(restaurant_id INTEGER)
  RETURNS TABLE (
+     food_id INTEGER,
      food_name VARCHAR,
      food_price DECIMAL,
      cuisine_type VARCHAR,
      overall_rating DECIMAL,
      availability_status BOOLEAN,
-     is_deleted BOOLEAN
+     is_deleted BOOLEAN,
+        quantity INTEGER
  ) AS $$
-     SELECT FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted
+     SELECT FI.food_id, FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted, FI.quantity
      FROM FoodItem FI join Sells S on FI.food_id = S.food_id
      WHERE FI.rid = restaurant_id
  $$ LANGUAGE SQL;
@@ -502,7 +498,6 @@ BEGIN
                       AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
                       AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
                       );
-
 END
  $$ LANGUAGE PLPGSQL;
 
@@ -726,31 +721,39 @@ end
 $$ LANGUAGE PLPGSQL;
 
 -- b) update menu items that belong -> can change count of food items, cuisine_type, food_name
-CREATE OR REPLACE FUNCTION update_count(food_item INTEGER, current_rid INTEGER, new_count INTEGER)
+CREATE OR REPLACE FUNCTION update_food(id INTEGER, current_rid INTEGER, new_name VARCHAR, new_quantity INTEGER, new_price DECIMAL, new_type VARCHAR)
 RETURNS VOID AS $$
-    UPDATE FoodItem  
-    SET quantity = new_count
+BEGIN
+    IF new_quantity IS NOT NULL then
+    UPDATE FoodItem 
+    SET quantity = new_quantity
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
+    AND food_id = id;
+    END IF;
 
---update cuisine_type
-CREATE OR REPLACE FUNCTION update_type(food_item INTEGER, current_rid INTEGER, new_type VARCHAR)
-RETURNS VOID AS $$
-    UPDATE FoodItem  
-    SET cuisine_type = new_type
+    IF new_price IS NOT NULL then
+    UPDATE Sells 
+    SET price = new_price
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
-
--- --update food_name
-CREATE OR REPLACE FUNCTION update_name(food_item INTEGER, current_rid INTEGER, new_name VARCHAR)
-RETURNS VOID AS $$
-    UPDATE FoodItem  
+    AND food_id = id;
+    END IF;
+    
+    IF new_name IS NOT NULL then
+    UPDATE FoodItem 
     SET food_name = new_name
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
+    AND food_id = id;
+    END IF;
+
+    IF new_type IS NOT NULL then
+    UPDATE FoodItem 
+    SET cuisine_type = new_type
+    WHERE rid = current_rid
+    AND food_id = id;
+    END IF;
+
+END;
+$$ LANGUAGE PLPGSQL;
 
 --generates top five based on highest rating
 CREATE OR REPLACE FUNCTION generate_top_five(current_rid INTEGER)
@@ -786,7 +789,7 @@ RETURNS DECIMAL AS $$
 $$ LANGUAGE SQL;
 
 
---- PROMOTIONAL CAMPAIGN
+--- PROMOTIONAL CAMPAIGN past promos
 CREATE OR REPLACE FUNCTION generate_all_my_promos(current_rid INTEGER)
 RETURNS TABLE (
     promo_id INTEGER,
@@ -799,7 +802,9 @@ RETURNS TABLE (
     declare
         time_frame INTEGER;
     begin
-        SELECT (DATE_PART('day', (input_end_date::timestamp - input_start_date::timestamp))) INTO time_frame;
+        SELECT (DATE_PART('day', (PC.end_date::timestamp - PC.start_date::timestamp)))
+        FROM PromotionalCampaign PC
+        INTO time_frame;
         
         RETURN QUERY(
             SELECT DISTINCT PC.promo_id, PC.discount, PC.description, PC.start_date, PC.end_date, time_frame
@@ -808,7 +813,6 @@ RETURNS TABLE (
         );
     end
 $$ LANGUAGE PLPGSQL;
-
 
 --AVERAGE ORDERS DURING THIS PROMO
 CREATE OR REPLACE FUNCTION average_orders_during_promo(current_rid INTEGER, input_start_date TIMESTAMP, input_end_date TIMESTAMP)
@@ -819,7 +823,6 @@ AS $$
     begin
          SELECT (DATE_PART('day', (input_end_date::timestamp - input_start_date::timestamp))) INTO time_frame;
 
-
         RETURN (
             SELECT count(*)::decimal/time_frame::decimal
             FROM FoodOrder FO join PromotionalCampaign PC
@@ -829,6 +832,16 @@ AS $$
             AND FO.completion_status = TRUE
         );
     end
+$$ LANGUAGE PLPGSQL;
+
+
+-- CREATING PROMOS for storewide discount
+CREATE OR REPLACE FUNCTION add_promo(current_rid INTEGER, discount NUMERIC, description VARCHAR(100), start_date TIMESTAMP, end_date TIMESTAMP) 
+RETURNS VOID 
+AS $$
+BEGIN
+    INSERT INTO PromotionalCampaign VALUES(DEFAULT, current_rid, discount, description, start_date, end_date);  
+END;
 $$ LANGUAGE PLPGSQL;
 
 ------ RESTAURANT STAFF ------
@@ -927,7 +940,7 @@ $$ LANGUAGE PLPGSQL;
 
 -- g) statistics of riders 
 -- input parameter to filter by month
- CREATE OR REPLACE FUNCTION riders_table(ridertype BOOLEAN)
+  CREATE OR REPLACE FUNCTION riders_table()
  RETURNS TABLE (
      order_month BIGINT,
      order_year BIGINT,
@@ -946,7 +959,7 @@ $$ LANGUAGE PLPGSQL;
      D.rider_id as rider_id,
      count(*) as count, ROUND((SUM(D.time_for_one_delivery)), 3) as total_hours_worked,
 
-     CASE WHEN ridertype THEN R.base_salary * 4 + count(*) * 6 --salary x 4 weeks + commission 6 for ft
+     CASE WHEN R.rider_type THEN R.base_salary * 4 + count(*) * 6 --salary x 4 weeks + commission 6 for ft
           ELSE R.base_salary * 4 + count(*) * 3 --salary * 4 weeks + commission 3 for pt
      END as total_salary,
 
@@ -958,7 +971,7 @@ $$ LANGUAGE PLPGSQL;
   END
  $$ LANGUAGE PLPGSQL;
 
-CREATE OR REPLACE FUNCTION filter_riders_table_by_month(input_month INTEGER, input_year INTEGER, ridertype BOOLEAN)
+CREATE OR REPLACE FUNCTION filter_riders_table_by_month(input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     order_month BIGINT,
      order_year BIGINT,
@@ -971,7 +984,7 @@ RETURNS TABLE (
      average_ratings NUMERIC
 ) AS $$
 SELECT * 
-FROM riders_table(ridertype) as curr_table
+FROM riders_table() as curr_table
 WHERE curr_table.order_month = input_month
 AND curr_table.order_year = input_year;
 $$ LANGUAGE SQL;

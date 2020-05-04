@@ -1,13 +1,27 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { switchMap } from "rxjs/internal/operators";
-import { environment } from "../environments/environment";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { catchError, retry } from "rxjs/operators";
+import { throwError, Subject, Observable, VirtualTimeScheduler } from "rxjs";
+import { Router } from "@angular/router";
 
 @Injectable()
 export class ApiService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, public router: Router) {}
 
-  url = "";
+  url = "http://localhost:3002";
+  public erMsg = new Subject();
+
+  getError(): Observable<any> {
+    return this.erMsg.asObservable();
+  }
+
+  clearError() {
+    this.erMsg.next();
+  }
+
+  indicateError() {
+    this.erMsg.next(true);
+  }
 
   getUsers() {
     return this.http.get(`${this.url}/users`);
@@ -41,6 +55,22 @@ export class ApiService {
     return this.http.get(`${this.url}/restaurants`);
   }
 
+  generateTotalOrders(month, year, rid) {
+    return this.http.get(
+      `${this.url}/staff/reports/orders?rid=${rid}&month=${month}&year=${year}`
+    );
+  }
+
+  generateTotalCost(month, year, rid) {
+    return this.http.get(
+      `${this.url}/staff/reports/cost?rid=${rid}&month=${month}&year=${year}`
+    );
+  }
+
+  generateTopFive(rid) {
+    return this.http.get(`${this.url}/staff/reports/top?rid=${rid}`);
+  }
+
   fetchMangerStatsByMonthAndYear(month, year) {
     return this.http.get(`${this.url}/manager?month=${month}&year=${year}`);
   }
@@ -63,9 +93,9 @@ export class ApiService {
     );
   }
 
-  getRiders(month, year, role) {
+  getRiders(month, year) {
     return this.http.get(
-      `${this.url}/manager/riders?month=${month}&year=${year}&role=${role}`
+      `${this.url}/manager/riders?month=${month}&year=${year}`
     );
   }
 
@@ -82,11 +112,54 @@ export class ApiService {
     );
   }
 
-  addMenuItem(food) {
-    return this.http.post(`${this.url}/staff/menu`, food);
+  deleteCampaign(rid) {
+    return this.http.delete(`${this.url}/staff/campaigns/${rid}`);
   }
 
-  getFoodItems() {
-    return this.http.get(`${this.url}/test`);
+  addMenuItem(food) {
+    return this.http.post(`${this.url}/staff/menu`, food).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  updateFoodItem(fid, rid, food) {
+    return this.http
+      .patch(`${this.url}/staff/menu/${fid}?rid=${rid}`, food)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
+  }
+
+  getCampaigns(rid) {
+    return this.http.get(`${this.url}/staff/campaigns/${rid}`);
+  }
+
+  addCampaign(rid, campaign) {
+    return this.http.post(`${this.url}/staff/campaigns/${rid}`, campaign).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  handleError(error) {
+    let errorMessage = "";
+
+    if (error.error instanceof ErrorEvent) {
+      // client-side error
+
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      // server-side error
+
+      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+    }
+    window.alert("You've entered invalid parameters! Please try again 😆");
+    location.reload();
+    return throwError(errorMessage);
   }
 }

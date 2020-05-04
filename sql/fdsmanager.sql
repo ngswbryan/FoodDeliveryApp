@@ -123,7 +123,7 @@
   END
  $$ LANGUAGE PLPGSQL;
 
-CREATE OR REPLACE FUNCTION filter_riders_table_by_month(input_month INTEGER, input_year INTEGER, ridertype BOOLEAN)
+CREATE OR REPLACE FUNCTION filter_riders_table_by_month(input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     order_month BIGINT,
      order_year BIGINT,
@@ -136,7 +136,7 @@ RETURNS TABLE (
      average_ratings NUMERIC
 ) AS $$
 SELECT * 
-FROM riders_table(ridertype) as curr_table
+FROM riders_table() as curr_table
 WHERE curr_table.order_month = input_month
 AND curr_table.order_year = input_year;
 $$ LANGUAGE SQL;

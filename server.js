@@ -76,7 +76,7 @@ const getLocation = (request, response) => {
   const year = request.query.year;
   const location = request.query.location;
   pool.query(
-    "select filter_location_table_by_month($1, $2, $3);",
+    "select * from filter_location_table_by_month($1, $2, $3);",
     [month, year, location],
     (error, results) => {
       if (error) {
@@ -89,11 +89,10 @@ const getLocation = (request, response) => {
 
 const getRiders = (request, response) => {
   const month = request.query.month;
-  const role = request.query.role;
   const year = request.query.year;
   pool.query(
-    "select filter_riders_table_by_month($1, $2, $3);",
-    [month, year, role],
+    "select * from filter_riders_table_by_month($1, $2);",
+    [month, year],
     (error, results) => {
       if (error) {
         throw error;
@@ -218,7 +217,8 @@ const addMenuItem = (request, response) => {
     [name, price, cuisine_type, rid, quantity, availability],
     (error) => {
       if (error) {
-        throw error;
+        response.status(400).json({ error: "invalid values" });
+        return;
       }
       response.status(201).json({ status: "success", message: "food added." });
     }
@@ -249,7 +249,131 @@ const getFoodItems = (request, response) => {
   });
 };
 
+const getTopFive = (request, response) => {
+  const rid = request.query.rid;
+  pool.query(
+    "SELECT * FROM generate_top_five($1);",
+    [rid],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const getTotalCost = (request, response) => {
+  const rid = request.query.rid;
+  const month = request.query.month;
+  const year = request.query.year;
+  pool.query(
+    "SELECT * FROM generate_total_cost_of_orders($1, $2, $3);",
+    [month, year, rid],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const getTotalOrders = (request, response) => {
+  const rid = request.query.rid;
+  const month = request.query.month;
+  const year = request.query.year;
+  pool.query(
+    "SELECT * FROM generate_total_num_of_orders($1, $2, $3);",
+    [month, year, rid],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const updateFoodItem = (request, response) => {
+  const fid = request.params.fid;
+  const rid = request.query.rid;
+  const { food_name, food_price, quantity, cuisine_type } = request.body;
+
+  console.log(fid);
+  console.log(rid);
+  console.log(food_price);
+
+  pool.query(
+    "select update_food($1, $2, $3, $4, $5, $6);",
+    [fid, rid, food_name, quantity, food_price, cuisine_type],
+    (error) => {
+      if (error) {
+        response.status(400).json({ error: "invalid values" });
+        return;
+      }
+      response
+        .status(200)
+        .json({ status: "success", message: "food updated." });
+    }
+  );
+};
+
+const getCampaigns = (request, response) => {
+  const rid = request.params.rid;
+
+  pool.query(
+    "SELECT * FROM generate_all_my_promos($1);",
+    [rid],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const addCampaign = (request, response) => {
+  const rid = request.params.rid;
+  const { description, discount, start, end } = request.body;
+
+  pool.query(
+    "select add_promo($1, $2, $3, $4, $5);",
+    [rid, discount, description, start, end],
+    (error) => {
+      if (error) {
+        response.status(400).json({ error: "invalid values" });
+        return;
+      }
+      response.status(201).json({ status: "success", message: "User added." });
+    }
+  );
+};
+
+const deleteCampaign = (request, response) => {
+  const rid = request.params.rid;
+  pool.query(
+    "DELETE from PromotionalCampaign P where P.promo_id = $1;",
+    [rid],
+    (error) => {
+      if (error) {
+        throw error;
+      }
+      response
+        .status(200)
+        .json({ status: "success", message: "campaign deleted." });
+    }
+  );
+};
+
 app.route("/test").get(getFoodItems);
+
+app
+  .route("/staff/campaigns/:rid")
+  .get(getCampaigns)
+  .post(addCampaign)
+  .delete(deleteCampaign);
 
 app
   .route("/users")
@@ -258,11 +382,19 @@ app
   // POST endpoint
   .post(addUser);
 
+app.route("/staff/menu/:fid").patch(updateFoodItem);
+
 app.route("/users/:username").get(getUserByUsername);
 
 app.route("/staff/:uid").get(getStaffByUsername);
 
 app.route("/staff/menu").post(addMenuItem).patch(deleteMenuItem);
+
+app.route("/staff/reports/orders").get(getTotalOrders);
+
+app.route("/staff/reports/cost").get(getTotalCost);
+
+app.route("/staff/reports/top").get(getTopFive);
 
 app.route("/restaurants").get(getRestaurants);
 

@@ -156,31 +156,24 @@
     <div class="col-md-1"></div>
     <div class="col-md-10">
       <div class="row">
-        <div class="col-md-3 box">
+        <div class="col-md-4 box">
           <div style="background-color: transparent;" class="inner">
             <button class="btn btn-primary" (click)="seeLocation()">
               See Statistics By Location
             </button>
           </div>
         </div>
-        <div class="col-md-3 box">
+        <div class="col-md-4 box">
           <div style="background-color: transparent;" class="inner">
             <button class="btn btn-primary" (click)="seeCustomers()">
               See Statistics Of All Customer
             </button>
           </div>
         </div>
-        <div class="col-md-3 box">
+        <div class="col-md-4 box">
           <div style="background-color: transparent;" class="inner">
-            <button class="btn btn-primary" (click)="seeFTRiders()">
-              See Statistics For Full Time Riders
-            </button>
-          </div>
-        </div>
-        <div class="col-md-3 box">
-          <div style="background-color: transparent;" class="inner">
-            <button class="btn btn-primary" (click)="seePTRiders()">
-              See Statistics For Part Time Riders
+            <button class="btn btn-primary" (click)="seeRiders()">
+              See Statistics For All Riders
             </button>
           </div>
         </div>
@@ -235,9 +228,11 @@
           <option value="all" selected="selected">
             All
           </option>
-          <option *ngFor="let location of availableLocations">{{
-            location
-          }}</option>
+          <option
+            *ngFor="let location of availableLocations"
+            [value]="location.delivery_location"
+            >{{ location.delivery_location }}</option
+          >
         </select>
       </h4>
       <table *ngIf="location.length > 0" class="table table-striped">
@@ -259,10 +254,10 @@
           <tr *ngFor="let location of location; index as i">
             <th scope="row">{{ i + 1 }}</th>
             <td>
-              {{ location[0] }}
+              {{ location.delivery_location }}
             </td>
-            <td>{{ location[4] }}</td>
-            <td>{{ location[3] }}</td>
+            <td>{{ location.hour }}</td>
+            <td>{{ location.count }}</td>
           </tr>
         </tbody>
       </table>
@@ -280,10 +275,7 @@
     <div class="col-md-2"></div>
     <div class="col-md-8">
       <h4 *ngIf="riderRole">
-        Full Time Rider Statistics for {{ selectedMonth }}/{{ selectedYear }}
-      </h4>
-      <h4 *ngIf="!riderRole">
-        Part Time Rider Statistics for {{ selectedMonth }}/{{ selectedYear }}
+        Rider Statistics for {{ selectedMonth }}/{{ selectedYear }}
       </h4>
       <table *ngIf="riders.length > 0" class="table table-striped">
         <thead>
@@ -299,21 +291,17 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let country of countries; index as i">
+          <tr *ngFor="let rider of riders; index as i">
             <th scope="row">{{ i + 1 }}</th>
             <td>
-              <img
-                [src]="
-                  'https://upload.wikimedia.org/wikipedia/commons/' +
-                  country.flag
-                "
-                class="mr-2"
-                style="width: 20px;"
-              />
-              {{ country.name }}
+              {{ rider.rider_id }}
             </td>
-            <td>{{ country.area | number }}</td>
-            <td>{{ country.population | number }}</td>
+            <td>{{ rider.count }}</td>
+            <td>{{ rider.total_hours_worked }}</td>
+            <td>{{ rider.total_salary }}</td>
+            <td>{{ rider.average_delivery_time }}</td>
+            <td>{{ rider.total_number_ratings }}</td>
+            <td>{{ rider.average_ratings }}</td>
           </tr>
         </tbody>
       </table>
@@ -326,4 +314,7 @@
     <div class="col-md-2"></div>
   </div>
 </div>
+<br />
+<br />
+<br />
 <br />
