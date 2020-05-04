@@ -219,6 +219,7 @@ const addMenuItem = (request, response) => {
     (error) => {
       if (error) {
         response.status(400).json({ error: "invalid values" });
+        return;
       }
       response.status(201).json({ status: "success", message: "food added." });
     }
@@ -309,7 +310,8 @@ const updateFoodItem = (request, response) => {
     [fid, rid, food_name, quantity, food_price, cuisine_type],
     (error) => {
       if (error) {
-        throw error;
+        response.status(400).json({ error: "invalid values" });
+        return;
       }
       response
         .status(200)
@@ -342,7 +344,8 @@ const addCampaign = (request, response) => {
     [rid, discount, description, start, end],
     (error) => {
       if (error) {
-        throw error;
+        response.status(400).json({ error: "invalid values" });
+        return;
       }
       response.status(201).json({ status: "success", message: "User added." });
     }
