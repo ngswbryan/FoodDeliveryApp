@@ -223,11 +223,25 @@ INSERT INTO PromotionalCampaign values (100, 1, 20, 'this is discount 1', '2018-
 INSERT INTO PromotionalCampaign values (101, 2, 30, 'this is discount 2', '2018-04-22 04:00:06', '2018-12-20 04:00:06');  
 INSERT INTO PromotionalCampaign values (102, 3, 40, 'this is discount 3', '2018-05-22 04:00:06', '2018-12-21 04:00:06');  
 
-INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken rice', 20, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken rice', 20, 0, 2, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken noodles', 30, 0, 1, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken kway teow', 15, 0, 1, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'fried chicken thigh', 15, 0, 14, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'porkchop', 15, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 3, 'western', 'pork chop', 15, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'chicken chop', 16, 0, 2, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'fish n chips', 17, 0, 4, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'grilled fish', 18, 0, 5, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'steak', 19, 0, 6, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 3, 'mexican', 'tacos', 15, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 3, 'mexican', 'burrito', 15, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 3, 'mexican', 'burrito bowl', 10, 0, 0, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'pineapple rice', 12, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 5, 'western', 'pork chop', 12, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'pad thai', 12, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'tom yum soup', 12, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'mookata', 12, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'garlic naan', 13, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'chicken taandori', 9, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'roti john', 2, 0, 0, true, false);
 
 INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'good stuff', 12, 2,0,true,false);
 INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'stuff good', 12, 3,0,true,false);
