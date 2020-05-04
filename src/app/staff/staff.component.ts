@@ -14,7 +14,7 @@ export class StaffComponent implements OnInit {
   newCampaign;
   add = false;
   showReport = false;
-  campaigns = ["campaign1", "campaign2", "campaign3", "campaign4"];
+  campaigns = [];
   menu = [];
   staff;
   selectedMonth = 5;
@@ -22,6 +22,13 @@ export class StaffComponent implements OnInit {
   top;
   totalOrders;
   totalCost;
+
+  createCampaign = new FormGroup({
+    description: new FormControl(""),
+    start: new FormControl(""),
+    end: new FormControl(""),
+    discount: new FormControl(""),
+  });
 
   createFoodForm = new FormGroup({
     name: new FormControl(""),
@@ -55,11 +62,77 @@ export class StaffComponent implements OnInit {
             .getStaffByUsername(staff[0].uid)
             .subscribe((staffDetails: any) => {
               this.staff = staffDetails;
-              this.updateMenu();
-              this.loadingService.loading.next(false);
+              this.apiService
+                .getCampaigns(this.staff[0].rid)
+                .subscribe((campaigns: any) => {
+                  for (let k = 0; k < campaigns.length; k++) {
+                    let start = campaigns[k].start_date;
+                    let end = campaigns[k].end_date;
+                    let formatted = start.substring(0, 10);
+                    let formmated2 = end.substring(0, 10);
+                    let newPromo = {
+                      ...campaigns[k],
+                      new_start: formatted,
+                      new_end: formmated2,
+                    };
+                    this.campaigns.push(newPromo);
+                  }
+                  console.log(this.campaigns);
+                  this.updateMenu();
+                  this.loadingService.loading.next(false);
+                });
             });
         });
     });
+  }
+
+  checkDate(date) {
+    let curr = new Date().toISOString();
+    let currDate = new Date(curr);
+    let input = new Date(date);
+
+    if (currDate > input) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  deleteCampaign(id) {
+    this.loadingService.loading.next(true);
+    this.apiService.deleteCampaign(id).subscribe(() => {
+      this.campaigns = [];
+      this.apiService
+        .getCampaigns(this.staff[0].rid)
+        .subscribe((campaigns: any) => {
+          for (let k = 0; k < campaigns.length; k++) {
+            let start = campaigns[k].start_date;
+            let end = campaigns[k].end_date;
+            let formatted = start.substring(0, 10);
+            let formmated2 = end.substring(0, 10);
+            let newPromo = {
+              ...campaigns[k],
+              new_start: formatted,
+              new_end: formmated2,
+            };
+            this.campaigns.push(newPromo);
+          }
+          this.updateMenu();
+          this.loadingService.loading.next(false);
+        });
+    });
+  }
+
+  checkStarted(date) {
+    let curr = new Date().toISOString();
+    let currDate = new Date(curr);
+    let input = new Date(date);
+
+    if (currDate > input) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   updateMenu() {
@@ -74,7 +147,19 @@ export class StaffComponent implements OnInit {
           };
           this.menu.push(food);
         }
-        console.log(this.menu);
+        for (let i = 0; i < this.campaigns.length; i++) {
+          let currentCampaign = this.campaigns[i];
+          if (
+            !this.checkDate(currentCampaign.end_date) &&
+            !this.checkStarted(currentCampaign.start_date)
+          ) {
+            for (let k = 0; k < this.menu.length; k++) {
+              this.menu[k].food_price =
+                this.menu[k].food_price -
+                this.menu[k].food_price * (currentCampaign.discount / 100);
+            }
+          }
+        }
       });
   }
 
@@ -130,7 +215,8 @@ export class StaffComponent implements OnInit {
       rid: Number(this.staff[0].rid),
     };
     console.log(newFood);
-    this.apiService.addMenuItem(newFood).subscribe(() => {
+    this.apiService.addMenuItem(newFood).subscribe((res: any) => {
+      console.log(res);
       this.updateMenu();
       this.loadingService.loading.next(false);
     });
@@ -167,6 +253,29 @@ export class StaffComponent implements OnInit {
   }
 
   addCampaign() {
-    this.campaigns.push(this.newCampaign);
+    this.loadingService.loading.next(true);
+    this.apiService
+      .addCampaign(this.staff[0].rid, this.createCampaign.value)
+      .subscribe(() => {
+        this.campaigns = [];
+        this.apiService
+          .getCampaigns(this.staff[0].rid)
+          .subscribe((campaigns: any) => {
+            for (let k = 0; k < campaigns.length; k++) {
+              let start = campaigns[k].start_date;
+              let end = campaigns[k].end_date;
+              let formatted = start.substring(0, 10);
+              let formmated2 = end.substring(0, 10);
+              let newPromo = {
+                ...campaigns[k],
+                new_start: formatted,
+                new_end: formmated2,
+              };
+              this.campaigns.push(newPromo);
+            }
+            this.updateMenu();
+            this.loadingService.loading.next(false);
+          });
+      });
   }
 }

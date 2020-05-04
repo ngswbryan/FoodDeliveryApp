@@ -76,7 +76,7 @@ CREATE TABLE FoodItem (
 );
 
 CREATE TABLE PromotionalCampaign (
-    promo_id INTEGER PRIMARY KEY,
+    promo_id SERIAL PRIMARY KEY,
     rid INTEGER REFERENCES Restaurants 
         ON DELETE CASCADE,
     discount INTEGER,
@@ -214,9 +214,7 @@ INSERT INTO Customers VALUES(1, 0.0, '1234 5678 9432 1234');
 INSERT INTO Customers VALUES(6, 0.0, '4321 7777 9432 8888');
 INSERT INTO Customers VALUES(11, 0.0, '4222 5678 1243 9808');
 
-INSERT INTO PromotionalCampaign values (100, 1, 20, 'this is discount 1', '2018-06-22 04:00:06', '2018-12-19 04:00:06');  
-INSERT INTO PromotionalCampaign values (101, 2, 30, 'this is discount 2', '2018-04-22 04:00:06', '2018-12-20 04:00:06');  
-INSERT INTO PromotionalCampaign values (102, 3, 40, 'this is discount 3', '2018-05-22 04:00:06', '2018-12-21 04:00:06');  
+INSERT INTO PromotionalCampaign values (DEFAULT, 1, 20, 'this is discount 1', '2018-06-22 04:00:06', '2018-12-19 04:00:06'); 
 
 INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken rice', 20, 0, 2, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken noodles', 30, 0, 1, true, false);
@@ -294,30 +292,24 @@ INSERT INTO Orders VALUES (8, 1);
 INSERT INTO Orders VALUES (9, 2);
 INSERT INTO Orders VALUES (10, 3);
 
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06', 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06', 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-23 04:00:06', '2018-06-23 05:00:06', 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06', 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-25 04:00:06', '2018-06-25 05:00:06', 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-26 04:00:06', '2018-06-26 05:00:06', 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-27 04:00:06', '2018-06-27 05:00:06', 1, 'kovan', 4.0, 'nice', TRUE);
-INSERT INTO Delivery VALUES(DEFAULT, 11, 2, 5.0, current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 12, 2, 5.0, current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 13, 2, 5.0,'2020-04-22 04:00:06','2020-04-22 04:00:06', 1, 'yishun', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 14, 2, 5.0, '2020-04-22 04:00:06', '2020-04-22 04:00:06', 1, 'khatib', 4.0, 'nice', FALSE);
 
-INSERT INTO Delivery VALUES(DEFAULT, 15, 2, 5.0, current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 11, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 12, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 13, 2, 5.0,'2020-04-22 04:00:06','2020-04-22 04:00:06',current_timestamp, current_timestamp, 1, 'yishun', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 14, 2, 5.0, '2020-04-22 04:00:06', '2020-04-22 04:00:06',current_timestamp, current_timestamp, 1, 'khatib', 4.0, 'nice', FALSE);
 
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-23 04:00:06', '2018-06-23 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-25 04:00:06', '2018-06-25 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-26 04:00:06', '2018-06-26 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-27 04:00:06', '2018-06-27 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 15, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
 
-INSERT INTO Delivery VALUES(DEFAULT, 7, 5, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06', 1, 'serangoon', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 8, 15, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06', 1, 'little inda', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-23 04:00:06', '2018-06-23 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-25 04:00:06', '2018-06-25 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-26 04:00:06', '2018-06-26 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-27 04:00:06', '2018-06-27 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
+
+INSERT INTO Delivery VALUES(DEFAULT, 7, 5, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'serangoon', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 8, 15, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'little inda', 4.0, 'nice', FALSE);
 
 INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 2, 11, 15, 2, 2, 5, 2018, 2);
 INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 2, 16, 20, 2, 2, 5, 2018, 2);
@@ -506,7 +498,6 @@ BEGIN
                       AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
                       AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
                       );
-  RETURN NEW;
 END
  $$ LANGUAGE PLPGSQL;
 
@@ -798,7 +789,7 @@ RETURNS DECIMAL AS $$
 $$ LANGUAGE SQL;
 
 
---- PROMOTIONAL CAMPAIGN
+--- PROMOTIONAL CAMPAIGN past promos
 CREATE OR REPLACE FUNCTION generate_all_my_promos(current_rid INTEGER)
 RETURNS TABLE (
     promo_id INTEGER,
@@ -811,7 +802,9 @@ RETURNS TABLE (
     declare
         time_frame INTEGER;
     begin
-        SELECT (DATE_PART('day', (input_end_date::timestamp - input_start_date::timestamp))) INTO time_frame;
+        SELECT (DATE_PART('day', (PC.end_date::timestamp - PC.start_date::timestamp)))
+        FROM PromotionalCampaign PC
+        INTO time_frame;
         
         RETURN QUERY(
             SELECT DISTINCT PC.promo_id, PC.discount, PC.description, PC.start_date, PC.end_date, time_frame
@@ -820,7 +813,6 @@ RETURNS TABLE (
         );
     end
 $$ LANGUAGE PLPGSQL;
-
 
 --AVERAGE ORDERS DURING THIS PROMO
 CREATE OR REPLACE FUNCTION average_orders_during_promo(current_rid INTEGER, input_start_date TIMESTAMP, input_end_date TIMESTAMP)
@@ -831,7 +823,6 @@ AS $$
     begin
          SELECT (DATE_PART('day', (input_end_date::timestamp - input_start_date::timestamp))) INTO time_frame;
 
-
         RETURN (
             SELECT count(*)::decimal/time_frame::decimal
             FROM FoodOrder FO join PromotionalCampaign PC
@@ -841,6 +832,16 @@ AS $$
             AND FO.completion_status = TRUE
         );
     end
+$$ LANGUAGE PLPGSQL;
+
+
+-- CREATING PROMOS for storewide discount
+CREATE OR REPLACE FUNCTION add_promo(current_rid INTEGER, discount NUMERIC, description VARCHAR(100), start_date TIMESTAMP, end_date TIMESTAMP) 
+RETURNS VOID 
+AS $$
+BEGIN
+    INSERT INTO PromotionalCampaign VALUES(DEFAULT, current_rid, discount, description, start_date, end_date);  
+END;
 $$ LANGUAGE PLPGSQL;
 
 ------ RESTAURANT STAFF ------

@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { switchMap } from "rxjs/internal/operators";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { switchMap, catchError } from "rxjs/internal/operators";
 import { environment } from "../environments/environment";
+import { throwError } from "rxjs";
 
 @Injectable()
 export class ApiService {
@@ -98,6 +99,10 @@ export class ApiService {
     );
   }
 
+  deleteCampaign(rid) {
+    return this.http.delete(`${this.url}/staff/campaigns/${rid}`);
+  }
+
   addMenuItem(food) {
     return this.http.post(`${this.url}/staff/menu`, food);
   }
@@ -108,5 +113,13 @@ export class ApiService {
 
   updateFoodItem(fid, rid, food) {
     return this.http.patch(`${this.url}/staff/menu/${fid}?rid=${rid}`, food);
+  }
+
+  getCampaigns(rid) {
+    return this.http.get(`${this.url}/staff/campaigns/${rid}`);
+  }
+
+  addCampaign(rid, campaign) {
+    return this.http.post(`${this.url}/staff/campaigns/${rid}`, campaign);
   }
 }

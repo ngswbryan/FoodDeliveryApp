@@ -218,7 +218,7 @@ const addMenuItem = (request, response) => {
     [name, price, cuisine_type, rid, quantity, availability],
     (error) => {
       if (error) {
-        throw error;
+        response.status(400).json({ error: "invalid values" });
       }
       response.status(201).json({ status: "success", message: "food added." });
     }
@@ -318,7 +318,60 @@ const updateFoodItem = (request, response) => {
   );
 };
 
+const getCampaigns = (request, response) => {
+  const rid = request.params.rid;
+
+  pool.query(
+    "SELECT * FROM generate_all_my_promos($1);",
+    [rid],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const addCampaign = (request, response) => {
+  const rid = request.params.rid;
+  const { description, discount, start, end } = request.body;
+
+  pool.query(
+    "select add_promo($1, $2, $3, $4, $5);",
+    [rid, discount, description, start, end],
+    (error) => {
+      if (error) {
+        throw error;
+      }
+      response.status(201).json({ status: "success", message: "User added." });
+    }
+  );
+};
+
+const deleteCampaign = (request, response) => {
+  const rid = request.params.rid;
+  pool.query(
+    "DELETE from PromotionalCampaign P where P.promo_id = $1;",
+    [rid],
+    (error) => {
+      if (error) {
+        throw error;
+      }
+      response
+        .status(200)
+        .json({ status: "success", message: "campaign deleted." });
+    }
+  );
+};
+
 app.route("/test").get(getFoodItems);
+
+app
+  .route("/staff/campaigns/:rid")
+  .get(getCampaigns)
+  .post(addCampaign)
+  .delete(deleteCampaign);
 
 app
   .route("/users")

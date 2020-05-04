@@ -242,21 +242,93 @@
 
         <tab heading="Campaigns" (selectTab)="console.log('ok')">
           <br />
-          <h5>Current Promotional Campaigns</h5>
+          <h5>All Promotional Campaigns</h5>
           <ul class="list-group">
             <li class="list-group-item" *ngFor="let campaign of campaigns">
-              {{ campaign }}
+              <p>Description: {{ campaign.description }} 📙</p>
+              <p>Discount Rate: {{ campaign.discount }}% 💰</p>
+              <p>Duration: {{ campaign.duration }} days</p>
+              <p>Start Date: {{ campaign.new_start }}</p>
+              <p>End Date: {{ campaign.new_end }}</p>
+              <p>
+                <button
+                  class="btn btn-danger"
+                  (click)="deleteCampaign(campaign.promo_id)"
+                >
+                  Delete
+                </button>
+              </p>
+              <small
+                style="float: right; color: red;"
+                *ngIf="checkDate(campaign.end_date)"
+              >
+                This campaign has expired
+              </small>
+              <small
+                style="float: right; color: green;"
+                *ngIf="
+                  !checkDate(campaign.end_date) &&
+                  !checkStarted(campaign.start_date)
+                "
+              >
+                This campaign is currently ongoing
+              </small>
+              <small
+                style="float: right; color: orange;"
+                *ngIf="checkStarted(campaign.start_date)"
+              >
+                This campaign has not started
+              </small>
             </li>
           </ul>
           <br />
           <br />
-          <textarea
-            class="form-control"
-            id="newCampaign"
-            placeholder="New Campaign"
-            [(ngModel)]="newCampaign"
-            [ngModelOptions]="{ standalone: true }"
-          ></textarea>
+          <form [formGroup]="createCampaign">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-12">
+                  <label for="description">Description</label>
+                  <input
+                    type="text"
+                    placeholder="Promotion Description"
+                    formControlName="description"
+                    id="description"
+                    class="form-control form-input"
+                  />
+                </div>
+
+                <div class="col-12">
+                  <label for="start">Start Date</label>
+                  <input
+                    id="start"
+                    type="date"
+                    formControlName="start"
+                    class="form-control form-input"
+                  />
+                </div>
+
+                <div class="col-12">
+                  <label for="end">End Date</label>
+                  <input
+                    id="end"
+                    type="date"
+                    formControlName="end"
+                    class="form-control form-input"
+                  />
+                </div>
+
+                <div class="col-12">
+                  <label for="discount">Discount</label>
+                  <input
+                    type="text"
+                    placeholder="Discount Percentage"
+                    formControlName="discount"
+                    class="form-control form-input"
+                  />
+                </div>
+              </div>
+            </div>
+          </form>
           <br />
           <button class="btn btn-success" (click)="addCampaign()">
             Add new campaign
