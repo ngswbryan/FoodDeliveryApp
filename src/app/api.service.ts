@@ -11,7 +11,7 @@ export class ApiService {
     private loadingService: LoadingService
   ) {}
 
-  url = "http://localhost:3002";
+  url = "";
   public erMsg = new Subject();
 
   getError(): Observable<any> {
