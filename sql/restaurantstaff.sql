@@ -30,17 +30,10 @@ $$ LANGUAGE PLPGSQL;
 -- b) update menu items that belong -> can change count of food items, cuisine_type, food_name
 CREATE OR REPLACE FUNCTION update_count(food_item INTEGER, current_rid INTEGER, new_count INTEGER)
 RETURNS VOID AS $$
-BEGIN TRANSACTION;
     UPDATE FoodItem  
     SET quantity = new_count
     WHERE rid = current_rid
     AND food_id = food_item;
-
-    UPDATE FoodItem  
-    SET ordered_count = ordered_count + 1
-    WHERE rid = current_rid
-    AND food_id = food_item;
-COMMIT;
 $$ LANGUAGE SQL;
 
 --update cuisine_type
@@ -53,7 +46,7 @@ RETURNS VOID AS $$
 $$ LANGUAGE SQL;
 
 -- --update food_name
-CREATE OR REPLACE FUNCTION update_count(food_item INTEGER, current_rid INTEGER, new_name VARCHAR)
+CREATE OR REPLACE FUNCTION update_name(food_item INTEGER, current_rid INTEGER, new_name VARCHAR)
 RETURNS VOID AS $$
     UPDATE FoodItem  
     SET food_name = new_name
@@ -141,17 +134,21 @@ AS $$
 $$ LANGUAGE PLPGSQL;
 
 
--- CREATING PROMOS
+-- CREATING PROMOS for storewide discount
 CREATE OR REPLACE FUNCTION add_promo(current_rid INTEGER, discount NUMERIC, description VARCHAR(100), start_date TIMESTAMP, end_date TIMESTAMP) 
 RETURNS VOID 
 AS $$
 BEGIN
-    INSERT INTO PromotionalCampaign VALUES(DEFAULT, current_rid, discount, description, start_date, end_date);
-
-    UPDATE Sells S
-    SET price = ROUND((price * discount), 3)
-    WHERE S.rid = current_rid;    
+    INSERT INTO PromotionalCampaign VALUES(DEFAULT, current_rid, discount, description, start_date, end_date);   
 END;
 $$ LANGUAGE PLPGSQL;
 
--- apply promo through the menu
+CREATE OR REPLACE FUNCTION apply_promo(current_rid INTEGER, discount NUMERIC, description VARCHAR(100), start_date TIMESTAMP, end_date TIMESTAMP) 
+RETURNS VOID 
+AS $$
+BEGIN
+    UPDATE Sells S
+    SET price = ROUND(price - (price * discount), 2)
+    WHERE S.rid = current_rid;    
+END;
+$$ LANGUAGE PLPGSQL;

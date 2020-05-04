@@ -92,7 +92,7 @@
 
 -- g) statistics of riders 
 -- input parameter to filter by month
- CREATE OR REPLACE FUNCTION riders_table(ridertype BOOLEAN)
+ CREATE OR REPLACE FUNCTION riders_table()
  RETURNS TABLE (
      order_month BIGINT,
      order_year BIGINT,
@@ -111,7 +111,7 @@
      D.rider_id as rider_id,
      count(*) as count, ROUND((SUM(D.time_for_one_delivery)), 3) as total_hours_worked,
 
-     CASE WHEN ridertype THEN R.base_salary * 4 + count(*) * 6 --salary x 4 weeks + commission 6 for ft
+     CASE WHEN R.rider_type THEN R.base_salary * 4 + count(*) * 6 --salary x 4 weeks + commission 6 for ft
           ELSE R.base_salary * 4 + count(*) * 3 --salary * 4 weeks + commission 3 for pt
      END as total_salary,
 
@@ -207,3 +207,41 @@ BEGIN
     AND curr_table.year = input_year;
 END;
 $$ LANGUAGE PLPGSQL;
+
+---- function for fds-wide delivery cost discount
+CREATE OR REPLACE FUNCTION insert_delivery_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
+RETURNS VOID
+AS $$
+BEGIN 
+    INSERT INTO PromotionalCampaign VALUES(DEFAULT, null, discount, description, start_date, end_date);
+END
+$$ LANGUAGE PLPGSQL;
+
+---- button to apply delivery cost discount
+-- CREATE OR REPLACE FUNCTION apply_delivery_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
+-- RETURNS VOID
+-- AS $$
+-- BEGIN 
+--     UPDATE 
+-- END
+-- $$ LANGUAGE PLPGSQL;
+
+---- function for fds-wide food price discount
+CREATE OR REPLACE FUNCTION insert_food_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
+RETURNS VOID
+AS $$
+BEGIN 
+    INSERT INTO PromotionalCampaign VALUES(DEFAULT, null, discount, description, start_date, end_date);
+END
+$$ LANGUAGE PLPGSQL;
+
+----- button to apply food_discount 
+CREATE OR REPLACE FUNCTION apply_food_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
+RETURNS VOID
+AS $$
+BEGIN 
+    UPDATE Sells S
+    SET price = ROUND(price - (price * discount), 2);
+END
+$$ LANGUAGE PLPGSQL;
+

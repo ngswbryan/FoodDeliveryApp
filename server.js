@@ -131,39 +131,55 @@ const getUserByUsername = (request, response) => {
   );
 };
 
+const getStaffByUsername = (request, response) => {
+  const uid = request.params.uid;
+  pool.query(
+    `SELECT * FROM RestaurantStaff where uid = '${uid}'`,
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
 const getPastDeliveryRating = (request, response) => {
   const uid = request.params.uid;
   console.log(uid);
   pool.query("select past_delivery_ratings($1);", [uid], (error, results) => {
-    if (error){
-      throw error; 
+    if (error) {
+      throw error;
     }
     response.status(200).json(results.rows);
-  })
-}
+  });
+};
 
 const getPastFoodReviews = (request, response) => {
   const uid = request.params.uid;
   console.log(uid);
   pool.query("select past_food_reviews($1);", [uid], (error, results) => {
-    if (error){
-      throw error; 
+    if (error) {
+      throw error;
     }
     response.status(200).json(results.rows);
-  })
-}
+  });
+};
 
 const getListOfFoodItem = (request, response) => {
   const rid = request.params.rid;
   console.log(rid);
-  pool.query("select list_of_fooditems($1);", [rid], (error, results) => {
-    if (error){
-      throw error; 
+  pool.query(
+    "select * from list_of_fooditems($1);",
+    [rid],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
     }
-    response.status(200).json(results.rows);
-  })
-}
-
+  );
+};
 
 const addUser = (request, response) => {
   const {
@@ -187,6 +203,53 @@ const addUser = (request, response) => {
   );
 };
 
+const addMenuItem = (request, response) => {
+  const {
+    name,
+    price,
+    cuisine_type,
+    quantity,
+    availability,
+    rid,
+  } = request.body;
+
+  pool.query(
+    "select add_menu_item($1, $2, $3, $4, $5, $6);",
+    [name, price, cuisine_type, rid, quantity, availability],
+    (error) => {
+      if (error) {
+        throw error;
+      }
+      response.status(201).json({ status: "success", message: "food added." });
+    }
+  );
+};
+
+const deleteMenuItem = (request, response) => {
+  const fname = request.query.fname;
+  const rid = request.query.rid;
+
+  console.log(fname);
+  console.log(rid);
+
+  pool.query("select delete_menu_item($1, $2);", [fname, rid], (error) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json({ status: "success", message: "food deleted." });
+  });
+};
+
+const getFoodItems = (request, response) => {
+  pool.query("SELECT * FROM fooditem", (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
+app.route("/test").get(getFoodItems);
 
 app
   .route("/users")
@@ -196,6 +259,10 @@ app
   .post(addUser);
 
 app.route("/users/:username").get(getUserByUsername);
+
+app.route("/staff/:uid").get(getStaffByUsername);
+
+app.route("/staff/menu").post(addMenuItem).patch(deleteMenuItem);
 
 app.route("/restaurants").get(getRestaurants);
 
