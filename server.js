@@ -169,7 +169,8 @@ const getPastFoodReviews = (request, response) => {
 const getListOfFoodItem = (request, response) => {
   const rid = request.params.rid;
   console.log(rid);
-  pool.query("select * from list_of_fooditems($1);", [rid], (error, results) => {
+  pool.query("select * from list_of_fooditems($1);", 
+  [rid], (error, results) => {
       if (error) {
         throw error;
       }
@@ -199,6 +200,28 @@ const addUser = (request, response) => {
     }
   );
 };
+
+const updateOrderCount = (request, response) => {
+  const {
+    currentorder,
+    customer_uid,
+    restaurant_id, 
+    have_credit,
+    total_order_cost,
+    delivery_location,
+  } = request.body;
+
+  pool.query(
+    "select update_order_count($1, $2, $3, $4, $5, $6);",
+    [currentorder, customer_uid, restaurant_id, have_credit, total_order_cost, delivery_location],
+    (error) => {
+      if (error) {
+        throw error;
+      }
+      response.status(201).json({ status: "success", message: "updated order count. "});
+    }
+  )
+}
 
 const addMenuItem = (request, response) => {
   const {
@@ -280,6 +303,8 @@ app.route("/users/rating/:uid").get(getPastDeliveryRating);
 app.route("/users/reviews/:uid").get(getPastFoodReviews);
 
 app.route("/users/restaurant/:rid").get(getListOfFoodItem);
+
+app.route("/users/restaurant/order").post(updateOrderCount);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {

@@ -47,13 +47,16 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  --List of available food items
  CREATE OR REPLACE FUNCTION list_of_fooditems(restaurant_id INTEGER)
  RETURNS TABLE (
+     food_id INTEGER,
      food_name VARCHAR,
      food_price DECIMAL,
      cuisine_type VARCHAR,
      overall_rating DECIMAL,
-     availability_status BOOLEAN
+     availability_status BOOLEAN,
+     is_deleted BOOLEAN,
+        quantity INTEGER
  ) AS $$
-     SELECT FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status
+     SELECT FI.food_id, FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted, FI.quantity
      FROM FoodItem FI join Sells S on FI.food_id = S.food_id
      WHERE FI.rid = restaurant_id
  $$ LANGUAGE SQL;
@@ -143,7 +146,6 @@ BEGIN
                       AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
                       AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
                       );
-  RETURN NEW;
 END
  $$ LANGUAGE PLPGSQL;
 
@@ -226,11 +228,10 @@ END
 
 
 ---- apply delivery promo IF HAVE REWARD POINTS, USE TO OFFSET (USE REWARD BUTTON)
-CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, input_delivery_id INTEGER)
+CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, input_delivery_id INTEGER, delivery_cost INTEGER)
 RETURNS VOID AS $$
 declare 
     points_check INTEGER;
-    delivery_cost_from_d INTEGER;
 begin
     SELECT points
     FROM Customers C 
@@ -241,31 +242,15 @@ begin
         RAISE EXCEPTION 'You have no points to be deducted';
     END IF;
     IF (points_check >= delivery_cost) THEN
-        UPDATE Delivery 
-        SET delivery_cost = 0
-        WHERE delivery_id = input_delivery_id;
-
-        SELECT delivery_cost 
-        FROM Delivery
-        WHERE delivery_id = input_delivery_id
-        INTO delivery_cost_from_d; 
 
         UPDATE Customers
         SET points = (points - delivery_cost_from_d)
         WHERE uid = input_customer_id;
     END IF;
     IF (points_check < delivery_cost) THEN 
-        UPDATE Delivery 
-        SET delivery_cost = (delivery_cost - points)
-        WHERE delivery_id = input_delivery_id;
-
-        SELECT delivery_cost 
-        FROM Delivery
-        WHERE delivery_id = input_delivery_id
-        INTO delivery_cost_from_d; 
 
         UPDATE Customers
-        SET points = (points - delivery_cost_from_d)
+        SET points = (points - delivery_cost)
         WHERE uid = input_customer_id;
     END IF;
 end

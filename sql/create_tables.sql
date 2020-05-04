@@ -26,7 +26,7 @@ CREATE TABLE Riders (
 CREATE TABLE Restaurants (
     rid INTEGER PRIMARY KEY,
     rname VARCHAR(100),
-    min_order_price MONEY NOT NULL,
+    min_order_price DECIMAL NOT NULL,
     unique(rid)
 );
 

@@ -21,14 +21,16 @@ export class CustomerComponent implements OnInit {
   username;
   user;
   uid;  
+  rid; 
   pastDeliveries = [];
   pastReviews = [];
   restaurants = [];
   foodItems = [];
   confirmedList=[]; 
   total; 
+
   toBePaid; 
-  creditCard;  //boolean : if credit card --> true if cash --> false 
+  creditCard: boolean;  //boolean : if credit card --> true if cash --> false 
   location;   //string
   orderedPairs=[];
   
@@ -104,15 +106,17 @@ export class CustomerComponent implements OnInit {
   }
 
   submitForm() {
-
     console.log("confirmed list is: " + this.confirmedList); 
     console.log("foodlist is: " + this.foodItems); 
     var current = [];
     for (let i=0; i<this.foodItems.length; i++) {
       if (this.confirmedList[i] > 0) {
-        current.push([])
+        console.log("food_id is : " + this.foodItems[i]["food_id"]);
+        current.push([this.foodItems[i]["food_id"], this.confirmedList[i]]);
       }
     }
+    console.log(current);
+    this.orderedPairs = current; 
     if (!this.createOrderForm.value.creditCard) {
       window.alert("Please enter mode of payment.");
     } else if (!this.createOrderForm.value.location) {
@@ -122,11 +126,26 @@ export class CustomerComponent implements OnInit {
       this.location = this.createOrderForm.value.location; 
     }
 
+    let order = {
+      currentorder: this.orderedPairs,
+      customer_uid: this.uid,
+      restaurant_id: this.rid, 
+      have_credit: this.creditCard,
+      total_order_cost: this.toBePaid + this.total,
+      delivery_location: this.location,
+    };
+    console.log(order);
+    this.apiService.updateOrderCount(order).subscribe((res: any) => {
+      console.log("after posting" + res);
+      this.loadingService.loading.next(false);
+    });
+
 
   }
 
   showYourModal(i) {
     const rid = i+1;
+    this.rid = rid; 
     const min = this.restaurants[i][2];
     var initialState = {
       list: [
@@ -139,7 +158,7 @@ export class CustomerComponent implements OnInit {
       ],
       title:'List of food items'
     };
-
+    
     this.bsModalRef = this.modalService.show( ModalContentComponent, {initialState});
     this.bsModalRef.content.closeBtnName = 'Close';
   }
