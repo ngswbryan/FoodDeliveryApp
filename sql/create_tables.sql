@@ -16,7 +16,7 @@ CREATE TABLE Riders (
     rating DECIMAL,
     working BOOLEAN, --to know if he's working now or not
     is_delivering BOOLEAN,--to know if he's free or not
-    base_salary DECIMAL, --in terms of per month
+    base_salary DECIMAL, --in terms of per week
     rider_type BOOLEAN, --pt f or ft t
     commission INTEGER, --PT is $2, FT is $3
     PRIMARY KEY(rider_id),

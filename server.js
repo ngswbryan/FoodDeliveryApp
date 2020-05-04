@@ -76,7 +76,7 @@ const getLocation = (request, response) => {
   const year = request.query.year;
   const location = request.query.location;
   pool.query(
-    "select filter_location_table_by_month($1, $2, $3);",
+    "select * from filter_location_table_by_month($1, $2, $3);",
     [month, year, location],
     (error, results) => {
       if (error) {
@@ -89,11 +89,10 @@ const getLocation = (request, response) => {
 
 const getRiders = (request, response) => {
   const month = request.query.month;
-  const role = request.query.role;
   const year = request.query.year;
   pool.query(
-    "select filter_riders_table_by_month($1, $2, $3);",
-    [month, year, role],
+    "select * from filter_riders_table_by_month($1, $2);",
+    [month, year],
     (error, results) => {
       if (error) {
         throw error;

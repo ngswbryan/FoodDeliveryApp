@@ -53,8 +53,7 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
      cuisine_type VARCHAR,
      overall_rating DECIMAL,
      availability_status BOOLEAN,
-     is_deleted BOOLEAN,
-        quantity INTEGER
+     is_deleted_BOOLEAN
  ) AS $$
      SELECT FI.food_id, FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted, FI.quantity
      FROM FoodItem FI join Sells S on FI.food_id = S.food_id

@@ -22,9 +22,10 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { TabsModule } from "ngx-bootstrap/tabs";
 import { AccordionModule } from "ngx-bootstrap/accordion";
 import { AlertModule } from "ngx-bootstrap/alert";
-import { ModalContentComponent } from './modal-content/modal-content.component';
+import { ModalContentComponent } from "./modal-content/modal-content.component";
 import { CollapseModule } from "ngx-bootstrap/collapse";
 import { ProgressbarModule } from "ngx-bootstrap/progressbar";
+import { HashLocationStrategy, LocationStrategy } from "@angular/common";
 
 
 @NgModule({
@@ -37,7 +38,7 @@ import { ProgressbarModule } from "ngx-bootstrap/progressbar";
     StaffComponent,
     ManagerComponent,
     RegisterComponent,
-    ModalContentComponent
+    ModalContentComponent,
   ],
   imports: [
     BrowserModule,
@@ -56,8 +57,14 @@ import { ProgressbarModule } from "ngx-bootstrap/progressbar";
     CollapseModule.forRoot(),
     ProgressbarModule.forRoot(),
   ],
-  providers: [ApiService, LoadingService, BsModalRef, DataService],
+  providers: [
+    ApiService,
+    LoadingService,
+    BsModalRef,
+    DataService,
+    { provide: LocationStrategy, useClass: HashLocationStrategy },
+  ],
   bootstrap: [AppComponent],
-  entryComponents: [ModalContentComponent]
+  entryComponents: [ModalContentComponent],
 })
 export class AppModule {}
