@@ -6,13 +6,15 @@
 CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  RETURNS TABLE (
      order_id INTEGER,
+     order_time TIMESTAMP,
      delivery_ratings INTEGER,
      rider_name VARCHAR
  ) AS $$
-     SELECT D.order_id, D.delivery_rating, U.name
+     SELECT D.order_id, FO.date_time, D.delivery_rating, U.name
      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
      join Users U on D.rider_id = U.uid
-     WHERE FO.uid = customers_uid;
+     WHERE FO.uid = customers_uid
+     AND D.delivery_rating IS NOT NULL;
  $$ LANGUAGE SQL;
 
 
@@ -21,12 +23,14 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  CREATE OR REPLACE FUNCTION past_food_reviews(customers_uid INTEGER)
  RETURNS TABLE (
      order_id INTEGER,
+     order_time TIMESTAMP,
      restaurant_name VARCHAR,
      food_review VARCHAR
  ) AS $$
-     SELECT D.order_id, R.rname, D.food_review
+     SELECT D.order_id, FO.date_time, R.rname, D.food_review
      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id join Restaurants R on R.rid = FO.rid
-     WHERE FO.uid = customers_uid;
+     WHERE FO.uid = customers_uid
+     AND D.food_review IS NOT NULL;
  $$ LANGUAGE SQL;
 
 
@@ -47,14 +51,16 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  --List of available food items
  CREATE OR REPLACE FUNCTION list_of_fooditems(restaurant_id INTEGER)
  RETURNS TABLE (
+     food_id INTEGER,
      food_name VARCHAR,
      food_price DECIMAL,
      cuisine_type VARCHAR,
      overall_rating DECIMAL,
      availability_status BOOLEAN,
-     is_deleted_BOOLEAN
+     is_deleted BOOLEAN,
+        quantity INTEGER
  ) AS $$
-     SELECT FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status
+     SELECT FI.food_id, FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted, FI.quantity
      FROM FoodItem FI join Sells S on FI.food_id = S.food_id
      WHERE FI.rid = restaurant_id
  $$ LANGUAGE SQL;
