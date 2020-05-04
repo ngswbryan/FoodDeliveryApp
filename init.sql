@@ -130,33 +130,16 @@ CREATE TABLE Receives (
 );
 
 --new updated delivery table
---CREATE TABLE Delivery (
---    delivery_id SERIAL NOT NULL,
---    order_id INTEGER REFERENCES FoodOrder(order_id),
---    rider_id INTEGER REFERENCES Riders(rider_id),
---    delivery_cost DECIMAL NOT NULL,
---    departure_time TIMESTAMP,
---    collected_time TIMESTAMP,
---    delivery_start_time TIMESTAMP, --start delivering to customer
---    delivery_end_time TIMESTAMP,
---    time_for_one_delivery DECIMAL, --in hours
---    location VARCHAR(100),
---    delivery_rating INTEGER, 
---    food_review varchar(100),
---    ongoing BOOLEAN, --true means delivering, false means done
---    PRIMARY KEY(delivery_id),
---    UNIQUE(delivery_id)
---);
-
-
 CREATE TABLE Delivery (
     delivery_id SERIAL NOT NULL,
     order_id INTEGER REFERENCES FoodOrder(order_id),
     rider_id INTEGER REFERENCES Riders(rider_id),
     delivery_cost DECIMAL NOT NULL,
-    delivery_start_time TIMESTAMP NOT NULL,
+    departure_time TIMESTAMP,
+    collected_time TIMESTAMP,
+    delivery_start_time TIMESTAMP, --start delivering to customer
     delivery_end_time TIMESTAMP,
-    time_for_one_delivery DECIMAL, --in minutes
+    time_for_one_delivery DECIMAL, --in hours
     location VARCHAR(100),
     delivery_rating INTEGER, 
     food_review varchar(100),
@@ -164,6 +147,23 @@ CREATE TABLE Delivery (
     PRIMARY KEY(delivery_id),
     UNIQUE(delivery_id)
 );
+
+
+--CREATE TABLE Delivery (
+--    delivery_id SERIAL NOT NULL,
+--    order_id INTEGER REFERENCES FoodOrder(order_id),
+--    rider_id INTEGER REFERENCES Riders(rider_id),
+--    delivery_cost DECIMAL NOT NULL,
+--    delivery_start_time TIMESTAMP NOT NULL,
+--    delivery_end_time TIMESTAMP,
+--    time_for_one_delivery DECIMAL, --in minutes
+--    location VARCHAR(100),
+--    delivery_rating INTEGER, 
+--    food_review varchar(100),
+--    ongoing BOOLEAN, --true means delivering, false means done
+--    PRIMARY KEY(delivery_id),
+--    UNIQUE(delivery_id)
+--);
 
 CREATE TABLE Contain (
     order_id INTEGER REFERENCES FoodOrder(order_id),
@@ -309,7 +309,7 @@ INSERT INTO Delivery VALUES(DEFAULT, 14, 2, 5.0, '2020-04-22 04:00:06', '2020-04
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-23 04:00:06', '2018-06-23 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06'null,null,, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06',null,null,, 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-25 04:00:06', '2018-06-25 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-26 04:00:06', '2018-06-26 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-27 04:00:06', '2018-06-27 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
