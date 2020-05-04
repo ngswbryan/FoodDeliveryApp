@@ -226,11 +226,10 @@ END
 
 
 ---- apply delivery promo IF HAVE REWARD POINTS, USE TO OFFSET (USE REWARD BUTTON)
-CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, input_delivery_id INTEGER)
+CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, input_delivery_id INTEGER, delivery_cost INTEGER)
 RETURNS VOID AS $$
 declare 
     points_check INTEGER;
-    delivery_cost_from_d INTEGER;
 begin
     SELECT points
     FROM Customers C 
@@ -241,31 +240,15 @@ begin
         RAISE EXCEPTION 'You have no points to be deducted';
     END IF;
     IF (points_check >= delivery_cost) THEN
-        UPDATE Delivery 
-        SET delivery_cost = 0
-        WHERE delivery_id = input_delivery_id;
-
-        SELECT delivery_cost 
-        FROM Delivery
-        WHERE delivery_id = input_delivery_id
-        INTO delivery_cost_from_d; 
 
         UPDATE Customers
         SET points = (points - delivery_cost_from_d)
         WHERE uid = input_customer_id;
     END IF;
     IF (points_check < delivery_cost) THEN 
-        UPDATE Delivery 
-        SET delivery_cost = (delivery_cost - points)
-        WHERE delivery_id = input_delivery_id;
-
-        SELECT delivery_cost 
-        FROM Delivery
-        WHERE delivery_id = input_delivery_id
-        INTO delivery_cost_from_d; 
 
         UPDATE Customers
-        SET points = (points - delivery_cost_from_d)
+        SET points = (points - delivery_cost)
         WHERE uid = input_customer_id;
     END IF;
 end
