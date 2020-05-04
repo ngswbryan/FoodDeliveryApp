@@ -51,7 +51,8 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
      food_price DECIMAL,
      cuisine_type VARCHAR,
      overall_rating DECIMAL,
-     availability_status BOOLEAN
+     availability_status BOOLEAN,
+     is_deleted_BOOLEAN
  ) AS $$
      SELECT FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status
      FROM FoodItem FI join Sells S on FI.food_id = S.food_id
@@ -143,7 +144,6 @@ BEGIN
                       AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
                       AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
                       );
-  RETURN NEW;
 END
  $$ LANGUAGE PLPGSQL;
 

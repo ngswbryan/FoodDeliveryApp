@@ -16,7 +16,7 @@ CREATE TABLE Riders (
     rating DECIMAL,
     working BOOLEAN, --to know if he's working now or not
     is_delivering BOOLEAN,--to know if he's free or not
-    base_salary DECIMAL, --in terms of per month
+    base_salary DECIMAL, --in terms of per week
     rider_type BOOLEAN, --pt f or ft t
     commission INTEGER, --PT is $2, FT is $3
     PRIMARY KEY(rider_id),
@@ -309,7 +309,7 @@ INSERT INTO Delivery VALUES(DEFAULT, 14, 2, 5.0, '2020-04-22 04:00:06', '2020-04
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-23 04:00:06', '2018-06-23 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06',null,null,, 1, 'kovan', 4.0, 'nice', FALSE);
+INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-25 04:00:06', '2018-06-25 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-26 04:00:06', '2018-06-26 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-27 04:00:06', '2018-06-27 05:00:06',null,null, 1, 'kovan', 4.0, 'nice', FALSE);
@@ -502,7 +502,7 @@ BEGIN
                       AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
                       AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
                       );
-  RETURN NEW;
+
 END
  $$ LANGUAGE PLPGSQL;
 
