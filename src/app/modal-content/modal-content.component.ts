@@ -34,7 +34,7 @@ export class ModalContentComponent implements OnInit {
         let result = current.substring(1, current.length-1);
         let arr = result.split(",");
         this.foodItems.push(arr);
-      }
+      } 
     });
     
   }
