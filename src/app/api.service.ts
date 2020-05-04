@@ -8,7 +8,7 @@ import { throwError } from "rxjs";
 export class ApiService {
   constructor(private http: HttpClient) {}
 
-  url = "http://localhost:3002";
+  url = "";
 
   getUsers() {
     return this.http.get(`${this.url}/users`);
