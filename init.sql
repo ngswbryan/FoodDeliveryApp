@@ -252,7 +252,7 @@ INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,current_timestamp, TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,current_timestamp, TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
-
+INSERT INTO FoodOrder VALUES(DEFAULT, 3, 2, TRUE, 23.3,current_timestamp, TRUE);
 
 
 INSERT INTO Sells VALUES (1,1,5.5);
@@ -283,6 +283,8 @@ INSERT INTO Delivery VALUES(DEFAULT, 11, 2, 5.0, current_timestamp, current_time
 INSERT INTO Delivery VALUES(DEFAULT, 12, 2, 5.0, current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 13, 2, 5.0,'2020-04-22 04:00:06','2020-04-22 04:00:06', 1, 'yishun', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 14, 2, 5.0, '2020-04-22 04:00:06', '2020-04-22 04:00:06', 1, 'khatib', 4.0, 'nice', FALSE);
+
+INSERT INTO Delivery VALUES(DEFAULT, 15, 2, 5.0, current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
 
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
@@ -382,14 +384,16 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  --List of available food items
  CREATE OR REPLACE FUNCTION list_of_fooditems(restaurant_id INTEGER)
  RETURNS TABLE (
+     food_id INTEGER,
      food_name VARCHAR,
      food_price DECIMAL,
      cuisine_type VARCHAR,
      overall_rating DECIMAL,
      availability_status BOOLEAN,
-     is_deleted BOOLEAN
+     is_deleted BOOLEAN,
+        quantity INTEGER
  ) AS $$
-     SELECT FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted
+     SELECT FI.food_id, FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted, FI.quantity
      FROM FoodItem FI join Sells S on FI.food_id = S.food_id
      WHERE FI.rid = restaurant_id
  $$ LANGUAGE SQL;
@@ -670,31 +674,39 @@ end
 $$ LANGUAGE PLPGSQL;
 
 -- b) update menu items that belong -> can change count of food items, cuisine_type, food_name
-CREATE OR REPLACE FUNCTION update_count(food_item INTEGER, current_rid INTEGER, new_count INTEGER)
+CREATE OR REPLACE FUNCTION update_food(id INTEGER, current_rid INTEGER, new_name VARCHAR, new_quantity INTEGER, new_price DECIMAL, new_type VARCHAR)
 RETURNS VOID AS $$
-    UPDATE FoodItem  
-    SET quantity = new_count
+BEGIN
+    IF new_quantity IS NOT NULL then
+    UPDATE FoodItem 
+    SET quantity = new_quantity
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
+    AND food_id = id;
+    END IF;
 
---update cuisine_type
-CREATE OR REPLACE FUNCTION update_type(food_item INTEGER, current_rid INTEGER, new_type VARCHAR)
-RETURNS VOID AS $$
-    UPDATE FoodItem  
-    SET cuisine_type = new_type
+    IF new_price IS NOT NULL then
+    UPDATE Sells 
+    SET price = new_price
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
-
--- --update food_name
-CREATE OR REPLACE FUNCTION update_name(food_item INTEGER, current_rid INTEGER, new_name VARCHAR)
-RETURNS VOID AS $$
-    UPDATE FoodItem  
+    AND food_id = id;
+    END IF;
+    
+    IF new_name IS NOT NULL then
+    UPDATE FoodItem 
     SET food_name = new_name
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
+    AND food_id = id;
+    END IF;
+
+    IF new_type IS NOT NULL then
+    UPDATE FoodItem 
+    SET cuisine_type = new_type
+    WHERE rid = current_rid
+    AND food_id = id;
+    END IF;
+
+END;
+$$ LANGUAGE PLPGSQL;
 
 --generates top five based on highest rating
 CREATE OR REPLACE FUNCTION generate_top_five(current_rid INTEGER)

@@ -7,7 +7,7 @@ import { environment } from "../environments/environment";
 export class ApiService {
   constructor(private http: HttpClient) {}
 
-  url = "";
+  url = "http://localhost:3002";
 
   getUsers() {
     return this.http.get(`${this.url}/users`);
@@ -39,6 +39,22 @@ export class ApiService {
 
   getRestaurants() {
     return this.http.get(`${this.url}/restaurants`);
+  }
+
+  generateTotalOrders(month, year, rid) {
+    return this.http.get(
+      `${this.url}/staff/reports/orders?rid=${rid}&month=${month}&year=${year}`
+    );
+  }
+
+  generateTotalCost(month, year, rid) {
+    return this.http.get(
+      `${this.url}/staff/reports/cost?rid=${rid}&month=${month}&year=${year}`
+    );
+  }
+
+  generateTopFive(rid) {
+    return this.http.get(`${this.url}/staff/reports/top?rid=${rid}`);
   }
 
   fetchMangerStatsByMonthAndYear(month, year) {
@@ -88,5 +104,9 @@ export class ApiService {
 
   getFoodItems() {
     return this.http.get(`${this.url}/test`);
+  }
+
+  updateFoodItem(fid, rid, food) {
+    return this.http.patch(`${this.url}/staff/menu/${fid}?rid=${rid}`, food);
   }
 }

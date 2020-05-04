@@ -17,6 +17,11 @@ export class StaffComponent implements OnInit {
   campaigns = ["campaign1", "campaign2", "campaign3", "campaign4"];
   menu = [];
   staff;
+  selectedMonth = 5;
+  selectedYear = 2020;
+  top;
+  totalOrders;
+  totalCost;
 
   createFoodForm = new FormGroup({
     name: new FormControl(""),
@@ -24,6 +29,13 @@ export class StaffComponent implements OnInit {
     cuisine_type: new FormControl(""),
     quantity: new FormControl(""),
     availability: new FormControl(""),
+  });
+
+  editForm = new FormGroup({
+    food_name: new FormControl(),
+    food_price: new FormControl(),
+    cuisine_type: new FormControl(),
+    quantity: new FormControl(),
   });
 
   constructor(
@@ -55,8 +67,14 @@ export class StaffComponent implements OnInit {
     this.apiService
       .getListOfFoodItem(this.staff[0].rid)
       .subscribe((rest: any) => {
-        this.menu = rest;
-        console.log(this.menu[0]);
+        for (let i = 0; i < rest.length; i++) {
+          let food = {
+            ...rest[i],
+            edit: false,
+          };
+          this.menu.push(food);
+        }
+        console.log(this.menu);
       });
   }
 
@@ -66,6 +84,32 @@ export class StaffComponent implements OnInit {
       .deleteMenuItem(this.menu[i].food_name, this.staff[0].rid)
       .subscribe(() => {
         this.updateMenu();
+        this.loadingService.loading.next(false);
+      });
+  }
+
+  closeEdit(i) {
+    this.menu[i].edit = false;
+  }
+
+  editItem(j) {
+    for (let i = 0; i < this.menu.length; i++) {
+      this.menu[i].edit = false;
+    }
+    this.menu[j].edit = true;
+  }
+
+  updateItem(i) {
+    this.loadingService.loading.next(true);
+    let toUpdate = this.menu[i];
+    let fid = toUpdate.food_id;
+    let rid = this.staff[0].rid;
+    console.log(this.editForm.value);
+    this.apiService
+      .updateFoodItem(fid, rid, this.editForm.value)
+      .subscribe(() => {
+        this.updateMenu();
+        this.editForm.reset();
         this.loadingService.loading.next(false);
       });
   }
@@ -93,8 +137,33 @@ export class StaffComponent implements OnInit {
   }
 
   generateReport() {
+    this.loadingService.loading.next(true);
     this.showReport = true;
-    //generation logic
+    this.apiService.generateTopFive(this.staff[0].rid).subscribe((top) => {
+      this.top = top;
+      this.apiService
+        .generateTotalOrders(
+          this.selectedMonth,
+          this.selectedYear,
+          this.staff[0].rid
+        )
+        .subscribe((totalOrders) => {
+          this.totalOrders = totalOrders;
+          this.apiService
+            .generateTotalCost(
+              this.selectedMonth,
+              this.selectedYear,
+              this.staff[0].rid
+            )
+            .subscribe((totalCost) => {
+              this.totalCost = totalCost;
+              this.loadingService.loading.next(false);
+              console.log(this.top);
+              console.log(this.totalCost);
+              console.log(this.totalOrders);
+            });
+        });
+    });
   }
 
   addCampaign() {
