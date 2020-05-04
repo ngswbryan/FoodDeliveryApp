@@ -112,7 +112,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
 
   <div *ngIf="hasOrdered" class="container"> 
     <h1> Order confirmation </h1>
-    <h1> {{confirmedList }} </h1>
+    <div> 
     <div class="col-md-12">
       <table class="table table-striped"> 
       <thead> 
@@ -130,16 +130,49 @@ style="align-content: center; background-color:#f3f5f8 ;">
           <tr *ngFor="let food of foodItems; index as i">
           <th scope="row">{{ i + 1 }}</th>
           <td>
-              {{ food[0] }}
-          </td>
-          <td>{{ food[1] }}</td>
-          <td>{{ food[2] }}</td>
-          <td>{{ food[3] }}</td>
-          <td>{{ food[4] }}</td>
-          <td>{{ orderList[i] }}</td>
+            {{ food["food_name"] }}
+           </td>
+          <td>{{ food["food_price"] }}</td>
+          <td>{{ food["cuisine_type"] }}</td>
+          <td>{{ food["overall_rating"] }}</td>
+          <td>{{ food["availability_status"] }}</td>
+          <td>{{ confirmedList[i] }}</td>
           </tr>
       </tbody>
       </table>
+    </div>
+    <div> 
+      <h5> Amount : {{total}}</h5>
+      <h5> Delivery Fee : 5 </h5>
+      <h5> Total cost : {{ total + toBePaid }}  </h5>
+      <button> Use reward </button>
+      <form [formGroup]="createOrderForm"> 
+        <div class="row"> 
+          <div class="col-12"> 
+            <select
+            type="boolean"
+            placeholder="credit card?"
+            class="form-control form-input"
+            formControlName="creditCard"
+            (change)="onChange($event.target.value)">
+              <option value ="true"> credit card</option>
+              <option value ="false"> cash </option>
+            </select>
+          </div>
+
+          <div class="col-12"> 
+            <input
+              type="text"
+              placeholder="location"
+              formControlName="location"
+              class="form-control form-input"/> 
+              
+          </div>
+        </div>
+      </form>
+
+      <button (click)="submitForm()"> order </button>
+    </div>
   </div>
   </div>
-  </div>
+</div>

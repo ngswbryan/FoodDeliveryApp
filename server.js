@@ -169,10 +169,7 @@ const getPastFoodReviews = (request, response) => {
 const getListOfFoodItem = (request, response) => {
   const rid = request.params.rid;
   console.log(rid);
-  pool.query(
-    "select * from list_of_fooditems($1);",
-    [rid],
-    (error, results) => {
+  pool.query("select * from list_of_fooditems($1);", [rid], (error, results) => {
       if (error) {
         throw error;
       }

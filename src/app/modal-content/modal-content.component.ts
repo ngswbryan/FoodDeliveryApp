@@ -13,7 +13,7 @@ export class ModalContentComponent implements OnInit {
   list: any[] = []; //this list is connected to the parent component 
   minOrder: any[] = []; //this list is connected to the parent component 
   confirmedList = [];
-  foodItems: any[] = []; //this list is connected to the parent component 
+  foodItems; //this list is connected to the parent component 
   orderList;
   total; 
   hasOrdered: boolean; 
@@ -27,27 +27,28 @@ export class ModalContentComponent implements OnInit {
   ngOnInit() {
     this.total = 0; 
     this.dataService.currentMessage.subscribe(hasOrdered => this.hasOrdered = hasOrdered);
+    this.dataService.currentFoodItems.subscribe(foodItems => this.foodItems = foodItems);
+    this.dataService.changeFoodItems([]);
     this.apiService.getListOfFoodItem(this.list).subscribe((fooditem: any) => {
       this.orderList = Array(fooditem.length).fill(0);
       for (let i = 0; i < fooditem.length; i++) {
-        let current = fooditem[i]["list_of_fooditems"];
-        let result = current.substring(1, current.length-1);
-        let arr = result.split(",");
-        this.foodItems.push(arr);
-      } 
+        this.foodItems.push(fooditem[i]);
+      }
+      console.log(this.foodItems); 
     });
     
   }
 
   confirm() {
     this.confirmedList = this.orderList; 
+    this.dataService.changeFoodItems(this.foodItems);
     this.dataService.changeList(this.confirmedList);
     this.dataService.changeMessage(true);
+    this.dataService.changeTotal(this.total);
     this.close();
   }
 
   close() {
-    
     this.bsModalRef.hide();
   }
 
@@ -58,7 +59,7 @@ export class ModalContentComponent implements OnInit {
   calculateTotal() {
     let amount = 0; 
     for (let i=0; i<this.orderList.length; i++) {
-      amount += this.orderList[i] * this.foodItems[i][1]
+      amount += this.orderList[i] * this.foodItems[i]["food_price"]
     }
     this.total = amount; 
   }

@@ -26,12 +26,12 @@
                     <tr *ngFor="let food of foodItems; index as i" class="clickable-row" (click) = "addOrder(i)" (click) = "calculateTotal()">
                     <th scope="row">{{ i + 1 }}</th>
                     <td>
-                        {{ food[0] }}
+                        {{ food["food_name"] }}
                     </td>
-                    <td>{{ food[1] }}</td>
-                    <td>{{ food[2] }}</td>
-                    <td>{{ food[3] }}</td>
-                    <td>{{ food[4] }}</td>
+                    <td>{{ food["food_price"] }}</td>
+                    <td>{{ food["cuisine_type"] }}</td>
+                    <td>{{ food["overall_rating"] }}</td>
+                    <td>{{ food["availability_status"] }}</td>
                     <td>{{ orderList[i] }}</td>
                     </tr>
                 </tbody>
