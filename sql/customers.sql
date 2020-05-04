@@ -143,7 +143,6 @@ BEGIN
                       AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
                       AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
                       );
-  RETURN NEW;
 END
  $$ LANGUAGE PLPGSQL;
 
