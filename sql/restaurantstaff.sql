@@ -101,7 +101,9 @@ RETURNS TABLE (
     declare
         time_frame INTEGER;
     begin
-        SELECT (DATE_PART('day', (input_end_date::timestamp - input_start_date::timestamp))) INTO time_frame;
+        SELECT (DATE_PART('day', (PC.end_date::timestamp - PC.start_date::timestamp)))
+        FROM PromotionalCampaign
+        INTO time_frame;
         
         RETURN QUERY(
             SELECT DISTINCT PC.promo_id, PC.discount, PC.description, PC.start_date, PC.end_date, time_frame
@@ -120,7 +122,6 @@ AS $$
         time_frame INTEGER;
     begin
          SELECT (DATE_PART('day', (input_end_date::timestamp - input_start_date::timestamp))) INTO time_frame;
-
 
         RETURN (
             SELECT count(*)::decimal/time_frame::decimal
