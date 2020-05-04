@@ -107,10 +107,6 @@ export class ApiService {
     return this.http.post(`${this.url}/staff/menu`, food);
   }
 
-  getFoodItems() {
-    return this.http.get(`${this.url}/test`);
-  }
-
   updateFoodItem(fid, rid, food) {
     return this.http.patch(`${this.url}/staff/menu/${fid}?rid=${rid}`, food);
   }
