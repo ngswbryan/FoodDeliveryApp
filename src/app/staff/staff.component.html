@@ -22,13 +22,97 @@
                 *ngIf="!food.is_deleted"
                 [heading]="food.food_name"
               >
-                <p><strong>Price:</strong> ${{ food.food_price }} 💵</p>
-                <p>Cuisine Type: {{ food.cuisine_type }}</p>
-                <p>Rating: {{ food.overall_rating }}</p>
-                <br />
-                <button class="btn btn-danger" (click)="delete(i)">
-                  Delete
-                </button>
+                <div class="row">
+                  <div class="col-md-10"></div>
+                  <div class="col-md-2">
+                    <button
+                      *ngIf="food.edit == true"
+                      (click)="closeEdit(i)"
+                      class="btn btn-info"
+                      style="float: right; margin-left: 2px;"
+                    >
+                      ❌
+                    </button>
+                    <button
+                      (click)="editItem(i)"
+                      class="btn btn-info"
+                      style="float: right;"
+                    >
+                      ✏️
+                    </button>
+                  </div>
+                </div>
+                <div *ngIf="food.edit == false" class="row">
+                  <div class="col-md-12">
+                    <p><strong>Food Name:</strong> {{ food.food_name }}</p>
+                    <p><strong>Price:</strong> ${{ food.food_price }} 💵</p>
+                    <p>Cuisine Type: {{ food.cuisine_type }}</p>
+                    <p>Rating: {{ food.overall_rating }}</p>
+                    <p>Quantity: {{ food.quantity }}</p>
+                    <br />
+                    <button class="btn btn-danger" (click)="delete(i)">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+
+                <div *ngIf="food.edit == true" class="row">
+                  <div class="col-md-12">
+                    <form [formGroup]="editForm">
+                      <div>
+                        <p>
+                          Food Name:
+                        </p>
+                        <input
+                          class="form-input"
+                          type="text"
+                          [value]="food.food_name"
+                          formControlName="food_name"
+                        />
+                      </div>
+                      <div>
+                        &nbsp;
+                        <p>
+                          Price:
+                        </p>
+                        <input
+                          type="text"
+                          formControlName="food_price"
+                          [value]="food.food_price"
+                          class="form-input"
+                        />
+                      </div>
+                      <div>
+                        &nbsp;
+                        <p>
+                          Cuisine Type:
+                        </p>
+                        <input
+                          class="form-input"
+                          type="text"
+                          [value]="food.cuisine_type"
+                          formControlName="cuisine_type"
+                        />
+                      </div>
+                      <div>
+                        &nbsp;
+                        <p>
+                          Quantity:
+                        </p>
+                        <input
+                          class="form-input"
+                          type="text"
+                          [value]="food.quantity"
+                          formControlName="quantity"
+                        />
+                      </div>
+                      <br />
+                      <button class="btn btn-primary" (click)="updateItem(i)">
+                        Update
+                      </button>
+                    </form>
+                  </div>
+                </div>
               </accordion-group>
             </ng-container>
           </accordion>
@@ -108,19 +192,24 @@
         <tab heading="Reports" (selectTab)="console.log('ok')">
           <br />
           <h5>Generate report for the month of</h5>
-          <select id="cars" name="cars">
-            <option value="volvo">January</option>
-            <option value="saab">February</option>
-            <option value="fiat">March</option>
-            <option value="audi">April</option>
-            <option value="audi">May</option>
-            <option value="audi">June</option>
-            <option value="audi">July</option>
-            <option value="audi">blah</option>
-            <option value="audi">blahhh</option>
+          <select id="month" name="month" [(ngModel)]="selectedMonth">
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
           </select>
-          <select id="cars" name="cars">
-            <option value="volvo">year</option>
+          <select id="year" name="year" [(ngModel)]="selectedYear">
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
           </select>
           <br />
           <br />
@@ -131,14 +220,22 @@
           <br />
           <div *ngIf="showReport">
             <alert type="success">
-              <strong>Total Completed Orders:</strong> 2000
+              <strong>Total Completed Orders:</strong>
+              <div>{{ this.totalOrders[0].generate_total_num_of_orders }}</div>
             </alert>
             <alert type="success">
-              <strong>Total Cost of Completed Orders:</strong> $3000
+              <strong>Total Cost of Completed Orders:</strong>
+              <div *ngIf="totalCost[0].generate_total_cost_of_orders != null">
+                ${{ this.totalCost[0].generate_total_cost_of_orders }}
+              </div>
+              <div *ngIf="totalCost[0].generate_total_cost_of_orders == null">
+                $0
+              </div>
             </alert>
             <alert type="success">
-              <strong>Top 5 Popular Food:</strong> Pizza, Burger, Fries, Ice
-              Cream, Nuggets
+              &nbsp;
+              <strong>Top 5 Popular Food:</strong>
+              <p *ngFor="let food of top">{{ food.top_few }}</p>
             </alert>
           </div>
         </tab>

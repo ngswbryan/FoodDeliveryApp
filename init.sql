@@ -47,11 +47,6 @@ CREATE TABLE Customers (
         ON DELETE CASCADE PRIMARY KEY,
     points INTEGER,
     credit_card VARCHAR(100)
-    -- recentFirst VARCHAR(100),
-    -- recentSecond VARCHAR(100),
-    -- recentThird VARCHAR(100),
-    -- recentFourth VARCHAR(100),
-    -- recentFIfth VARCHAR(100)
 );
 
 CREATE TABLE FoodOrder (
@@ -135,33 +130,16 @@ CREATE TABLE Receives (
 );
 
 --new updated delivery table
---CREATE TABLE Delivery (
---    delivery_id SERIAL NOT NULL,
---    order_id INTEGER REFERENCES FoodOrder(order_id),
---    rider_id INTEGER REFERENCES Riders(rider_id),
---    delivery_cost DECIMAL NOT NULL,
---    departure_time TIMESTAMP,
---    collected_time TIMESTAMP,
---    delivery_start_time TIMESTAMP, --start delivering to customer
---    delivery_end_time TIMESTAMP,
---    time_for_one_delivery DECIMAL, --in hours
---    location VARCHAR(100),
---    delivery_rating INTEGER, 
---    food_review varchar(100),
---    ongoing BOOLEAN, --true means delivering, false means done
---    PRIMARY KEY(delivery_id),
---    UNIQUE(delivery_id)
---);
-
-
 CREATE TABLE Delivery (
     delivery_id SERIAL NOT NULL,
     order_id INTEGER REFERENCES FoodOrder(order_id),
     rider_id INTEGER REFERENCES Riders(rider_id),
     delivery_cost DECIMAL NOT NULL,
-    delivery_start_time TIMESTAMP NOT NULL,
+    departure_time TIMESTAMP,
+    collected_time TIMESTAMP,
+    delivery_start_time TIMESTAMP, --start delivering to customer
     delivery_end_time TIMESTAMP,
-    time_for_one_delivery DECIMAL, --in minutes
+    time_for_one_delivery DECIMAL, --in hours
     location VARCHAR(100),
     delivery_rating INTEGER, 
     food_review varchar(100),
@@ -169,6 +147,23 @@ CREATE TABLE Delivery (
     PRIMARY KEY(delivery_id),
     UNIQUE(delivery_id)
 );
+
+
+--CREATE TABLE Delivery (
+--    delivery_id SERIAL NOT NULL,
+--    order_id INTEGER REFERENCES FoodOrder(order_id),
+--    rider_id INTEGER REFERENCES Riders(rider_id),
+--    delivery_cost DECIMAL NOT NULL,
+--    delivery_start_time TIMESTAMP NOT NULL,
+--    delivery_end_time TIMESTAMP,
+--    time_for_one_delivery DECIMAL, --in minutes
+--    location VARCHAR(100),
+--    delivery_rating INTEGER, 
+--    food_review varchar(100),
+--    ongoing BOOLEAN, --true means delivering, false means done
+--    PRIMARY KEY(delivery_id),
+--    UNIQUE(delivery_id)
+--);
 
 CREATE TABLE Contain (
     order_id INTEGER REFERENCES FoodOrder(order_id),
@@ -223,20 +218,32 @@ INSERT INTO PromotionalCampaign values (100, 1, 20, 'this is discount 1', '2018-
 INSERT INTO PromotionalCampaign values (101, 2, 30, 'this is discount 2', '2018-04-22 04:00:06', '2018-12-20 04:00:06');  
 INSERT INTO PromotionalCampaign values (102, 3, 40, 'this is discount 3', '2018-05-22 04:00:06', '2018-12-21 04:00:06');  
 
-INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken rice', 20, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken rice', 20, 0, 2, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken noodles', 30, 0, 1, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken kway teow', 15, 0, 1, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'fried chicken thigh', 15, 0, 14, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'porkchop', 15, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 3, 'western', 'pork chop', 15, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'chicken chop', 16, 0, 2, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'fish n chips', 17, 0, 4, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'grilled fish', 18, 0, 5, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'steak', 19, 0, 6, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 3, 'mexican', 'tacos', 15, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 3, 'mexican', 'burrito', 15, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 3, 'mexican', 'burrito bowl', 10, 0, 0, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'pineapple rice', 12, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 5, 'western', 'pork chop', 12, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'pad thai', 12, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'tom yum soup', 12, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'mookata', 12, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'garlic naan', 13, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'chicken taandori', 9, 0, 0, true, false);
+INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'roti john', 2, 0, 0, true, false);
 
-INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'good stuff', 12, 2,0,true,false);
-INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'stuff good', 12, 3,0,true,false);
-INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork loin', 12, 5,0,true,false);
-INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork bone', 12, 4,0,true,false);
-INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork jizz', 12, 3.3,0,true,false);
+--INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'good stuff', 12, 2,0,true,false);
+--INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'stuff good', 12, 3,0,true,false);
+--INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork loin', 12, 5,0,true,false);
+--INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork bone', 12, 4,0,true,false);
+--INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork jizz', 12, 3.3,0,true,false);
 
-INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'dog chop', 12, 4.4);
-INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'horse chop', 12, 1.9);
 
 INSERT INTO FoodOrder VALUES(DEFAULT, 1, 1, TRUE, 50.0,'2018-06-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 6, 2, FALSE, 46.0,'2018-05-22 04:00:06', TRUE);
@@ -252,14 +259,29 @@ INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,current_timestamp, TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,current_timestamp, TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
-
+INSERT INTO FoodOrder VALUES(DEFAULT, 3, 2, TRUE, 23.3,current_timestamp, TRUE);
 
 
 INSERT INTO Sells VALUES (1,1,5.5);
-INSERT INTO Sells VALUES (2,2,4.5);
-INSERT INTO Sells VALUES (3,3,2.5);
-INSERT INTO Sells VALUES (4,4,3.5);
-INSERT INTO Sells VALUES (5,5,6.5);
+INSERT INTO Sells VALUES (1,2,4.5);
+INSERT INTO Sells VALUES (1,3,3.5);
+INSERT INTO Sells VALUES (1,4,2.5);
+INSERT INTO Sells VALUES (2,5,4.5);
+INSERT INTO Sells VALUES (2,6,5.5);
+INSERT INTO Sells VALUES (2,7,1.5);
+INSERT INTO Sells VALUES (2,8,4.5);
+INSERT INTO Sells VALUES (2,9,4.5);
+INSERT INTO Sells VALUES (3,10,2.5);
+INSERT INTO Sells VALUES (3,11,3.5);
+INSERT INTO Sells VALUES (3,12,2.0);
+INSERT INTO Sells VALUES (4,13,3.3);
+INSERT INTO Sells VALUES (4,14,2.5);
+INSERT INTO Sells VALUES (4,15,3.1);
+INSERT INTO Sells VALUES (4,16,3.4);
+INSERT INTO Sells VALUES (5,17,5.0);
+INSERT INTO Sells VALUES (5,18,6.3);
+INSERT INTO Sells VALUES (5,19,7.5);
+
 
 INSERT INTO Orders VALUES (6, 2);
 INSERT INTO Orders VALUES (7, 3);
@@ -283,6 +305,8 @@ INSERT INTO Delivery VALUES(DEFAULT, 11, 2, 5.0, current_timestamp, current_time
 INSERT INTO Delivery VALUES(DEFAULT, 12, 2, 5.0, current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 13, 2, 5.0,'2020-04-22 04:00:06','2020-04-22 04:00:06', 1, 'yishun', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 14, 2, 5.0, '2020-04-22 04:00:06', '2020-04-22 04:00:06', 1, 'khatib', 4.0, 'nice', FALSE);
+
+INSERT INTO Delivery VALUES(DEFAULT, 15, 2, 5.0, current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
 
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
 INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06', 1, 'kovan', 4.0, 'nice', FALSE);
@@ -336,6 +360,8 @@ end;
 $$ language plpgsql;
 
 ------ CUSTOMERS ------
+
+
 --a)
 -- past delivery ratings
 CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
@@ -382,14 +408,16 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  --List of available food items
  CREATE OR REPLACE FUNCTION list_of_fooditems(restaurant_id INTEGER)
  RETURNS TABLE (
+     food_id INTEGER,
      food_name VARCHAR,
      food_price DECIMAL,
      cuisine_type VARCHAR,
      overall_rating DECIMAL,
      availability_status BOOLEAN,
-     is_deleted BOOLEAN
+     is_deleted BOOLEAN,
+        quantity INTEGER
  ) AS $$
-     SELECT FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted
+     SELECT FI.food_id, FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted, FI.quantity
      FROM FoodItem FI join Sells S on FI.food_id = S.food_id
      WHERE FI.rid = restaurant_id
  $$ LANGUAGE SQL;
@@ -452,7 +480,39 @@ CREATE TYPE orderdeliveryid AS (
   delivery_id  integer
 );
 
---e)
+
+--e (i) run this function first
+ --function to activate riders that are working NOW
+CREATE OR REPLACE FUNCTION activate_riders()
+RETURNS VOID AS $$
+BEGIN
+  UPDATE Riders R
+  SET working = TRUE
+  WHERE R.rider_id IN (SELECT WWS.rider_id
+                      FROM WeeklyWorkSchedule WWS
+                      WHERE WWS.start_hour = (SELECT EXTRACT(HOUR FROM current_timestamp))
+                      AND WWS.day%7 = (SELECT EXTRACT(DOW FROM current_timestamp))
+                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp) - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
+                      AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
+                      AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
+                      );
+   UPDATE Riders R
+   SET working = FALSE
+   WHERE R.rider_id NOT IN (SELECT WWS.rider_id
+                      FROM WeeklyWorkSchedule WWS
+                      WHERE WWS.start_hour = (SELECT EXTRACT(HOUR FROM current_timestamp))
+                      AND WWS.day%7 = (SELECT EXTRACT(DOW FROM current_timestamp))
+                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp) - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
+                      AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
+                      AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
+                      );
+  RETURN NEW;
+END
+ $$ LANGUAGE PLPGSQL;
+
+
+
+--e (ii)
  --create new foodorder, create new delivery, update order count
  --returns orderid and deliveryid as a tuple
  --currentorder is a 2d array which consist of the { {foodid,quantity}, {foodid2,quantity} }
@@ -670,31 +730,39 @@ end
 $$ LANGUAGE PLPGSQL;
 
 -- b) update menu items that belong -> can change count of food items, cuisine_type, food_name
-CREATE OR REPLACE FUNCTION update_count(food_item INTEGER, current_rid INTEGER, new_count INTEGER)
+CREATE OR REPLACE FUNCTION update_food(id INTEGER, current_rid INTEGER, new_name VARCHAR, new_quantity INTEGER, new_price DECIMAL, new_type VARCHAR)
 RETURNS VOID AS $$
-    UPDATE FoodItem  
-    SET quantity = new_count
+BEGIN
+    IF new_quantity IS NOT NULL then
+    UPDATE FoodItem 
+    SET quantity = new_quantity
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
+    AND food_id = id;
+    END IF;
 
---update cuisine_type
-CREATE OR REPLACE FUNCTION update_type(food_item INTEGER, current_rid INTEGER, new_type VARCHAR)
-RETURNS VOID AS $$
-    UPDATE FoodItem  
-    SET cuisine_type = new_type
+    IF new_price IS NOT NULL then
+    UPDATE Sells 
+    SET price = new_price
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
-
--- --update food_name
-CREATE OR REPLACE FUNCTION update_name(food_item INTEGER, current_rid INTEGER, new_name VARCHAR)
-RETURNS VOID AS $$
-    UPDATE FoodItem  
+    AND food_id = id;
+    END IF;
+    
+    IF new_name IS NOT NULL then
+    UPDATE FoodItem 
     SET food_name = new_name
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
+    AND food_id = id;
+    END IF;
+
+    IF new_type IS NOT NULL then
+    UPDATE FoodItem 
+    SET cuisine_type = new_type
+    WHERE rid = current_rid
+    AND food_id = id;
+    END IF;
+
+END;
+$$ LANGUAGE PLPGSQL;
 
 --generates top five based on highest rating
 CREATE OR REPLACE FUNCTION generate_top_five(current_rid INTEGER)

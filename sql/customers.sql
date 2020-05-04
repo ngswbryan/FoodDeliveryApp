@@ -1,3 +1,6 @@
+
+
+
 --a)
 -- past delivery ratings
 CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
@@ -92,6 +95,8 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
   FOR EACH ROW
   EXECUTE FUNCTION notify_minorder_not_met();
 
+
+
   --trigger to update isdelivering for the particular rider
  CREATE OR REPLACE FUNCTION update_rider_isdelivering() RETURNS TRIGGER AS $$
  BEGIN
@@ -113,7 +118,38 @@ CREATE TYPE orderdeliveryid AS (
   delivery_id  integer
 );
 
---e)
+--e (i) run this function first
+ --function to activate riders that are working NOW
+CREATE OR REPLACE FUNCTION activate_riders()
+RETURNS VOID AS $$
+BEGIN
+  UPDATE Riders R
+  SET working = TRUE
+  WHERE R.rider_id IN (SELECT WWS.rider_id
+                      FROM WeeklyWorkSchedule WWS
+                      WHERE WWS.start_hour = (SELECT EXTRACT(HOUR FROM current_timestamp))
+                      AND WWS.day%7 = (SELECT EXTRACT(DOW FROM current_timestamp))
+                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp) - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
+                      AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
+                      AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
+                      );
+   UPDATE Riders R
+   SET working = FALSE
+   WHERE R.rider_id NOT IN (SELECT WWS.rider_id
+                      FROM WeeklyWorkSchedule WWS
+                      WHERE WWS.start_hour = (SELECT EXTRACT(HOUR FROM current_timestamp))
+                      AND WWS.day%7 = (SELECT EXTRACT(DOW FROM current_timestamp))
+                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp) - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
+                      AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
+                      AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
+                      );
+  RETURN NEW;
+END
+ $$ LANGUAGE PLPGSQL;
+
+
+
+--e (ii)
  --create new foodorder, create new delivery, update order count
  --returns orderid and deliveryid as a tuple
  --currentorder is a 2d array which consist of the { {foodid,quantity}, {foodid2,quantity} }

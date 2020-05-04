@@ -249,6 +249,75 @@ const getFoodItems = (request, response) => {
   });
 };
 
+const getTopFive = (request, response) => {
+  const rid = request.query.rid;
+  pool.query(
+    "SELECT * FROM generate_top_five($1);",
+    [rid],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const getTotalCost = (request, response) => {
+  const rid = request.query.rid;
+  const month = request.query.month;
+  const year = request.query.year;
+  pool.query(
+    "SELECT * FROM generate_total_cost_of_orders($1, $2, $3);",
+    [month, year, rid],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const getTotalOrders = (request, response) => {
+  const rid = request.query.rid;
+  const month = request.query.month;
+  const year = request.query.year;
+  pool.query(
+    "SELECT * FROM generate_total_num_of_orders($1, $2, $3);",
+    [month, year, rid],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const updateFoodItem = (request, response) => {
+  const fid = request.params.fid;
+  const rid = request.query.rid;
+  const { food_name, food_price, quantity, cuisine_type } = request.body;
+
+  console.log(fid);
+  console.log(rid);
+  console.log(food_price);
+
+  pool.query(
+    "select update_food($1, $2, $3, $4, $5, $6);",
+    [fid, rid, food_name, quantity, food_price, cuisine_type],
+    (error) => {
+      if (error) {
+        throw error;
+      }
+      response
+        .status(200)
+        .json({ status: "success", message: "food updated." });
+    }
+  );
+};
+
 app.route("/test").get(getFoodItems);
 
 app
@@ -258,11 +327,19 @@ app
   // POST endpoint
   .post(addUser);
 
+app.route("/staff/menu/:fid").patch(updateFoodItem);
+
 app.route("/users/:username").get(getUserByUsername);
 
 app.route("/staff/:uid").get(getStaffByUsername);
 
 app.route("/staff/menu").post(addMenuItem).patch(deleteMenuItem);
+
+app.route("/staff/reports/orders").get(getTotalOrders);
+
+app.route("/staff/reports/cost").get(getTotalCost);
+
+app.route("/staff/reports/top").get(getTopFive);
 
 app.route("/restaurants").get(getRestaurants);
 
