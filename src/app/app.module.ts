@@ -7,6 +7,7 @@ import { NgxLoadingModule } from "ngx-loading";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { ApiService } from "./api.service";
+import { DataService } from "./data.service";
 import { LoginComponent } from "./login/login.component";
 import { LoadingComponent } from "./loading/loading.component";
 import { LoadingService } from "./loading.service";
@@ -24,6 +25,7 @@ import { AlertModule } from "ngx-bootstrap/alert";
 import { ModalContentComponent } from './modal-content/modal-content.component';
 import { CollapseModule } from "ngx-bootstrap/collapse";
 import { ProgressbarModule } from "ngx-bootstrap/progressbar";
+
 
 @NgModule({
   declarations: [
@@ -54,7 +56,7 @@ import { ProgressbarModule } from "ngx-bootstrap/progressbar";
     CollapseModule.forRoot(),
     ProgressbarModule.forRoot(),
   ],
-  providers: [ApiService, LoadingService, BsModalRef],
+  providers: [ApiService, LoadingService, BsModalRef, DataService],
   bootstrap: [AppComponent],
   entryComponents: [ModalContentComponent]
 })

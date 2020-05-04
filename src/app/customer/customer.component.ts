@@ -4,6 +4,9 @@ import { LoadingService } from "../loading.service";
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ModalContentComponent } from '../modal-content/modal-content.component';
 import { ApiService } from "../api.service";
+import { DataService } from "../data.service";
+
+
 @Component({
   selector: 'app-customer',
   templateUrl: './customer.component.html',
@@ -12,6 +15,7 @@ import { ApiService } from "../api.service";
 
 export class CustomerComponent implements OnInit {
 
+  hasOrdered: boolean;  
   bsModalRef: BsModalRef;
   username;
   user;
@@ -20,18 +24,21 @@ export class CustomerComponent implements OnInit {
   pastReviews = [];
   restaurants = [];
   foodItems = [];
+  confirmedList=[]; 
   
   
   constructor(
     private router : ActivatedRoute,
     private loadingService: LoadingService,
     private modalService: BsModalService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private dataService: DataService
     ) { }
 
   ngOnInit() {
-
     this.loadingService.loading.next(true);
+    this.dataService.currentMessage.subscribe(hasOrdered => this.hasOrdered = hasOrdered);
+    this.dataService.currentList.subscribe(confirmedList => this.confirmedList = confirmedList);
     this.router.params.subscribe((params: Params) => {
       this.username = params.username;
         this.apiService
@@ -96,14 +103,12 @@ export class CustomerComponent implements OnInit {
       ],
       foodItems: [
       ],
-      confirmedList: [
-      ],
       title:'List of food items'
     };
 
     this.bsModalRef = this.modalService.show( ModalContentComponent, {initialState});
     this.bsModalRef.content.closeBtnName = 'Close';
-}
+  }
 
 }
 

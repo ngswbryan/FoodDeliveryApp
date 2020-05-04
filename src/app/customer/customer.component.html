@@ -5,13 +5,12 @@ style="align-content: center; background-color:#f3f5f8 ;">
       <h1> Welcome to FoodHub, {{ username }}</h1>
     </div>
   </div>  
-        <br />
-
+        <br/>
   
-  <div class="container"> 
-  <div class="row"> 
-      <h5>Past Delivery Ratings</h5>
-  </div>
+  <div *ngIf="!hasOrdered" class="container" > 
+    <div class="row"> 
+        <h5>Past Delivery Ratings</h5>
+    </div>
 
   
           <div class="col-md-12">
@@ -36,7 +35,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
               </tbody>
             </table>
           </div>
-  <div>
+    <div>
   <br />
   <div class="row"> 
       <h5>Past Food Reviews</h5>
@@ -108,6 +107,39 @@ style="align-content: center; background-color:#f3f5f8 ;">
 
 
   </div>
-</div>
+  </div>
 
+
+  <div *ngIf="hasOrdered" class="container"> 
+    <h1> Order confirmation </h1>
+    <h1> {{confirmedList }} </h1>
+    <div class="col-md-12">
+      <table class="table table-striped"> 
+      <thead> 
+          <tr>
+          <th scope="col"> # </th>
+          <th scope="col"> Food name </th>
+          <th scope="col"> Food Price  </th>
+          <th scope="col"> Cuisine type </th>
+          <th scope="col"> Overall Rating </th>
+          <th scope="col"> Available </th>
+          <th scope="col"> Quantity </th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr *ngFor="let food of foodItems; index as i">
+          <th scope="row">{{ i + 1 }}</th>
+          <td>
+              {{ food[0] }}
+          </td>
+          <td>{{ food[1] }}</td>
+          <td>{{ food[2] }}</td>
+          <td>{{ food[3] }}</td>
+          <td>{{ food[4] }}</td>
+          <td>{{ orderList[i] }}</td>
+          </tr>
+      </tbody>
+      </table>
+  </div>
+  </div>
   </div>
