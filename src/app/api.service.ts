@@ -2,14 +2,11 @@ import { Injectable } from "@angular/core";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { catchError, retry } from "rxjs/operators";
 import { throwError, Subject, Observable, VirtualTimeScheduler } from "rxjs";
-import { LoadingService } from "./loading.service";
+import { Router } from "@angular/router";
 
 @Injectable()
 export class ApiService {
-  constructor(
-    private http: HttpClient,
-    private loadingService: LoadingService
-  ) {}
+  constructor(private http: HttpClient, public router: Router) {}
 
   url = "";
   public erMsg = new Subject();
