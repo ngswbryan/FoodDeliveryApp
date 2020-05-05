@@ -7,6 +7,7 @@ import { NgxLoadingModule } from "ngx-loading";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { ApiService } from "./api.service";
+import { DataService } from "./data.service";
 import { LoginComponent } from "./login/login.component";
 import { LoadingComponent } from "./loading/loading.component";
 import { LoadingService } from "./loading.service";
@@ -25,6 +26,7 @@ import { ModalContentComponent } from "./modal-content/modal-content.component";
 import { CollapseModule } from "ngx-bootstrap/collapse";
 import { ProgressbarModule } from "ngx-bootstrap/progressbar";
 import { HashLocationStrategy, LocationStrategy } from "@angular/common";
+
 
 @NgModule({
   declarations: [
@@ -59,6 +61,7 @@ import { HashLocationStrategy, LocationStrategy } from "@angular/common";
     ApiService,
     LoadingService,
     BsModalRef,
+    DataService,
     { provide: LocationStrategy, useClass: HashLocationStrategy },
   ],
   bootstrap: [AppComponent],

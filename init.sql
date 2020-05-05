@@ -537,7 +537,7 @@ CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer
  $$ LANGUAGE PLPGSQL;
 
  --e(iii)
- -- get delivery_id and food_id
+ -- get delivery_id and order_id
  CREATE OR REPLACE FUNCTION get_ids(customer_uid INTEGER, restaurant_id INTEGER, total_order_cost DECIMAL)
  RETURNS TABLE (
     orderid INTEGER,
