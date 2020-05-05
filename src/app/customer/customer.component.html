@@ -6,7 +6,8 @@ style="align-content: center; background-color:#f3f5f8 ;">
     </div>
   </div>  
         <br/>
-  
+  <tabset> 
+    <tab heading="stats">
   <div *ngIf="!hasOrdered" class="container" > 
     <div class="row"> 
         <h5>Past Delivery Ratings</h5>
@@ -203,13 +204,12 @@ style="align-content: center; background-color:#f3f5f8 ;">
     </div>
   </div>
   </div>
+  
+    </tab>
 
-  <div class="container"> 
-    <div class="row"> 
-      <h5> Delivery Page </h5>
-    </div>
-  <br/> 
-    <div> 
+    <tab heading="ongoing delivery">
 
-  </div>
+    </tab>
+  </tabset>
+
 </div>

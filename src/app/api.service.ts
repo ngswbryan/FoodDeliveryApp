@@ -63,6 +63,10 @@ export class ApiService {
     );
   }
 
+  getFoodandDeliveryID() {
+    return this.http.get(`${this.url}/users/restaurant/order/ids`, )
+  }
+
   applyDeliveryPromo() {
 
   }

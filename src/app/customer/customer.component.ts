@@ -146,7 +146,7 @@ export class CustomerComponent implements OnInit {
       customer_uid: this.uid,
       restaurant_id: this.rid, 
       have_credit: this.creditCard,
-      total_order_cost: this.toBePaid + this.total,
+      total_order_cost: this.total,
       delivery_location: this.location,
     };
     console.log(order);
@@ -202,6 +202,7 @@ export class CustomerComponent implements OnInit {
         this.rewardsBal = reward[0]["reward_balance"];
         // console.log("rewards balance is : " + this.rewardsBal);
     })
+    
   }
 
   confirmOrder() {

@@ -242,6 +242,10 @@ const updateOrderCount = (request, response) => {
   )
 }
 
+// const getFoodandDeliveryID = (request, response) => {
+//   const 
+// }
+
 const activateRiders = (request, response) => {
   pool.query("select activate_riders();", (error) => {
     if (error) {
