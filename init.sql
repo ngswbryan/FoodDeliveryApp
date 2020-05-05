@@ -26,6 +26,7 @@ CREATE TABLE Riders (
 CREATE TABLE Restaurants (
     rid INTEGER PRIMARY KEY,
     rname VARCHAR(100),
+    location VARCHAR(100),
     min_order_price DECIMAL,
     unique(rid)
 );
@@ -66,7 +67,7 @@ CREATE TABLE FoodItem (
         ON DELETE CASCADE,
     cuisine_type VARCHAR(100),
     food_name VARCHAR(100),
-    quantity INTEGER,
+    restaurant_quantity INTEGER,
     overall_rating DECIMAL,
     ordered_count INTEGER,
     availability_status BOOLEAN,
@@ -121,6 +122,7 @@ CREATE TABLE Sells (
 CREATE TABLE Orders (
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
+    item_quantity INTEGER
     PRIMARY KEY(order_id,food_id)
 );
 
