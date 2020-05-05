@@ -27,6 +27,37 @@
               <strong>Hey there! 🏍️ </strong> Here are the details of your
               current assignment:
             </alert>
+            <alert type="info">
+              <p><strong>Restaurant Name:</strong> TBC</p>
+              <p><strong>Pickup Location:</strong> TBC</p>
+              <p>
+                <strong>Delivery Location:</strong> {{ currentJob[0].location }}
+              </p>
+              <p>
+                <strong>Customer Name:</strong> {{ currentJob[0].recipient }}
+              </p>
+              <p><strong>Total Cost:</strong> {{ currentJob[0].total_cost }}</p>
+            </alert>
+            <div>
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Food Item</th>
+                    <th scope="col">Quantity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let food of currentJob; index as i">
+                    <th scope="row">{{ i + 1 }}</th>
+                    <td>
+                      {{ food.food_name }}
+                    </td>
+                    <td>TBC</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
             <div>
               <button
                 class="btn btn-info"

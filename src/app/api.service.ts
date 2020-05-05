@@ -8,7 +8,7 @@ import { Router } from "@angular/router";
 export class ApiService {
   constructor(private http: HttpClient, public router: Router) {}
 
-  url = "";
+  url = "http://localhost:3002";
   public erMsg = new Subject();
 
   getError(): Observable<any> {
@@ -64,15 +64,17 @@ export class ApiService {
   }
 
   getFoodandDeliveryID() {
-    return this.http.get(`${this.url}/users/restaurant/order/ids`, )
+    return this.http.get(`${this.url}/users/restaurant/order/ids`);
   }
 
   applyDeliveryPromo(promo) {
-    return this.http.post(`${this.url}/users/restaurant/order/promo`, promo).pipe(
-      retry(1),
+    return this.http
+      .post(`${this.url}/users/restaurant/order/promo`, promo)
+      .pipe(
+        retry(1),
 
-      catchError(this.handleError)
-    );
+        catchError(this.handleError)
+      );
   }
 
   getRewardBalance(uid) {
@@ -80,11 +82,13 @@ export class ApiService {
   }
 
   activateRiders() {
-    return this.http.post(`${this.url}/users/restaurant/order/activate`, "").pipe(
-      retry(1),
-      
-      catchError(this.handleError)
-    )
+    return this.http
+      .post(`${this.url}/users/restaurant/order/activate`, "")
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   getMostRecentLocation(uid) {
@@ -238,7 +242,7 @@ export class ApiService {
     );
   }
 
-  updateDelivertStart(rid, did) {
+  updateDeliveryStart(rid, did) {
     return this.http.patch(
       `${this.url}/riders/delivery/delivery?rid=${rid}&did=${did}`,
       {}
