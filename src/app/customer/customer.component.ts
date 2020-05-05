@@ -6,6 +6,7 @@ import { ModalContentComponent } from '../modal-content/modal-content.component'
 import { FormGroup, FormArray, FormControl, Validators } from "@angular/forms";
 import { ApiService } from "../api.service";
 import { DataService } from "../data.service";
+import { Router } from "@angular/router";
 
 
 @Component({
@@ -32,11 +33,17 @@ export class CustomerComponent implements OnInit {
 
   locationDropdown; 
   recentLocations = [];
+  rewardsBal; 
 
   toBePaid; 
   creditCard: boolean;  //boolean : if credit card --> true if cash --> false 
   location;   //string
   orderedPairs=[];
+  deliveryid; 
+
+  confirm: boolean;
+
+  orderOngoing: boolean; 
   
   
   constructor(
@@ -44,12 +51,13 @@ export class CustomerComponent implements OnInit {
     private loadingService: LoadingService,
     private modalService: BsModalService,
     private apiService: ApiService,
-    private dataService: DataService
+    private dataService: DataService,
     ) { }
 
   ngOnInit() {
     this.toBePaid = 5; 
     this.locationDropdown = true; 
+    this.orderOngoing = false; 
     this.loadingService.loading.next(true);
     this.dataService.currentMessage.subscribe(hasOrdered => this.hasOrdered = hasOrdered);
     this.dataService.currentList.subscribe(confirmedList => this.confirmedList = confirmedList);
@@ -71,9 +79,9 @@ export class CustomerComponent implements OnInit {
               let result = current.substring(1, current.length-1);
               let arr = result.split(",");
               this.pastDeliveries.push(arr);
-             
+              // console.log("past deliveries : " + arr);
             }
-            console.log("past deliveries : " + this.pastDeliveries[1][2]);
+            // console.log("past deliveries : " + this.pastDeliveries[1][2]);
             this.loadingService.loading.next(false);
           });
 
@@ -109,12 +117,6 @@ export class CustomerComponent implements OnInit {
       creditCard: new FormControl(""),
       location: new FormControl(""),
     });
-
-    this.apiService.getMostRecentLocation(this.uid).subscribe((location: any) => {
-      console.log("getting recent locations: " + location);
-      this.recentLocations.push(location);
-      this.loadingService.loading.next(false);
-    })
     
   }
 
@@ -148,18 +150,25 @@ export class CustomerComponent implements OnInit {
       delivery_location: this.location,
     };
     console.log(order);
-    // this.apiService.updateOrderCount(order).subscribe((res: any) => {
-    //   console.log("after posting" + res);
-    //   this.loadingService.loading.next(false);
-    // });
-    // this.apiService.activateRiders().subscribe((res: any) => {
-    //   console.log("activated riders : " + res);
-    //   this.loadingService.loading.next(false);
-    // })
+
+    this.apiService.updateOrderCount(order).subscribe((res: any) => {
+      console.log("after posting" + res);
+      for (let i=0; i<res.length; i++) {
+        console.log("testing " + res[i]);
+      }
+      this.loadingService.loading.next(false);
+    });
+    this.apiService.activateRiders().subscribe((res: any) => {
+      // console.log("activated riders : " + res);
+      this.loadingService.loading.next(false);
+    })
+    window.alert("Order completed!");
+    this.hasOrdered = !this.hasOrdered; 
 
   }
 
   showYourModal(i) {
+    this.recentLocations = [];
     const rid = i+1;
     this.rid = rid; 
     const min = this.restaurants[i][2];
@@ -177,6 +186,26 @@ export class CustomerComponent implements OnInit {
     
     this.bsModalRef = this.modalService.show( ModalContentComponent, {initialState});
     this.bsModalRef.content.closeBtnName = 'Close';
+    this.apiService.getMostRecentLocation(this.uid).subscribe((location : any) => {
+      // console.log("getting recent locations: " + location);
+      for (let i = 0; i < location.length; i++) {
+        this.recentLocations.push(location[i]["most_recent_location"]);
+        // console.log("recent locations: " + location[i]["most_recent_location"]);
+      }
+      // console.log(this.recentLocations);
+      this.loadingService.loading.next(false);
+    })
+
+    this.apiService.getRewardBalance(this.uid).subscribe((reward : any) => {
+        console.log(reward);
+        
+        this.rewardsBal = reward[0]["reward_balance"];
+        // console.log("rewards balance is : " + this.rewardsBal);
+    })
+  }
+
+  confirmOrder() {
+
   }
 
   checkRewards() {

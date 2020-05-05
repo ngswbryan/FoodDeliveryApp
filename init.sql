@@ -581,6 +581,34 @@ END
      LIMIT 5;
  $$ LANGUAGE SQL;
 
+---- apply delivery promo IF HAVE REWARD POINTS, USE TO OFFSET (USE REWARD BUTTON)
+CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, input_delivery_id INTEGER, delivery_cost INTEGER)
+RETURNS VOID AS $$
+declare 
+    points_check INTEGER;
+begin
+    SELECT points
+    FROM Customers C 
+    WHERE C.uid = customer_id
+    INTO points_check;
+
+    IF (points_check = 0) THEN 
+        RAISE EXCEPTION 'You have no points to be deducted';
+    END IF;
+    IF (points_check >= delivery_cost) THEN
+
+        UPDATE Customers
+        SET points = (points - delivery_cost_from_d)
+        WHERE uid = input_customer_id;
+    END IF;
+    IF (points_check < delivery_cost) THEN 
+
+        UPDATE Customers
+        SET points = (points - delivery_cost)
+        WHERE uid = input_customer_id;
+    END IF;
+end
+$$ LANGUAGE PLPGSQL;
 
 
  --f)

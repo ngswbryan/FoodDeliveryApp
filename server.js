@@ -171,7 +171,7 @@ const getMostRecentLocation = (request, response) => {
     if (error) {
       throw error; 
     }
-    response.status(200).json(results.row);
+    response.status(200).json(results.rows);
   })
 }
 
@@ -187,6 +187,16 @@ const getListOfFoodItem = (request, response) => {
     }
   );
 };
+
+const getRewardBalance = (request, response) => {
+  const uid = request.params.uid;
+  pool.query("select reward_balance($1);", [uid], (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json(results.rows);
+  })
+}
 
 const addUser = (request, response) => {
   const {
@@ -227,19 +237,20 @@ const updateOrderCount = (request, response) => {
       if (error) {
         throw error;
       }
-      response.status(201).json({ status: "success", message: "updated order count. "});
+      response.status(201).json({ status: "success", message: "updated order count "});
     }
   )
 }
 
 const activateRiders = (request, response) => {
-  pool.query("select activate_riders()", (error) => {
+  pool.query("select activate_riders();", (error) => {
     if (error) {
       throw error; 
     }
     response.status(201).json({ status: "success", message: "riders activated. "});
   })
 }
+
 
 
 const addMenuItem = (request, response) => {
@@ -327,7 +338,9 @@ app.route("/users/restaurant/order").post(updateOrderCount);
 
 app.route("/users/restaurant/order/activate").post(activateRiders);
 
-app.route("/users/restaurant/order/recent").get(getMostRecentLocation);
+app.route("/users/restaurant/order/recent/:uid").get(getMostRecentLocation);
+
+app.route("/users/restaurant/order/rewards/:uid").get(getRewardBalance);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {

@@ -33,9 +33,9 @@ export class ModalContentComponent implements OnInit {
       this.orderList = Array(fooditem.length).fill(0);
       for (let i = 0; i < fooditem.length; i++) {
         this.foodItems.push(fooditem[i]);
-        console.log(fooditem[i]);
+        // console.log(fooditem[i]);
       }
-      console.log("food items testing " + this.foodItems); 
+      // console.log("food items testing " + this.foodItems); 
     });
     
   }

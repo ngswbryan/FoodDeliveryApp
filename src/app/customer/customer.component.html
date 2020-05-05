@@ -19,6 +19,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
                 <tr>
                   <th scope="col"> # </th>
                   <th scope="col"> Order ID </th>
+                  <th scope="col"> Time </th>
                   <th scope="col"> Rating </th>
                   <th scope="col"> Rider </th>
                 </tr>
@@ -31,6 +32,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
                   </td>
                   <td>{{ delivery[1] }}</td>
                   <td>{{ delivery[2] }}</td>
+                  <td>{{ delivery[3] }}</td>
                 </tr>
               </tbody>
             </table>
@@ -47,6 +49,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
                 <tr>
                   <th scope="col"> # </th>
                   <th scope="col"> Order ID </th>
+                  <th scope="col"> Time </th>
                   <th scope="col"> Restaurant name </th>
                   <th scope="col"> Review </th>
                 </tr>
@@ -59,6 +62,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
                   </td>
                   <td>{{ review[1] }}</td>
                   <td>{{ review[2] }}</td>
+                  <td>{{ review[3] }}</td>
                 </tr>
               </tbody>
             </table>
@@ -145,7 +149,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
       <h5> Amount : {{total}}</h5>
       <h5> Delivery Fee : 5 </h5>
       <h5> Total cost : {{ total + toBePaid }}  </h5>
-      <button> Use reward </button>
+      <h5> Available rewards balance: {{ rewardsBal }}</h5>
       <form [formGroup]="createOrderForm"> 
         <div class="row"> 
           <div class="col-12"> 
@@ -177,8 +181,11 @@ style="align-content: center; background-color:#f3f5f8 ;">
                   formControlName="location"
                   (change)="onChange($event.target.value)"
                   value={{this.createOrderForm.value.location}} > 
-                  <option value="test"> test </option>
-                  <option value="blah"> blah </option>
+                  <option value={{recentLocations[0]}}> {{recentLocations[0]}} </option>
+                  <option value={{recentLocations[1]}}> {{recentLocations[1]}} </option>
+                  <option value={{recentLocations[2]}}> {{recentLocations[2]}} </option>
+                  <option value={{recentLocations[3]}}> {{recentLocations[3]}} </option>
+                  <option value={{recentLocations[4]}}> {{recentLocations[4]}} </option>
                 </select> 
               </div> 
               
@@ -190,7 +197,19 @@ style="align-content: center; background-color:#f3f5f8 ;">
       </form>
 
       <button (click)="submitForm()"> order </button>
+      <div *ngIf="confirm"> 
+
+      </div>
     </div>
   </div>
+  </div>
+
+  <div class="container"> 
+    <div class="row"> 
+      <h5> Delivery Page </h5>
+    </div>
+  <br/> 
+    <div> 
+
   </div>
 </div>
