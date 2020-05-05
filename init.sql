@@ -359,13 +359,15 @@ $$ language plpgsql;
 CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  RETURNS TABLE (
      order_id INTEGER,
+     order_time TIMESTAMP,
      delivery_ratings INTEGER,
      rider_name VARCHAR
  ) AS $$
-     SELECT D.order_id, D.delivery_rating, U.name
+     SELECT D.order_id, FO.date_time, D.delivery_rating, U.name
      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
      join Users U on D.rider_id = U.uid
-     WHERE FO.uid = customers_uid;
+     WHERE FO.uid = customers_uid
+     AND D.delivery_rating IS NOT NULL;
  $$ LANGUAGE SQL;
 
 
@@ -374,12 +376,14 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  CREATE OR REPLACE FUNCTION past_food_reviews(customers_uid INTEGER)
  RETURNS TABLE (
      order_id INTEGER,
+     order_time TIMESTAMP,
      restaurant_name VARCHAR,
      food_review VARCHAR
  ) AS $$
-     SELECT D.order_id, R.rname, D.food_review
+     SELECT D.order_id, FO.date_time, R.rname, D.food_review
      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id join Restaurants R on R.rid = FO.rid
-     WHERE FO.uid = customers_uid;
+     WHERE FO.uid = customers_uid
+     AND D.food_review IS NOT NULL;
  $$ LANGUAGE SQL;
 
 
