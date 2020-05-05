@@ -51,7 +51,7 @@ CREATE TABLE Customers (
 
 CREATE TABLE FoodOrder (
     order_id SERIAL PRIMARY KEY NOT NULL,
-    uid INTEGER REFERENCES Users NOT NULL,
+    uid INTEGER REFERENCES Customer NOT NULL,
     rid INTEGER REFERENCES Restaurants NOT NULL,
     have_credit_card BOOLEAN,
     order_cost DECIMAL NOT NULL,
