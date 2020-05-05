@@ -338,7 +338,7 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  --trigger when choosen quantity > available quantity
  CREATE OR REPLACE FUNCTION notify_user() RETURNS TRIGGER AS $$
  BEGIN
-    IF  NEW.ordered_count > OLD.quantity THEN
+    IF  NEW.ordered_count > OLD.restaurant_quantity THEN
         RAISE EXCEPTION 'ordered quantity more than available quantity';
     END IF;
     RETURN NEW;
@@ -388,11 +388,21 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
   FOR EACH ROW
   EXECUTE FUNCTION update_rider_isdelivering();
 
-CREATE TYPE orderdeliveryid AS (
-  order_id   integer,
-  delivery_id  integer
-);
-
+ --trigger to check if there are available riders
+ CREATE OR REPLACE FUNCTION check_available_riders() RETURNS TRIGGER AS $$
+ BEGIN
+    IF NEW.rider_id IS NULL THEN
+      RAISE EXCEPTION 'There are no available riders right now';
+    END IF;
+    RETURN NEW;
+ END;
+ $$ LANGUAGE PLPGSQL;
+ DROP TRIGGER IF EXISTS check_available_riders ON Delivery CASCADE;
+ CREATE TRIGGER check_available_riders
+  BEFORE INSERT
+  ON Delivery
+  FOR EACH ROW
+  EXECUTE FUNCTION check_available_riders();
 
 --e (i) run this function first
  --function to activate riders that are working NOW
@@ -463,7 +473,7 @@ CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][],
 
        FOREACH item SLICE 1 IN ARRAY currentorder LOOP
           SELECT ordered_count into orderedcount FROM FoodItem WHERE food_id = item[1];
-          SELECT quantity into foodquantity FROM FoodItem WHERE food_id = item[1];
+          SELECT restaurant_quantity into foodquantity FROM FoodItem WHERE food_id = item[1];
           UPDATE FoodItem FI
           SET ordered_count = ordered_count + item[2]
           WHERE item[1] = FI.food_id;
@@ -472,7 +482,7 @@ CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][],
             SET availability_status = false
             WHERE item[1] = FI.food_id;
           END IF;
-          INSERT INTO Orders(order_id,food_id,food_quantity)
+          INSERT INTO Orders(order_id,food_id,item_quantity)
           VALUES (orderid,item[1],item[2]);
        END loop;
        UPDATE Customers C
