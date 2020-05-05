@@ -381,7 +381,7 @@ const getTotalOrders = (request, response) => {
 const getFoodandDeliveryID = (request, response) => {
   const uid = request.query.uid; 
   const rid = request.query.rid; 
-  const total_order_cost = request.query.total_order_cost;
+  const total_order_cost = request.query.total;
   
   pool.query(
     "select get_ids($1, $2, $3);",

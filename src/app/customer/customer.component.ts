@@ -176,7 +176,8 @@ export class CustomerComponent implements OnInit {
     this.disableEnable();
     this.selectTab(1);
     this.apiService.getFoodandDeliveryID(this.uid, this.rid, this.total).subscribe((res: any) => {
-      console.log("this is did : " + res);
+      // console.log("uid : " + this.uid + " rid is :" + this.rid + " total cost is :" + this.total);
+      console.log(res);
       this.loadingService.loading.next(false);
     })
     
