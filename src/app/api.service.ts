@@ -62,6 +62,17 @@ export class ApiService {
       catchError(this.handleError)
     );
   }
+  activateRiders() {
+    return this.http.post(`${this.url}/users/restaurant/order/activate`, "").pipe(
+      retry(1),
+      
+      catchError(this.handleError)
+    )
+  }
+
+  getMostRecentLocation(uid) {
+    return this.http.get(`${this.url}/users/restaurant/order/recent?uid=${uid}`);
+  }
 
   generateTotalOrders(month, year, rid) {
     return this.http.get(

@@ -165,8 +165,26 @@ style="align-content: center; background-color:#f3f5f8 ;">
               type="text"
               placeholder="location"
               formControlName="location"
-              class="form-control form-input"/> 
+              class="form-control form-input"
+              (change)=manualEntry()
+              value={{this.createOrderForm.value.location}}/> 
+
+              <div *ngIf=locationDropdown>
+                <select
+                  type="string"
+                  placeholde="last 5 locations"
+                  class="form-control form-input"
+                  formControlName="location"
+                  (change)="onChange($event.target.value)"
+                  value={{this.createOrderForm.value.location}} > 
+                  <option value="test"> test </option>
+                  <option value="blah"> blah </option>
+                </select> 
+              </div> 
               
+          </div>
+          <div class="col-12"> 
+             
           </div>
         </div>
       </form>

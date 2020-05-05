@@ -22,12 +22,16 @@ export class CustomerComponent implements OnInit {
   user;
   uid;  
   rid; 
+
   pastDeliveries = [];
   pastReviews = [];
   restaurants = [];
   foodItems = [];
   confirmedList=[]; 
   total; 
+
+  locationDropdown; 
+  recentLocations = [];
 
   toBePaid; 
   creditCard: boolean;  //boolean : if credit card --> true if cash --> false 
@@ -45,6 +49,7 @@ export class CustomerComponent implements OnInit {
 
   ngOnInit() {
     this.toBePaid = 5; 
+    this.locationDropdown = true; 
     this.loadingService.loading.next(true);
     this.dataService.currentMessage.subscribe(hasOrdered => this.hasOrdered = hasOrdered);
     this.dataService.currentList.subscribe(confirmedList => this.confirmedList = confirmedList);
@@ -66,7 +71,9 @@ export class CustomerComponent implements OnInit {
               let result = current.substring(1, current.length-1);
               let arr = result.split(",");
               this.pastDeliveries.push(arr);
+             
             }
+            console.log("past deliveries : " + this.pastDeliveries[1][2]);
             this.loadingService.loading.next(false);
           });
 
@@ -93,7 +100,7 @@ export class CustomerComponent implements OnInit {
             this.loadingService.loading.next(false);
           });
           
-  
+          
         })
 
     })
@@ -102,6 +109,12 @@ export class CustomerComponent implements OnInit {
       creditCard: new FormControl(""),
       location: new FormControl(""),
     });
+
+    this.apiService.getMostRecentLocation(this.uid).subscribe((location: any) => {
+      console.log("getting recent locations: " + location);
+      this.recentLocations.push(location);
+      this.loadingService.loading.next(false);
+    })
     
   }
 
@@ -135,11 +148,14 @@ export class CustomerComponent implements OnInit {
       delivery_location: this.location,
     };
     console.log(order);
-    this.apiService.updateOrderCount(order).subscribe((res: any) => {
-      console.log("after posting" + res);
-      this.loadingService.loading.next(false);
-    });
-
+    // this.apiService.updateOrderCount(order).subscribe((res: any) => {
+    //   console.log("after posting" + res);
+    //   this.loadingService.loading.next(false);
+    // });
+    // this.apiService.activateRiders().subscribe((res: any) => {
+    //   console.log("activated riders : " + res);
+    //   this.loadingService.loading.next(false);
+    // })
 
   }
 
@@ -165,6 +181,10 @@ export class CustomerComponent implements OnInit {
 
   checkRewards() {
 
+  }
+
+  manualEntry() {
+    this.locationDropdown = false;
   }
 
 }

@@ -165,6 +165,16 @@ const getPastFoodReviews = (request, response) => {
   });
 };
 
+const getMostRecentLocation = (request, response) => {
+  const uid = request.params.uid;
+  pool.query("select most_recent_location($1)", [uid], (error, results) => {
+    if (error) {
+      throw error; 
+    }
+    response.status(200).json(results.row);
+  })
+}
+
 const getListOfFoodItem = (request, response) => {
   const rid = request.params.rid;
   console.log(rid);
@@ -221,6 +231,16 @@ const updateOrderCount = (request, response) => {
     }
   )
 }
+
+const activateRiders = (request, response) => {
+  pool.query("select activate_riders()", (error) => {
+    if (error) {
+      throw error; 
+    }
+    response.status(201).json({ status: "success", message: "riders activated. "});
+  })
+}
+
 
 const addMenuItem = (request, response) => {
   const {
@@ -304,6 +324,10 @@ app.route("/users/reviews/:uid").get(getPastFoodReviews);
 app.route("/users/restaurant/:rid").get(getListOfFoodItem);
 
 app.route("/users/restaurant/order").post(updateOrderCount);
+
+app.route("/users/restaurant/order/activate").post(activateRiders);
+
+app.route("/users/restaurant/order/recent").get(getMostRecentLocation);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {
