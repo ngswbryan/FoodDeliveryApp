@@ -121,6 +121,7 @@ CREATE TABLE Sells (
 CREATE TABLE Orders (
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
+    food_quantity INTEGER,
     PRIMARY KEY(order_id,food_id)
 );
 
@@ -132,8 +133,8 @@ CREATE TABLE Receives (
 --new updated delivery table
 CREATE TABLE Delivery (
     delivery_id SERIAL NOT NULL,
-    order_id INTEGER REFERENCES FoodOrder(order_id),
-    rider_id INTEGER REFERENCES Riders(rider_id),
+    order_id INTEGER REFERENCES FoodOrder(order_id) NOT NULL,
+    rider_id INTEGER REFERENCES Riders(rider_id) NOT NULL,
     delivery_cost DECIMAL NOT NULL,
     departure_time TIMESTAMP,
     collected_time TIMESTAMP,
@@ -488,7 +489,8 @@ BEGIN
                       FROM WeeklyWorkSchedule WWS
                       WHERE WWS.start_hour = (SELECT EXTRACT(HOUR FROM current_timestamp))
                       AND WWS.day%7 = (SELECT EXTRACT(DOW FROM current_timestamp))
-                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp) - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
+                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp)
+                                                      - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
                       AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
                       AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
                       );
@@ -498,7 +500,8 @@ BEGIN
                       FROM WeeklyWorkSchedule WWS
                       WHERE WWS.start_hour = (SELECT EXTRACT(HOUR FROM current_timestamp))
                       AND WWS.day%7 = (SELECT EXTRACT(DOW FROM current_timestamp))
-                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp) - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
+                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp)
+                                                      - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
                       AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
                       AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
                       );
@@ -512,7 +515,13 @@ END
  --returns orderid and deliveryid as a tuple
  --currentorder is a 2d array which consist of the { {foodid,quantity}, {foodid2,quantity} }
 
-CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100), delivery_fee DECIMAL)
+CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][],
+                                              customer_uid INTEGER,
+                                              restaurant_id INTEGER,
+                                              have_credit BOOLEAN,
+                                              total_order_cost DECIMAL,
+                                              delivery_location VARCHAR(100),
+                                              delivery_fee DECIMAL)
  RETURNS VOID AS $$
  DECLARE
     orderid INTEGER;
@@ -525,45 +534,34 @@ CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer
       VALUES (customer_uid, restaurant_id, have_credit, total_order_cost, current_timestamp, FALSE)
       RETURNING order_id into orderid;
 
-      --check for promo
-
-
       INSERT INTO Delivery(order_id, rider_id, delivery_cost, location, ongoing)
       VALUES (orderid,
               (SELECT CASE WHEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE ORDER BY random() LIMIT 1) IS NOT NULL
-                       THEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE  ORDER BY random() LIMIT 1)
-                       ELSE (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE ORDER BY random() LIMIT 1)
-                       END),
+                      THEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE  ORDER BY random() LIMIT 1)
+                      ELSE (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE ORDER BY random() LIMIT 1)
+                      END),
               delivery_fee,
               delivery_location,
               TRUE) --flat fee of 5 for delivery cost
       RETURNING delivery_id into deliveryid;
 
-
-
        FOREACH item SLICE 1 IN ARRAY currentorder LOOP
           SELECT ordered_count into orderedcount FROM FoodItem WHERE food_id = item[1];
           SELECT quantity into foodquantity FROM FoodItem WHERE food_id = item[1];
-
+          UPDATE FoodItem FI
+          SET ordered_count = ordered_count + item[2]
+          WHERE item[1] = FI.food_id;
+          IF orderedcount + item[2] = foodquantity THEN
             UPDATE FoodItem FI
-            SET ordered_count = ordered_count + item[2]
+            SET availability_status = false
             WHERE item[1] = FI.food_id;
-
-            IF orderedcount + item[2] = foodquantity THEN
-              UPDATE FoodItem FI
-              SET availability_status = false
-              WHERE item[1] = FI.food_id;
-            END IF;
-
-            INSERT INTO Orders(order_id,food_id)
-            VALUES (orderid,item[1]);
-
+          END IF;
+          INSERT INTO Orders(order_id,food_id,food_quantity)
+          VALUES (orderid,item[1],item[2]);
        END loop;
-
        UPDATE Customers C
        SET points = points + CAST(floor(total_order_cost/5) AS INTEGER) --Gain 1 reward point every $5 spent
        WHERE C.uid = customer_uid;
-
  END
  $$ LANGUAGE PLPGSQL;
 
@@ -995,7 +993,7 @@ $$ LANGUAGE PLPGSQL;
 
 -- g) statistics of riders 
 -- input parameter to filter by month
-  CREATE OR REPLACE FUNCTION riders_table()
+ CREATE OR REPLACE FUNCTION riders_table()
  RETURNS TABLE (
      order_month BIGINT,
      order_year BIGINT,
@@ -1527,13 +1525,25 @@ BEGIN
    END IF;
    SELECT 1 INTO insufficientbreak
    FROM WeeklyWorkSchedule WWS
-   WHERE NEW.rider_id = WWS.rider_id AND NEW.day = WWS.day AND NEW.week = WWS.week AND NEW.month = WWS.month  AND NEW.year = WWS.year AND (WWS.end_hour > NEW.start_hour - 1 AND NEW.end_hour + 1 > WWS.start_hour); --at least 1 hour of break between consecutive hour interval
+   WHERE NEW.rider_id = WWS.rider_id
+   AND NEW.day = WWS.day
+   AND NEW.week = WWS.week
+   AND NEW.month = WWS.month
+   AND NEW.year = WWS.year
+   AND (WWS.end_hour > NEW.start_hour - 1 AND NEW.end_hour + 1 > WWS.start_hour);
    IF (insufficientbreak = 1) THEN
        RAISE EXCEPTION 'There must be at least one hour break between consective hour intervals';
    END IF;
    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+ DROP TRIGGER IF EXISTS update_wws_trigger ON WeeklyWorkSchedule CASCADE;
+ CREATE TRIGGER update_wws_trigger
+  BEFORE UPDATE OR INSERT
+  ON WeeklyWorkSchedule
+  FOR EACH ROW
+  EXECUTE FUNCTION checkWWS();
 
 CREATE OR REPLACE FUNCTION checktotalhourwws()
   RETURNS trigger as $$
@@ -1550,13 +1560,6 @@ BEGIN
    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
- DROP TRIGGER IF EXISTS update_wws_trigger ON WeeklyWorkSchedule CASCADE;
- CREATE TRIGGER update_wws_trigger
-  BEFORE UPDATE OR INSERT
-  ON WeeklyWorkSchedule
-  FOR EACH ROW
-  EXECUTE FUNCTION checkWWS();
 
   DROP TRIGGER IF EXISTS check_wws_hours_trigger ON WeeklyWorkSchedule CASCADE;
   CREATE CONSTRAINT TRIGGER check_wws_hours_trigger

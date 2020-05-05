@@ -123,6 +123,7 @@ CREATE TABLE Sells ( --rid, food_id -> price
 CREATE TABLE Orders ( --2 attributes thus BCNF
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
+    food_quantity INTEGER,
     PRIMARY KEY(order_id,food_id)
 );
 
