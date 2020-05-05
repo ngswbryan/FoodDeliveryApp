@@ -120,10 +120,10 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
   FOR EACH ROW
   EXECUTE FUNCTION update_rider_isdelivering();
 
-CREATE TYPE orderdeliveryid AS (
-  order_id   integer,
-  delivery_id  integer
-);
+--CREATE TYPE orderdeliveryid AS (
+--  order_id   integer,
+--  delivery_id  integer
+--);
 
 --e (i) run this function first
  --function to activate riders that are working NOW
@@ -161,7 +161,7 @@ END
  --currentorder is a 2d array which consist of the { {foodid,quantity}, {foodid2,quantity} }
 
  CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100))
- RETURNS orderdeliveryid AS $$
+ RETURNS VOID AS $$
  DECLARE
     orderid INTEGER;
     deliveryid INTEGER;
@@ -212,11 +212,24 @@ END
        SET points = points + CAST(floor(total_order_cost/5) AS INTEGER) --Gain 1 reward point every $5 spent
        WHERE C.uid = customer_uid;
 
-       RETURN  (orderid,deliveryid);
-
  END
  $$ LANGUAGE PLPGSQL;
 
+ --e(iii)
+ -- get delivery_id and food_id
+ CREATE OR REPLACE FUNCTION get_ids(customer_uid INTEGER, restaurant_id INTEGER, total_order_cost DECIMAL)
+ RETURNS TABLE (
+    orderid INTEGER,
+    deliveryid INTEGER
+    ) AS $$
+        SELECT D.order_id, D.delivery_id
+        FROM Delivery D join FoodOrder FO on FO.order_id = D.order_id
+        WHERE FO.uid = customer_uid
+        AND FO.rid = restaurant_id
+        AND FO.order_cost = total_order_cost
+        ORDER BY D.delivery_id DESC
+        LIMIT 1;
+      $$ LANGUAGE SQL;
 
  -- 5 most recent Location
  CREATE OR REPLACE FUNCTION most_recent_location(input_customer_id INTEGER)
