@@ -176,43 +176,12 @@ CREATE TABLE Contain (
 
 
 -------- POPULATION -------------
-INSERT INTO Users VALUES(DEFAULT, 'lawnce', 'lawnce23', '1234', 'customer', '2018-06-22 04:00:06'); --1
-INSERT INTO Users VALUES(DEFAULT, 'joshua', 'joshua11', '1111', 'rider', '2018-06-22 04:00:06'); --2
-INSERT INTO Users VALUES(DEFAULT, 'bryan', 'bry15', '2222', 'manager', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'jess', 'jess10', '3333', 'staff', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'yongcheng', 'yc15', '4444', 'rider', '2018-06-22 04:00:06'); --5
-
-INSERT INTO Users VALUES(DEFAULT, 'lance', 'lance', '1234', 'customer', '2019-05-27 04:00:06'); --6
-INSERT INTO Users VALUES(DEFAULT, 'eq', 'eq', '1111', 'rider', '2018-06-22 04:00:06'); --7
-INSERT INTO Users VALUES(DEFAULT, 'jq', 'jq', '2222', 'manager', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'jordan', 'jord', '3333', 'staff', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'sally', 'sally', '4444', 'rider', '2018-06-22 04:00:06'); --10
-
-INSERT INTO Users VALUES(DEFAULT, 'hazel', 'hazel', '1234', 'customer', '2018-05-26 04:00:06'); --11
-INSERT INTO Users VALUES(DEFAULT, 'charlotte', 'char', '1111', 'rider', '2018-06-22 04:00:06'); --12
-INSERT INTO Users VALUES(DEFAULT, 'jamie', 'jam', '2222', 'manager', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'rachie', 'rach', '3333', 'staff', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'knottedboys', 'kb69', '4444', 'rider', '2018-06-22 04:00:06'); --15
-
-INSERT INTO RIDERS VALUES(2, 0.0, true, false, 15, TRUE, 3);
-INSERT INTO RIDERS VALUES(5, 0.0, false, false, 15, TRUE, 3);
-INSERT INTO RIDERS VALUES(7, 0.0, true, false, 15, TRUE, 3);
-INSERT INTO RIDERS VALUES(12, 0.0, false,false, 10, TRUE, 3);
-INSERT INTO RIDERS VALUES(15, 0.0, true, true, 10, TRUE, 3);
 
 INSERT INTO Restaurants VALUES (1, 'kfc', 5.0);
 INSERT INTO Restaurants VALUES (2, 'mac', 8.0);
 INSERT INTO Restaurants VALUES (3, 'sweechoon', 4.0);
 INSERT INTO Restaurants VALUES (4, 'reedz', 10.0);
 INSERT INTO Restaurants VALUES (5, 'nanathai', 6.0);
-
-INSERT INTO RestaurantStaff VALUES(4, 1);
-INSERT INTO RestaurantStaff VALUES(9, 2);
-INSERT INTO RestaurantStaff VALUES(14, 3);
-
-INSERT INTO Customers VALUES(1, 0.0, '1234 5678 9432 1234');
-INSERT INTO Customers VALUES(6, 0.0, '4321 7777 9432 8888');
-INSERT INTO Customers VALUES(11, 0.0, '4222 5678 1243 9808');
 
 INSERT INTO PromotionalCampaign values (DEFAULT, 1, 20, 'this is discount 1', '2018-06-22 04:00:06', '2018-12-19 04:00:06'); 
 

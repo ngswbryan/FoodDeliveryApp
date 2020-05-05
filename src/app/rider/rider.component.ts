@@ -58,6 +58,11 @@ export class RiderComponent implements OnInit {
   WWS;
   MWS;
 
+  start = true;
+  collecting = false;
+  collected = false;
+  omw = false;
+
   constructor(
     private route: ActivatedRoute,
     private loadingService: LoadingService,
@@ -144,6 +149,23 @@ export class RiderComponent implements OnInit {
                                 mws.sort((a, b) =>
                                   a.week < b.week ? -1 : a.day > b.day ? 1 : 0
                                 );
+                                for (let i = 0; i < mws.length; i++) {
+                                  if (mws[i].day == 1) {
+                                    mws[i].day = "Monday";
+                                  } else if (mws[i].day == 2) {
+                                    mws[i].day = "Tuesday";
+                                  } else if (mws[i].day == 3) {
+                                    mws[i].day = "Wednesday";
+                                  } else if (mws[i].day == 4) {
+                                    mws[i].day = "Thursday";
+                                  } else if (mws[i].day == 5) {
+                                    mws[i].day = "Friday";
+                                  } else if (mws[i].day == 6) {
+                                    mws[i].day = "Saturday";
+                                  } else {
+                                    mws[i].day = "Sunday";
+                                  }
+                                }
                                 this.MWS = mws;
 
                                 this.loadingService.loading.next(false);
@@ -164,6 +186,23 @@ export class RiderComponent implements OnInit {
       .subscribe((mws: any) => {
         console.log(mws);
         mws.sort((a, b) => (a.week < b.week ? -1 : a.day > b.day ? 1 : 0));
+        for (let i = 0; i < mws.length; i++) {
+          if (mws[i].day == 1) {
+            mws[i].day = "Monday";
+          } else if (mws[i].day == 2) {
+            mws[i].day = "Tuesday";
+          } else if (mws[i].day == 3) {
+            mws[i].day = "Wednesday";
+          } else if (mws[i].day == 4) {
+            mws[i].day = "Thursday";
+          } else if (mws[i].day == 5) {
+            mws[i].day = "Friday";
+          } else if (mws[i].day == 6) {
+            mws[i].day = "Saturday";
+          } else {
+            mws[i].day = "Sunday";
+          }
+        }
         this.MWS = mws;
 
         this.loadingService.loading.next(false);
@@ -219,6 +258,27 @@ export class RiderComponent implements OnInit {
           "Successfully added your schedule for the selected month. You can check it in the 'Monthly Work Schedules' tab!"
         );
       });
+  }
+
+  collectingNow() {
+    this.start = false;
+    this.collecting = true;
+  }
+
+  collectedNow() {
+    this.collected = true;
+    this.collecting = false;
+  }
+
+  omwNow() {
+    this.collected = false;
+    this.omw = true;
+  }
+
+  done() {
+    this.omw = false;
+    this.start = true;
+    //refresh done logic reload jobs
   }
 
   reset() {

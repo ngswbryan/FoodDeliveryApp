@@ -4,7 +4,7 @@
 >
   <div class="row">
     <div class="col-md-12" style="text-align: center;">
-      <h1>Welcome to FoodHub, {{ username }}</h1>
+      <h1>Welcome to FoodHub, {{ username }} 🚴</h1>
     </div>
   </div>
 
@@ -21,6 +21,34 @@
               <strong>Uh-oh...</strong> You currently have no job assigned to
               you! 🙇
             </alert>
+          </div>
+          <div *ngIf="currentJob.length > 0">
+            <alert type="success">
+              <strong>Hey there! 🏍️ </strong> Here are the details of your
+              current assignment:
+            </alert>
+            <div>
+              <button
+                class="btn btn-info"
+                (click)="collectingNow()"
+                *ngIf="start"
+              >
+                I'm Going To Collect The Food! 🚨
+              </button>
+              <button
+                class="btn btn-info"
+                (click)="collectedNow()"
+                *ngIf="collecting"
+              >
+                I've Collected The Food! 🍔
+              </button>
+              <button class="btn btn-info" (click)="omwNow()" *ngIf="collected">
+                I'm On My Way! 🏃‍♂️
+              </button>
+              <button class="btn btn-info" (click)="done()" *ngIf="omw">
+                I'm delivered the food! 😋
+              </button>
+            </div>
           </div>
         </tab>
 
@@ -102,8 +130,8 @@
                 <th scope="col">#</th>
                 <th scope="col">Week</th>
                 <th scope="col">Day</th>
-                <th scope="col">Start Hour</th>
-                <th scope="col">End Hour</th>
+                <th scope="col">Start Time</th>
+                <th scope="col">End Time</th>
               </tr>
             </thead>
             <tbody>
@@ -113,8 +141,8 @@
                   {{ mws.week }}
                 </td>
                 <td>{{ mws.day }}</td>
-                <td>{{ mws.starthour }}</td>
-                <td>{{ mws.endhour }}</td>
+                <td>{{ mws.starthour }}:00</td>
+                <td>{{ mws.endhour }}:00</td>
               </tr>
             </tbody>
           </table>
@@ -139,7 +167,14 @@
           *ngIf="rider_type[0].rider_type"
           (selectTab)="console.log('ok')"
         >
-          hi
+          <br />
+
+          <div *ngIf="monthlyStats.length == 0">
+            <alert type="danger">
+              <strong>Sorry...</strong> You don't have any earnings for this
+              month 🥺👉🏻👈🏻
+            </alert>
+          </div>
         </tab>
 
         <tab

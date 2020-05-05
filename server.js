@@ -482,6 +482,58 @@ const updateMWS = (request, response) => {
   );
 };
 
+const updateDeparture = (request, response) => {
+  const did = request.query.fid;
+  const rid = request.query.rid;
+
+  pool.query("select update_departure_time($1, $2);", [rid, did], (error) => {
+    if (error) {
+      response.status(400).json({ error: "invalid values" });
+      return;
+    }
+    response.status(200).json({ status: "success", message: "food updated." });
+  });
+};
+
+const updateCollected = (request, response) => {
+  const did = request.query.fid;
+  const rid = request.query.rid;
+
+  pool.query("select update_collected_time($1, $2);", [rid, did], (error) => {
+    if (error) {
+      response.status(400).json({ error: "invalid values" });
+      return;
+    }
+    response.status(200).json({ status: "success", message: "food updated." });
+  });
+};
+
+const updateDelivery = (request, response) => {
+  const did = request.query.fid;
+  const rid = request.query.rid;
+
+  pool.query("select update_delivery_start($1, $2);", [rid, did], (error) => {
+    if (error) {
+      response.status(400).json({ error: "invalid values" });
+      return;
+    }
+    response.status(200).json({ status: "success", message: "food updated." });
+  });
+};
+
+const updateDone = (request, response) => {
+  const did = request.query.fid;
+  const rid = request.query.rid;
+
+  pool.query("select update_done_status($1, $2);", [rid, did], (error) => {
+    if (error) {
+      response.status(400).json({ error: "invalid values" });
+      return;
+    }
+    response.status(200).json({ status: "success", message: "food updated." });
+  });
+};
+
 app.route("/test").get(getFoodItems);
 
 app
@@ -489,6 +541,14 @@ app
   .get(getCampaigns)
   .post(addCampaign)
   .delete(deleteCampaign);
+
+app.route("/riders/delivery/departure").patch(updateDeparture);
+
+app.route("/riders/delivery/collected").patch(updateCollected);
+
+app.route("/riders/delivery/delivery").patch(updateDelivery);
+
+app.route("/riders/delivery/done").patch(updateDone);
 
 app.route("/riders/job/:rid").get(getCurrentJob);
 

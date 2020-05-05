@@ -188,6 +188,34 @@ export class ApiService {
     );
   }
 
+  updateDepartureTime(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/departure?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateCollectedTime(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/collected?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateDelivertStart(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/delivery?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateDone(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/done?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
   handleError(error) {
     let errorMessage = "";
 
