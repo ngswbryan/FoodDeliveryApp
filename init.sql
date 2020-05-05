@@ -26,6 +26,7 @@ CREATE TABLE Riders (
 CREATE TABLE Restaurants (
     rid INTEGER PRIMARY KEY,
     rname VARCHAR(100),
+    location VARCHAR(100),
     min_order_price DECIMAL,
     unique(rid)
 );
@@ -66,7 +67,7 @@ CREATE TABLE FoodItem (
         ON DELETE CASCADE,
     cuisine_type VARCHAR(100),
     food_name VARCHAR(100),
-    quantity INTEGER,
+    restaurant_quantity INTEGER,
     overall_rating DECIMAL,
     ordered_count INTEGER,
     availability_status BOOLEAN,
@@ -121,7 +122,7 @@ CREATE TABLE Sells (
 CREATE TABLE Orders (
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
-    food_quantity INTEGER,
+    item_quantity INTEGER
     PRIMARY KEY(order_id,food_id)
 );
 
@@ -177,43 +178,12 @@ CREATE TABLE Contain (
 
 
 -------- POPULATION -------------
-INSERT INTO Users VALUES(DEFAULT, 'lawnce', 'lawnce23', '1234', 'customer', '2018-06-22 04:00:06'); --1
-INSERT INTO Users VALUES(DEFAULT, 'joshua', 'joshua11', '1111', 'rider', '2018-06-22 04:00:06'); --2
-INSERT INTO Users VALUES(DEFAULT, 'bryan', 'bry15', '2222', 'manager', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'jess', 'jess10', '3333', 'staff', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'yongcheng', 'yc15', '4444', 'rider', '2018-06-22 04:00:06'); --5
-
-INSERT INTO Users VALUES(DEFAULT, 'lance', 'lance', '1234', 'customer', '2019-05-27 04:00:06'); --6
-INSERT INTO Users VALUES(DEFAULT, 'eq', 'eq', '1111', 'rider', '2018-06-22 04:00:06'); --7
-INSERT INTO Users VALUES(DEFAULT, 'jq', 'jq', '2222', 'manager', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'jordan', 'jord', '3333', 'staff', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'sally', 'sally', '4444', 'rider', '2018-06-22 04:00:06'); --10
-
-INSERT INTO Users VALUES(DEFAULT, 'hazel', 'hazel', '1234', 'customer', '2018-05-26 04:00:06'); --11
-INSERT INTO Users VALUES(DEFAULT, 'charlotte', 'char', '1111', 'rider', '2018-06-22 04:00:06'); --12
-INSERT INTO Users VALUES(DEFAULT, 'jamie', 'jam', '2222', 'manager', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'rachie', 'rach', '3333', 'staff', '2018-06-22 04:00:06');
-INSERT INTO Users VALUES(DEFAULT, 'knottedboys', 'kb69', '4444', 'rider', '2018-06-22 04:00:06'); --15
-
-INSERT INTO RIDERS VALUES(2, 0.0, true, false, 15, TRUE, 3);
-INSERT INTO RIDERS VALUES(5, 0.0, false, false, 15, TRUE, 3);
-INSERT INTO RIDERS VALUES(7, 0.0, true, false, 15, TRUE, 3);
-INSERT INTO RIDERS VALUES(12, 0.0, false,false, 10, TRUE, 3);
-INSERT INTO RIDERS VALUES(15, 0.0, true, true, 10, TRUE, 3);
 
 INSERT INTO Restaurants VALUES (1, 'kfc', 5.0);
 INSERT INTO Restaurants VALUES (2, 'mac', 8.0);
 INSERT INTO Restaurants VALUES (3, 'sweechoon', 4.0);
 INSERT INTO Restaurants VALUES (4, 'reedz', 10.0);
 INSERT INTO Restaurants VALUES (5, 'nanathai', 6.0);
-
-INSERT INTO RestaurantStaff VALUES(4, 1);
-INSERT INTO RestaurantStaff VALUES(9, 2);
-INSERT INTO RestaurantStaff VALUES(14, 3);
-
-INSERT INTO Customers VALUES(1, 0.0, '1234 5678 9432 1234');
-INSERT INTO Customers VALUES(6, 0.0, '4321 7777 9432 8888');
-INSERT INTO Customers VALUES(11, 0.0, '4222 5678 1243 9808');
 
 INSERT INTO PromotionalCampaign values (DEFAULT, 1, 20, 'this is discount 1', '2018-06-22 04:00:06', '2018-12-19 04:00:06'); 
 
@@ -244,23 +214,6 @@ INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'roti john', 2, 0, 0, true, f
 --INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork jizz', 12, 3.3,0,true,false);
 
 
-INSERT INTO FoodOrder VALUES(DEFAULT, 1, 1, TRUE, 50.0,'2018-06-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 2, FALSE, 46.0,'2018-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 11, 3, TRUE, 30.0,'2018-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 1, 4, FALSE, 20.0,'2018-08-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,'2018-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 1, 1, TRUE, 50.0,'2019-06-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 2, FALSE, 46.0,'2019-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 11, 3, TRUE, 30.0,'2019-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 1, 4, FALSE, 20.0,'2019-08-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,'2019-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,current_timestamp, TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 1, 1, TRUE, 23.3,current_timestamp, TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 11, 2, TRUE, 23.3,current_timestamp, TRUE);
-
-
 INSERT INTO Sells VALUES (1,1,5.5);
 INSERT INTO Sells VALUES (1,2,4.5);
 INSERT INTO Sells VALUES (1,3,3.5);
@@ -281,43 +234,6 @@ INSERT INTO Sells VALUES (5,17,5.0);
 INSERT INTO Sells VALUES (5,18,6.3);
 INSERT INTO Sells VALUES (5,19,7.5);
 
-
-INSERT INTO Orders VALUES (6, 2);
-INSERT INTO Orders VALUES (7, 3);
-INSERT INTO Orders VALUES (8, 4);
-INSERT INTO Orders VALUES (9, 5);
-INSERT INTO Orders VALUES (10, 6);
-INSERT INTO Orders VALUES (6, 7);
-INSERT INTO Orders VALUES (7, 8);
-INSERT INTO Orders VALUES (8, 1);
-INSERT INTO Orders VALUES (9, 2);
-INSERT INTO Orders VALUES (10, 3);
-
-
-INSERT INTO Delivery VALUES(DEFAULT, 11, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 12, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 13, 2, 5.0,'2020-04-22 04:00:06','2020-04-22 04:00:06',current_timestamp, current_timestamp, 1, 'yishun', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 14, 2, 5.0, '2020-04-22 04:00:06', '2020-04-22 04:00:06',current_timestamp, current_timestamp, 1, 'khatib', 4.0, 'nice', FALSE);
-
-INSERT INTO Delivery VALUES(DEFAULT, 15, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
-
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-23 04:00:06', '2018-06-23 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-25 04:00:06', '2018-06-25 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-26 04:00:06', '2018-06-26 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-27 04:00:06', '2018-06-27 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-
-INSERT INTO Delivery VALUES(DEFAULT, 7, 5, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'serangoon', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 8, 15, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'little inda', 4.0, 'nice', FALSE);
-
-INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 2, 11, 15, 2, 2, 5, 2018, 2);
-INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 2, 16, 20, 2, 2, 5, 2018, 2);
-INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 7, 10, 14, 3, 3, 5, 2018, 1);
-INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 7, 15, 19, 3, 3, 5, 2018, 1);
-
-INSERT INTO MonthlyWorkSchedule VALUES (DEFAULT, 2, 5, 2018, 1, 2, NULL, NULL);
 
 -------- POPULATION -------------
 
@@ -566,7 +482,7 @@ CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][],
  $$ LANGUAGE PLPGSQL;
 
  --e(iii)
- -- get delivery_id and food_id
+ -- get delivery_id and order_id
  CREATE OR REPLACE FUNCTION get_ids(customer_uid INTEGER, restaurant_id INTEGER, total_order_cost DECIMAL)
  RETURNS TABLE (
     orderid INTEGER,

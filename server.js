@@ -165,6 +165,16 @@ const getPastFoodReviews = (request, response) => {
   });
 };
 
+const getMostRecentLocation = (request, response) => {
+  const uid = request.params.uid;
+  pool.query("select most_recent_location($1)", [uid], (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
 const getListOfFoodItem = (request, response) => {
   const rid = request.params.rid;
   console.log(rid);
@@ -178,6 +188,16 @@ const getListOfFoodItem = (request, response) => {
       response.status(200).json(results.rows);
     }
   );
+};
+
+const getRewardBalance = (request, response) => {
+  const uid = request.params.uid;
+  pool.query("select reward_balance($1);", [uid], (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json(results.rows);
+  });
 };
 
 const addUser = (request, response) => {
@@ -202,6 +222,74 @@ const addUser = (request, response) => {
   );
 };
 
+const updateOrderCount = (request, response) => {
+  const {
+    currentorder,
+    customer_uid,
+    restaurant_id,
+    have_credit,
+    total_order_cost,
+    delivery_location,
+    delivery_fee, //discounted
+  } = request.body;
+
+  pool.query(
+    "select update_order_count($1, $2, $3, $4, $5, $6, $7);",
+    [
+      currentorder,
+      customer_uid,
+      restaurant_id,
+      have_credit,
+      total_order_cost,
+      delivery_location,
+      delivery_fee,
+    ],
+    (error) => {
+      if (error) {
+        throw error;
+      }
+      response
+        .status(201)
+        .json({ status: "success", message: "updated order count " });
+    }
+  );
+};
+
+const applyDeliveryPromo = (request, response) => {
+  const {
+    uid,
+    delivery_cost, //5
+  } = request.body;
+
+  pool.query(
+    "select apply_delivery_promo($1, $2)",
+    [uid, delivery_cost],
+    (error) => {
+      if (error) {
+        throw error;
+      }
+      response
+        .status(201)
+        .json({ status: "success", message: " delivery promo applied. " });
+    }
+  );
+};
+
+// const getFoodandDeliveryID = (request, response) => {
+//   const
+// }
+
+const activateRiders = (request, response) => {
+  pool.query("select activate_riders();", (error) => {
+    if (error) {
+      throw error;
+    }
+    response
+      .status(201)
+      .json({ status: "success", message: "riders activated. " });
+  });
+};
+
 const addMenuItem = (request, response) => {
   const {
     name,
@@ -217,8 +305,7 @@ const addMenuItem = (request, response) => {
     [name, price, cuisine_type, rid, quantity, availability],
     (error) => {
       if (error) {
-        response.status(400).json({ error: "invalid values" });
-        return;
+        throw error;
       }
       response.status(201).json({ status: "success", message: "food added." });
     }
@@ -482,6 +569,58 @@ const updateMWS = (request, response) => {
   );
 };
 
+const updateDeparture = (request, response) => {
+  const did = request.query.fid;
+  const rid = request.query.rid;
+
+  pool.query("select update_departure_time($1, $2);", [rid, did], (error) => {
+    if (error) {
+      response.status(400).json({ error: "invalid values" });
+      return;
+    }
+    response.status(200).json({ status: "success", message: "food updated." });
+  });
+};
+
+const updateCollected = (request, response) => {
+  const did = request.query.fid;
+  const rid = request.query.rid;
+
+  pool.query("select update_collected_time($1, $2);", [rid, did], (error) => {
+    if (error) {
+      response.status(400).json({ error: "invalid values" });
+      return;
+    }
+    response.status(200).json({ status: "success", message: "food updated." });
+  });
+};
+
+const updateDelivery = (request, response) => {
+  const did = request.query.fid;
+  const rid = request.query.rid;
+
+  pool.query("select update_delivery_start($1, $2);", [rid, did], (error) => {
+    if (error) {
+      response.status(400).json({ error: "invalid values" });
+      return;
+    }
+    response.status(200).json({ status: "success", message: "food updated." });
+  });
+};
+
+const updateDone = (request, response) => {
+  const did = request.query.fid;
+  const rid = request.query.rid;
+
+  pool.query("select update_done_status($1, $2);", [rid, did], (error) => {
+    if (error) {
+      response.status(400).json({ error: "invalid values" });
+      return;
+    }
+    response.status(200).json({ status: "success", message: "food updated." });
+  });
+};
+
 app.route("/test").get(getFoodItems);
 
 app
@@ -489,6 +628,19 @@ app
   .get(getCampaigns)
   .post(addCampaign)
   .delete(deleteCampaign);
+
+app.route("/staff/menu/:fid").patch(updateFoodItem);
+app.route("/staff/reports/orders").get(getTotalOrders);
+app.route("/staff/reports/cost").get(getTotalCost);
+app.route("/staff/reports/top").get(getTopFive);
+
+app.route("/riders/delivery/departure").patch(updateDeparture);
+
+app.route("/riders/delivery/collected").patch(updateCollected);
+
+app.route("/riders/delivery/delivery").patch(updateDelivery);
+
+app.route("/riders/delivery/done").patch(updateDone);
 
 app.route("/riders/job/:rid").get(getCurrentJob);
 
@@ -509,19 +661,11 @@ app
   // POST endpoint
   .post(addUser);
 
-app.route("/staff/menu/:fid").patch(updateFoodItem);
-
 app.route("/users/:username").get(getUserByUsername);
 
 app.route("/staff/:uid").get(getStaffByUsername);
 
 app.route("/staff/menu").post(addMenuItem).patch(deleteMenuItem);
-
-app.route("/staff/reports/orders").get(getTotalOrders);
-
-app.route("/staff/reports/cost").get(getTotalCost);
-
-app.route("/staff/reports/top").get(getTopFive);
 
 app.route("/restaurants").get(getRestaurants);
 
@@ -542,6 +686,16 @@ app.route("/users/rating/:uid").get(getPastDeliveryRating);
 app.route("/users/reviews/:uid").get(getPastFoodReviews);
 
 app.route("/users/restaurant/:rid").get(getListOfFoodItem);
+
+app.route("/users/restaurant/order").post(updateOrderCount);
+
+app.route("/users/restaurant/order/activate").post(activateRiders);
+
+app.route("/users/restaurant/order/recent/:uid").get(getMostRecentLocation);
+
+app.route("/users/restaurant/order/rewards/:uid").get(getRewardBalance);
+
+app.route("/users/restaurant/order/promo").post(applyDeliveryPromo);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {

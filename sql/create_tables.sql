@@ -1,6 +1,6 @@
 -- ENTITIES
 
-CREATE TABLE Users (
+CREATE TABLE Users ( --BCNF
     uid SERIAL PRIMARY KEY,
     name VARCHAR(100),
     username VARCHAR(100),
@@ -10,7 +10,7 @@ CREATE TABLE Users (
     UNIQUE(username)
 );
 
-CREATE TABLE Riders (
+CREATE TABLE Riders ( --BCNF
     rider_id INTEGER REFERENCES Users(uid)
         ON DELETE CASCADE,
     rating DECIMAL,
@@ -23,33 +23,34 @@ CREATE TABLE Riders (
     UNIQUE(rider_id)
 );
 
-CREATE TABLE Restaurants (
+CREATE TABLE Restaurants ( --BCNF
     rid INTEGER PRIMARY KEY,
     rname VARCHAR(100),
+    location VARCHAR(100),
     min_order_price DECIMAL NOT NULL,
     unique(rid)
 );
 
-CREATE TABLE RestaurantStaff (
+CREATE TABLE RestaurantStaff ( --BCNF
     uid INTEGER REFERENCES Users
         ON DELETE CASCADE,
     rid INTEGER REFERENCES Restaurants(rid)
         ON DELETE CASCADE
 );
 
-CREATE TABLE FDSManager (
+CREATE TABLE FDSManager ( --BCNF
     uid INTEGER REFERENCES Users
         ON DELETE CASCADE PRIMARY KEY
 );
 
-CREATE TABLE Customers (
+CREATE TABLE Customers ( --BCNF
     uid INTEGER REFERENCES Users
         ON DELETE CASCADE PRIMARY KEY,
     points INTEGER,
     credit_card VARCHAR(100)
 );
 
-CREATE TABLE FoodOrder (
+CREATE TABLE FoodOrder ( --BCNF
     order_id SERIAL PRIMARY KEY NOT NULL,
     uid INTEGER REFERENCES Customers NOT NULL,
     rid INTEGER REFERENCES Restaurants NOT NULL,
@@ -60,13 +61,13 @@ CREATE TABLE FoodOrder (
     UNIQUE(order_id)
 );
 
-CREATE TABLE FoodItem (
+CREATE TABLE FoodItem ( --BCNF
     food_id SERIAL NOT NULL, 
     rid INTEGER REFERENCES Restaurants
         ON DELETE CASCADE,
     cuisine_type VARCHAR(100),
     food_name VARCHAR(100),
-    quantity INTEGER,
+    restaurant_quantity INTEGER,
     overall_rating DECIMAL,
     ordered_count INTEGER,
     availability_status BOOLEAN,
@@ -75,7 +76,7 @@ CREATE TABLE FoodItem (
     UNIQUE(food_id)
 );
 
-CREATE TABLE PromotionalCampaign (
+CREATE TABLE PromotionalCampaign ( --BCNF
     promo_id SERIAL PRIMARY KEY,
     rid INTEGER REFERENCES Restaurants 
         ON DELETE CASCADE,
@@ -85,7 +86,7 @@ CREATE TABLE PromotionalCampaign (
     end_date TIMESTAMP
 );
 
-CREATE TABLE WeeklyWorkSchedule (
+CREATE TABLE WeeklyWorkSchedule ( --BCNF
     wws_id SERIAL PRIMARY KEY NOT NULL,
     rider_id INTEGER references Riders(rider_id),
     start_hour INTEGER,
@@ -113,7 +114,7 @@ CREATE TABLE WeeklyWorkSchedule (
 
 --RELATIONSHIPS
 
-CREATE TABLE Sells ( --rid, food_id -> price 
+CREATE TABLE Sells ( --rid, food_id -> price  --BCNF
     rid INTEGER REFERENCES Restaurants(rid) NOT NULL, 
     food_id INTEGER REFERENCES FoodItem(food_id) ON DELETE CASCADE,
     price DECIMAL NOT NULL check (price > 0),
@@ -123,7 +124,7 @@ CREATE TABLE Sells ( --rid, food_id -> price
 CREATE TABLE Orders ( --2 attributes thus BCNF
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
-    food_quantity INTEGER,
+    item_quantity INTEGER,
     PRIMARY KEY(order_id,food_id)
 );
 
@@ -132,7 +133,7 @@ CREATE TABLE Receives ( --2 attributes thus BCNF
     promo_id INTEGER REFERENCES PromotionalCampaign(promo_id)
 );
 
-CREATE TABLE Delivery (
+CREATE TABLE Delivery ( --BCNF
     delivery_id SERIAL NOT NULL,
     order_id INTEGER REFERENCES FoodOrder(order_id),
     rider_id INTEGER REFERENCES Riders(rider_id),

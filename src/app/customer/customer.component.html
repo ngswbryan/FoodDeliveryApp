@@ -5,13 +5,13 @@ style="align-content: center; background-color:#f3f5f8 ;">
       <h1> Welcome to FoodHub, {{ username }}</h1>
     </div>
   </div>  
-        <br />
-
-  
-  <div class="container"> 
-  <div class="row"> 
-      <h5>Past Delivery Ratings</h5>
-  </div>
+        <br/>
+  <tabset #staticTabs> 
+    <tab heading="FoodHub" id="1">
+  <div *ngIf="!hasOrdered" class="container" > 
+    <div class="row"> 
+        <h5>Past Delivery Ratings</h5>
+    </div>
 
   
           <div class="col-md-12">
@@ -20,8 +20,9 @@ style="align-content: center; background-color:#f3f5f8 ;">
                 <tr>
                   <th scope="col"> # </th>
                   <th scope="col"> Order ID </th>
+                  <th scope="col"> Time </th>
                   <th scope="col"> Rating </th>
-                  <th scope="col"> Location </th>
+                  <th scope="col"> Rider </th>
                 </tr>
               </thead>
               <tbody>
@@ -32,14 +33,15 @@ style="align-content: center; background-color:#f3f5f8 ;">
                   </td>
                   <td>{{ delivery[1] }}</td>
                   <td>{{ delivery[2] }}</td>
+                  <td>{{ delivery[3] }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
-  <div>
+    <div>
   <br />
   <div class="row"> 
-      <h5>Past Food Reviews</h5>
+      <h5>Past Food Orders and Reviews</h5>
   </div>
        
           <div class="col-md-12">
@@ -48,6 +50,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
                 <tr>
                   <th scope="col"> # </th>
                   <th scope="col"> Order ID </th>
+                  <th scope="col"> Time </th>
                   <th scope="col"> Restaurant name </th>
                   <th scope="col"> Review </th>
                 </tr>
@@ -60,6 +63,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
                   </td>
                   <td>{{ review[1] }}</td>
                   <td>{{ review[2] }}</td>
+                  <td>{{ review[3] }}</td>
                 </tr>
               </tbody>
             </table>
@@ -80,15 +84,6 @@ style="align-content: center; background-color:#f3f5f8 ;">
               <th scope="col"> Min Order ($) </th>
             </tr>
           </thead>
-          <!-- <tbody> 
-            <tr class="clickable-row" (click)="showYourModal()">  
-              <th scope="row"> 1 </th>
-              <td> 1234 </td>
-              <td> Macdonalds </td>
-              <td> 20 </td>
-            </tr>
-          
-          </tbody> -->
           <tbody>
             <tr *ngFor="let restaurant of restaurants; index as i" class="clickable-row" (click)="showYourModal(i)">
               <th scope="row">{{ i + 1 }}</th>
@@ -108,6 +103,104 @@ style="align-content: center; background-color:#f3f5f8 ;">
 
 
   </div>
-</div>
-
   </div>
+
+
+  <div *ngIf="hasOrdered" class="container"> 
+    <h1> Order confirmation </h1>
+    <div> 
+    <div class="col-md-12">
+      <table class="table table-striped"> 
+      <thead> 
+          <tr>
+          <th scope="col"> # </th>
+          <th scope="col"> Food name </th>
+          <th scope="col"> Food Price  </th>
+          <th scope="col"> Cuisine type </th>
+          <th scope="col"> Overall Rating </th>
+          <th scope="col"> Available </th>
+          <th scope="col"> Quantity </th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr *ngFor="let food of foodItems; index as i">
+          <th scope="row">{{ i + 1 }}</th>
+          <td>
+            {{ food["food_name"] }}
+           </td>
+          <td>{{ food["food_price"] }}</td>
+          <td>{{ food["cuisine_type"] }}</td>
+          <td>{{ food["overall_rating"] }}</td>
+          <td>{{ food["availability_status"] }}</td>
+          <td>{{ confirmedList[i] }}</td>
+          </tr>
+      </tbody>
+      </table>
+    </div>
+    <div> 
+      <h5> Amount : {{total}}</h5>
+      <h5> Delivery Fee : {{ deliveryCost }} </h5>
+      <h5> Total cost : {{ total + deliveryCost }}  </h5>
+      <h5> Available rewards balance: {{ rewardsBal }}</h5>
+      <button *ngIf="!promoApplied" (click)="applyPromo()"> Apply promo </button>
+      <form [formGroup]="createOrderForm"> 
+        <div class="row"> 
+          <div class="col-12"> 
+            <select
+            type="boolean"
+            placeholder="credit card?"
+            class="form-control form-input"
+            formControlName="creditCard"
+            (change)="onChange($event.target.value)">
+              <option value ="true"> credit card</option>
+              <option value ="false"> cash </option>
+            </select>
+          </div>
+
+          <div class="col-12"> 
+            <input
+              type="text"
+              placeholder="location"
+              formControlName="location"
+              class="form-control form-input"
+              (change)=manualEntry()
+              value={{this.createOrderForm.value.location}}/> 
+
+              <div *ngIf=locationDropdown>
+                <select
+                  type="string"
+                  placeholde="last 5 locations"
+                  class="form-control form-input"
+                  formControlName="location"
+                  (change)="onChange($event.target.value)"
+                  value={{this.createOrderForm.value.location}} > 
+                  <option value={{recentLocations[0]}}> {{recentLocations[0]}} </option>
+                  <option value={{recentLocations[1]}}> {{recentLocations[1]}} </option>
+                  <option value={{recentLocations[2]}}> {{recentLocations[2]}} </option>
+                  <option value={{recentLocations[3]}}> {{recentLocations[3]}} </option>
+                  <option value={{recentLocations[4]}}> {{recentLocations[4]}} </option>
+                </select> 
+              </div> 
+              
+          </div>
+          <div class="col-12"> 
+             
+          </div>
+        </div>
+      </form>
+
+      <button (click)="submitForm()"> order </button>
+      <div *ngIf="confirm"> 
+
+      </div>
+    </div>
+  </div>
+  </div>
+  
+    </tab>
+
+    <tab heading="Ongoing Delivery" id="2">
+
+    </tab>
+  </tabset>
+</div>

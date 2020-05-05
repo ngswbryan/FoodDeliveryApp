@@ -55,6 +55,46 @@ export class ApiService {
     return this.http.get(`${this.url}/restaurants`);
   }
 
+  updateOrderCount(order) {
+    return this.http.post(`${this.url}/users/restaurant/order`, order).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  getFoodandDeliveryID() {
+    return this.http.get(`${this.url}/users/restaurant/order/ids`);
+  }
+
+  applyDeliveryPromo(promo) {
+    return this.http
+      .post(`${this.url}/users/restaurant/order/promo`, promo)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
+  }
+
+  getRewardBalance(uid) {
+    return this.http.get(`${this.url}/users/restaurant/order/rewards/${uid}`);
+  }
+
+  activateRiders() {
+    return this.http
+      .post(`${this.url}/users/restaurant/order/activate`, "")
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
+  }
+
+  getMostRecentLocation(uid) {
+    return this.http.get(`${this.url}/users/restaurant/order/recent/${uid}`);
+  }
+
   generateTotalOrders(month, year, rid) {
     return this.http.get(
       `${this.url}/staff/reports/orders?rid=${rid}&month=${month}&year=${year}`
@@ -185,6 +225,34 @@ export class ApiService {
       retry(1),
 
       catchError(this.handleError)
+    );
+  }
+
+  updateDepartureTime(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/departure?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateCollectedTime(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/collected?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateDeliveryStart(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/delivery?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateDone(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/done?rid=${rid}&did=${did}`,
+      {}
     );
   }
 
