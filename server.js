@@ -228,11 +228,12 @@ const updateOrderCount = (request, response) => {
     have_credit,
     total_order_cost,
     delivery_location,
+    delivery_fee //discounted
   } = request.body;
 
   pool.query(
-    "select update_order_count($1, $2, $3, $4, $5, $6);",
-    [currentorder, customer_uid, restaurant_id, have_credit, total_order_cost, delivery_location],
+    "select update_order_count($1, $2, $3, $4, $5, $6, $7);",
+    [currentorder, customer_uid, restaurant_id, have_credit, total_order_cost, delivery_location, delivery_fee],
     (error) => {
       if (error) {
         throw error;
@@ -240,6 +241,22 @@ const updateOrderCount = (request, response) => {
       response.status(201).json({ status: "success", message: "updated order count "});
     }
   )
+}
+
+const applyDeliveryPromo = (request, response) => {
+  const {
+    uid, 
+    delivery_cost //5
+  } = request.body;
+  
+
+  pool.query("select apply_delivery_promo($1, $2)", [uid, delivery_cost], (error) => {
+    if (error) {
+      throw error; 
+    }
+    response.status(201).json({ status:"success", message: " delivery promo applied. "});
+  })
+
 }
 
 // const getFoodandDeliveryID = (request, response) => {
@@ -596,6 +613,8 @@ app.route("/users/restaurant/order/activate").post(activateRiders);
 app.route("/users/restaurant/order/recent/:uid").get(getMostRecentLocation);
 
 app.route("/users/restaurant/order/rewards/:uid").get(getRewardBalance);
+
+app.route("/users/restaurant/order/promo").post(applyDeliveryPromo);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {

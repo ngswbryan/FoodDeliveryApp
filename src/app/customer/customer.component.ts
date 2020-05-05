@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { LoadingService } from "../loading.service";
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
@@ -7,6 +7,7 @@ import { FormGroup, FormArray, FormControl, Validators } from "@angular/forms";
 import { ApiService } from "../api.service";
 import { DataService } from "../data.service";
 import { Router } from "@angular/router";
+import { TabsetComponent } from 'ngx-bootstrap/tabs';
 
 
 @Component({
@@ -16,6 +17,9 @@ import { Router } from "@angular/router";
 })
 
 export class CustomerComponent implements OnInit {
+
+  @ViewChild('staticTabs', { static: false }) staticTabs: TabsetComponent;
+  
   createOrderForm: FormGroup;
   hasOrdered: boolean;  
   bsModalRef: BsModalRef;
@@ -35,11 +39,13 @@ export class CustomerComponent implements OnInit {
   recentLocations = [];
   rewardsBal; 
 
-  toBePaid; 
+  promoApplied: boolean; 
+  deliveryCost; 
   creditCard: boolean;  //boolean : if credit card --> true if cash --> false 
   location;   //string
   orderedPairs=[];
   deliveryid; 
+
 
   confirm: boolean;
 
@@ -55,9 +61,10 @@ export class CustomerComponent implements OnInit {
     ) { }
 
   ngOnInit() {
-    this.toBePaid = 5; 
+    this.deliveryCost = 5; 
     this.locationDropdown = true; 
     this.orderOngoing = false; 
+    this.promoApplied = false; 
     this.loadingService.loading.next(true);
     this.dataService.currentMessage.subscribe(hasOrdered => this.hasOrdered = hasOrdered);
     this.dataService.currentList.subscribe(confirmedList => this.confirmedList = confirmedList);
@@ -148,6 +155,7 @@ export class CustomerComponent implements OnInit {
       have_credit: this.creditCard,
       total_order_cost: this.total,
       delivery_location: this.location,
+      delivery_fee: this.deliveryCost
     };
     console.log(order);
 
@@ -164,7 +172,8 @@ export class CustomerComponent implements OnInit {
     })
     window.alert("Order completed!");
     this.hasOrdered = !this.hasOrdered; 
-
+    this.disableEnable();
+    this.selectTab(1);
   }
 
   showYourModal(i) {
@@ -202,20 +211,50 @@ export class CustomerComponent implements OnInit {
         this.rewardsBal = reward[0]["reward_balance"];
         // console.log("rewards balance is : " + this.rewardsBal);
     })
+   
     
   }
 
-  confirmOrder() {
-
+  test() {
+    
   }
 
-  checkRewards() {
+  applyPromo() {
+    this.promoApplied = true; 
+    if (this.rewardsBal != 0) {
+      let promo = {
+        uid: this.uid,
+        delivery_cost: 5
+      };
 
+      this.apiService.applyDeliveryPromo(promo).subscribe((res: any) => {
+        console.log("after applying" + res);
+        for (let i=0; i<res.length; i++) {
+          console.log("testing " + res[i]);
+        }
+        this.loadingService.loading.next(false);
+      });
+
+      if (this.rewardsBal <= 5) {
+        this.deliveryCost = this.deliveryCost - this.rewardsBal;
+      } else {
+        this.deliveryCost = this.deliveryCost - 5; 
+      }
+      this.rewardsBal = 0; 
+    } else {
+      window.alert("you do not have any reward points!");
+    }
   }
 
   manualEntry() {
     this.locationDropdown = false;
   }
 
+  selectTab(tabId: number) {
+    this.staticTabs.tabs[tabId].active = true;
+  }
+  disableEnable() {
+    this.staticTabs.tabs[0].disabled = !this.staticTabs.tabs[0].disabled;
+  }
 }
 

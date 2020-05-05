@@ -67,8 +67,12 @@ export class ApiService {
     return this.http.get(`${this.url}/users/restaurant/order/ids`, )
   }
 
-  applyDeliveryPromo() {
+  applyDeliveryPromo(promo) {
+    return this.http.post(`${this.url}/users/restaurant/order/promo`, promo).pipe(
+      retry(1),
 
+      catchError(this.handleError)
+    );
   }
 
   getRewardBalance(uid) {

@@ -6,8 +6,8 @@ style="align-content: center; background-color:#f3f5f8 ;">
     </div>
   </div>  
         <br/>
-  <tabset> 
-    <tab heading="stats">
+  <tabset #staticTabs> 
+    <tab heading="FoodHub" id="1">
   <div *ngIf="!hasOrdered" class="container" > 
     <div class="row"> 
         <h5>Past Delivery Ratings</h5>
@@ -41,7 +41,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
     <div>
   <br />
   <div class="row"> 
-      <h5>Past Food Reviews</h5>
+      <h5>Past Food Orders and Reviews</h5>
   </div>
        
           <div class="col-md-12">
@@ -84,15 +84,6 @@ style="align-content: center; background-color:#f3f5f8 ;">
               <th scope="col"> Min Order ($) </th>
             </tr>
           </thead>
-          <!-- <tbody> 
-            <tr class="clickable-row" (click)="showYourModal()">  
-              <th scope="row"> 1 </th>
-              <td> 1234 </td>
-              <td> Macdonalds </td>
-              <td> 20 </td>
-            </tr>
-          
-          </tbody> -->
           <tbody>
             <tr *ngFor="let restaurant of restaurants; index as i" class="clickable-row" (click)="showYourModal(i)">
               <th scope="row">{{ i + 1 }}</th>
@@ -148,9 +139,10 @@ style="align-content: center; background-color:#f3f5f8 ;">
     </div>
     <div> 
       <h5> Amount : {{total}}</h5>
-      <h5> Delivery Fee : 5 </h5>
-      <h5> Total cost : {{ total + toBePaid }}  </h5>
+      <h5> Delivery Fee : {{ deliveryCost }} </h5>
+      <h5> Total cost : {{ total + deliveryCost }}  </h5>
       <h5> Available rewards balance: {{ rewardsBal }}</h5>
+      <button *ngIf="!promoApplied" (click)="applyPromo()"> Apply promo </button>
       <form [formGroup]="createOrderForm"> 
         <div class="row"> 
           <div class="col-12"> 
@@ -207,9 +199,8 @@ style="align-content: center; background-color:#f3f5f8 ;">
   
     </tab>
 
-    <tab heading="ongoing delivery">
+    <tab heading="Ongoing Delivery" id="2">
 
     </tab>
   </tabset>
-
 </div>
