@@ -63,10 +63,6 @@ export class ApiService {
     );
   }
 
-  getFoodandDeliveryID() {
-    return this.http.get(`${this.url}/users/restaurant/order/ids`, )
-  }
-
   applyDeliveryPromo(promo) {
     return this.http.post(`${this.url}/users/restaurant/order/promo`, promo).pipe(
       retry(1),
@@ -89,6 +85,12 @@ export class ApiService {
 
   getMostRecentLocation(uid) {
     return this.http.get(`${this.url}/users/restaurant/order/recent/${uid}`);
+  }
+
+  getFoodandDeliveryID(uid, rid, total_order_cost) {
+    return this.http.get(
+      `${this.url}/users/restaurant/order/${uid}/${rid}/${total_order_cost}`
+    )
   }
 
   generateTotalOrders(month, year, rid) {

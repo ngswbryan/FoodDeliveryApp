@@ -259,10 +259,6 @@ const applyDeliveryPromo = (request, response) => {
 
 }
 
-// const getFoodandDeliveryID = (request, response) => {
-//   const 
-// }
-
 const activateRiders = (request, response) => {
   pool.query("select activate_riders();", (error) => {
     if (error) {
@@ -365,6 +361,23 @@ const getTotalOrders = (request, response) => {
     }
   );
 };
+
+const getFoodandDeliveryID = (request, response) => {
+  const uid = request.query.uid; 
+  const rid = request.query.rid; 
+  const total_order_cost = request.query.total_order_cost;
+  
+  pool.query(
+    "select get_ids($1, $2, $3);",
+    [uid, rid, total_order_cost],
+    (error, results) => {
+      if (error) {
+        throw error; 
+      }
+      response.status(200).json(results.rows);
+    }
+  )
+}
 
 const updateFoodItem = (request, response) => {
   const fid = request.params.fid;
@@ -615,6 +628,8 @@ app.route("/users/restaurant/order/recent/:uid").get(getMostRecentLocation);
 app.route("/users/restaurant/order/rewards/:uid").get(getRewardBalance);
 
 app.route("/users/restaurant/order/promo").post(applyDeliveryPromo);
+
+app.route("/users/restaurant/order/:uid/:rid/:total_order_cost").get(getFoodandDeliveryID);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {

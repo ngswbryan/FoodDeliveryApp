@@ -46,7 +46,7 @@ export class CustomerComponent implements OnInit {
   orderedPairs=[];
   deliveryid; 
 
-
+  blah; 
   confirm: boolean;
 
   orderOngoing: boolean; 
@@ -159,6 +159,11 @@ export class CustomerComponent implements OnInit {
     };
     console.log(order);
 
+    // this.apiService.activateRiders().subscribe((res: any) => {
+    //   // console.log("activated riders : " + res);
+    //   this.loadingService.loading.next(false);
+    // })
+
     this.apiService.updateOrderCount(order).subscribe((res: any) => {
       console.log("after posting" + res);
       for (let i=0; i<res.length; i++) {
@@ -166,14 +171,15 @@ export class CustomerComponent implements OnInit {
       }
       this.loadingService.loading.next(false);
     });
-    this.apiService.activateRiders().subscribe((res: any) => {
-      // console.log("activated riders : " + res);
-      this.loadingService.loading.next(false);
-    })
     window.alert("Order completed!");
     this.hasOrdered = !this.hasOrdered; 
     this.disableEnable();
     this.selectTab(1);
+    this.apiService.getFoodandDeliveryID(this.uid, this.rid, this.total).subscribe((res: any) => {
+      console.log("this is did : " + res);
+      this.loadingService.loading.next(false);
+    })
+    
   }
 
   showYourModal(i) {
