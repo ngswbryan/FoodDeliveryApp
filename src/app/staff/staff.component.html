@@ -243,6 +243,11 @@
         <tab heading="Campaigns" (selectTab)="console.log('ok')">
           <br />
           <h5>All Promotional Campaigns</h5>
+          <div *ngIf="campaigns.length == 0">
+            <alert type="danger">
+              <strong>None found!</strong> You have not added any campaigns! 😢
+            </alert>
+          </div>
           <ul class="list-group">
             <li class="list-group-item" *ngFor="let campaign of campaigns">
               <p>Description: {{ campaign.description }} 📙</p>

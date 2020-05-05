@@ -1072,7 +1072,7 @@ $$ LANGUAGE PLPGSQL;
 ------ RIDERS ------
 --a)
  -- get current job
-  CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
+ CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
   RETURNS TABLE (
       order_id INTEGER,
       location VARCHAR(100),
@@ -1087,7 +1087,6 @@ $$ LANGUAGE PLPGSQL;
       join FoodItem FI on FI.food_id = O.food_id
       WHERE input_rider_id = D.rider_id
       AND D.ongoing = TRUE;
-
   $$ LANGUAGE SQL;
 
 --b)
@@ -1108,7 +1107,6 @@ $$ LANGUAGE PLPGSQL;
 
 -- for WWS
 -- --c)
--- -- get previous weekly salaries --for weekly
 CREATE OR REPLACE FUNCTION get_weekly_statistics(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     week INTEGER,
@@ -1168,6 +1166,8 @@ RETURNS TABLE (
     GROUP BY R.rider_id;
 $$ LANGUAGE SQL;
 
+
+
 --e)
 -- Allow Part Time riders to see their weekly work schedule
 CREATE OR REPLACE FUNCTION get_WWS(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
@@ -1205,7 +1205,9 @@ RETURNS TABLE (
     AND WWS.year = input_year;
 $$ LANGUAGE SQL;
 
---g)
+
+
+  --g)
   --Update WWS and MWS for full timer
  --Shift 1: 10am to 2pm and 3pm to 7pm.
  --Shift 2: 11am to 3pm and 4pm to 8pm.
@@ -1453,7 +1455,11 @@ $$ LANGUAGE SQL;
   $$ LANGUAGE PLPGSQL;
 
 
--- for WWS
+
+
+
+
+-- -- for WWS
 CREATE OR REPLACE FUNCTION checkWWS()
   RETURNS trigger AS $$
 DECLARE
@@ -1462,7 +1468,7 @@ BEGIN
    IF (NEW.start_hour > 22 OR NEW.start_hour < 10) OR (NEW.end_hour > 22 AND NEW.end_hour < 10) THEN
        RAISE EXCEPTION 'Time interval has to be between 1000 - 2200';
    END IF;
-     IF (NEW.start_hour > NEW.end_hour) THEN
+   IF (NEW.start_hour > NEW.end_hour) THEN
        RAISE EXCEPTION 'Start time cannot be later than end time';
    END IF;
    IF (NEW.end_hour - NEW.start_hour > 4) THEN
@@ -1511,7 +1517,8 @@ $$ LANGUAGE plpgsql;
 
 
 
-  -- to determine which is the delivery that needs to be found now
+
+-- to determine which is the delivery that needs to be found now
 
 -------------- rider delivery process ----------------
 -- departing to pick food button
@@ -1558,5 +1565,7 @@ $$ LANGUAGE SQL;
   $$ LANGUAGE PLPGSQL;
 
 -------------- rider delivery process ----------------
+
+
 
 ------ RIDERS ------
