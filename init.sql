@@ -122,7 +122,7 @@ CREATE TABLE Sells (
 CREATE TABLE Orders (
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
-    item_quantity INTEGER
+    item_quantity INTEGER,
     PRIMARY KEY(order_id,food_id)
 );
 
@@ -330,7 +330,7 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
      is_deleted BOOLEAN,
         quantity INTEGER
  ) AS $$
-     SELECT FI.food_id, FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted, FI.quantity
+     SELECT FI.food_id, FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted, FI.restaurant_quantity
      FROM FoodItem FI join Sells S on FI.food_id = S.food_id
      WHERE FI.rid = restaurant_id
  $$ LANGUAGE SQL;
@@ -1035,21 +1035,27 @@ END;
 $$ LANGUAGE PLPGSQL;
 ------ FDS MANAGER -------
 ------ RIDERS ------
---a)
- -- get current job
- CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
+-- --a)
+--  -- get current job
+  CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
   RETURNS TABLE (
       order_id INTEGER,
       location VARCHAR(100),
       recipient VARCHAR(100),
       food_name VARCHAR(100),
-      total_cost DECIMAL
+      food_quantity INTEGER,
+      total_cost DECIMAL,
+      restaurant_id INTEGER,
+      delivery_id INTEGER,
+      restaurant_name VARCHAR(100),
+      restaurant_location VARCHAR(100)
   ) AS $$
-      SELECT D.order_id, D.location, U.username, FI.food_name, D.delivery_cost + FO.order_cost
+      SELECT D.order_id, D.location, U.username, FI.food_name, O.item_quantity, D.delivery_cost + FO.order_cost, FO.rid, D.delivery_id, R.rname, R.location
       FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
       join Users U on FO.uid = U.uid 
       join Orders O on FO.order_id = O.order_id
       join FoodItem FI on FI.food_id = O.food_id
+      join Restaurants R on R.rid = FO.rid
       WHERE input_rider_id = D.rider_id
       AND D.ongoing = TRUE;
   $$ LANGUAGE SQL;
