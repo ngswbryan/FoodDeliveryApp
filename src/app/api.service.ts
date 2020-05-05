@@ -1,14 +1,27 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
-import { switchMap, catchError } from "rxjs/internal/operators";
-import { environment } from "../environments/environment";
-import { throwError } from "rxjs";
+import { catchError, retry } from "rxjs/operators";
+import { throwError, Subject, Observable, VirtualTimeScheduler } from "rxjs";
+import { Router } from "@angular/router";
 
 @Injectable()
 export class ApiService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, public router: Router) {}
 
-  url = "";
+  url = "http://localhost:3002";
+  public erMsg = new Subject();
+
+  getError(): Observable<any> {
+    return this.erMsg.asObservable();
+  }
+
+  clearError() {
+    this.erMsg.next();
+  }
+
+  indicateError() {
+    this.erMsg.next(true);
+  }
 
   getUsers() {
     return this.http.get(`${this.url}/users`);
@@ -80,10 +93,52 @@ export class ApiService {
     );
   }
 
-  getRiders(month, year, role) {
+  getRiders(month, year) {
     return this.http.get(
-      `${this.url}/manager/riders?month=${month}&year=${year}&role=${role}`
+      `${this.url}/manager/riders?month=${month}&year=${year}`
     );
+  }
+
+  getCurrentJob(rid) {
+    return this.http.get(`${this.url}/riders/job/${rid}`);
+  }
+
+  getWeeklyStatistics(rid, week, month, year) {
+    return this.http.get(
+      `${this.url}/riders/weeklystats/${rid}?month=${month}&year=${year}&week=${week}`
+    );
+  }
+
+  getMonthlyStatistics(rid, month, year) {
+    return this.http.get(
+      `${this.url}/riders/monthlystats/${rid}?month=${month}&year=${year}`
+    );
+  }
+
+  getWWS(rid, week, month, year) {
+    return this.http.get(
+      `${this.url}/riders/wws/${rid}?month=${month}&year=${year}&week=${week}`
+    );
+  }
+
+  getMWS(rid, month, year) {
+    return this.http.get(
+      `${this.url}/riders/mws/${rid}?month=${month}&year=${year}`
+    );
+  }
+
+  updateMWS(rid, month, year, mws) {
+    return this.http
+      .post(`${this.url}/riders/mws/${rid}?month=${month}&year=${year}`, mws)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
+  }
+
+  getRiderByRID(rid) {
+    return this.http.get(`${this.url}/riders/type/${rid}`);
   }
 
   getCustomers(month, year) {
@@ -104,11 +159,21 @@ export class ApiService {
   }
 
   addMenuItem(food) {
-    return this.http.post(`${this.url}/staff/menu`, food);
+    return this.http.post(`${this.url}/staff/menu`, food).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   updateFoodItem(fid, rid, food) {
-    return this.http.patch(`${this.url}/staff/menu/${fid}?rid=${rid}`, food);
+    return this.http
+      .patch(`${this.url}/staff/menu/${fid}?rid=${rid}`, food)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   getCampaigns(rid) {
@@ -116,6 +181,27 @@ export class ApiService {
   }
 
   addCampaign(rid, campaign) {
-    return this.http.post(`${this.url}/staff/campaigns/${rid}`, campaign);
+    return this.http.post(`${this.url}/staff/campaigns/${rid}`, campaign).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  handleError(error) {
+    let errorMessage = "";
+
+    if (error.error instanceof ErrorEvent) {
+      // client-side error
+
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      // server-side error
+
+      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+    }
+    window.alert("You've entered invalid parameters! Please try again 😆");
+    location.reload();
+    return throwError(errorMessage);
   }
 }

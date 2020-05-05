@@ -6,13 +6,15 @@
 CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  RETURNS TABLE (
      order_id INTEGER,
+     order_time TIMESTAMP,
      delivery_ratings INTEGER,
      rider_name VARCHAR
  ) AS $$
-     SELECT D.order_id, D.delivery_rating, U.name
+     SELECT D.order_id, FO.date_time, D.delivery_rating, U.name
      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
      join Users U on D.rider_id = U.uid
-     WHERE FO.uid = customers_uid;
+     WHERE FO.uid = customers_uid
+     AND D.delivery_rating IS NOT NULL;
  $$ LANGUAGE SQL;
 
 
@@ -21,12 +23,14 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  CREATE OR REPLACE FUNCTION past_food_reviews(customers_uid INTEGER)
  RETURNS TABLE (
      order_id INTEGER,
+     order_time TIMESTAMP,
      restaurant_name VARCHAR,
      food_review VARCHAR
  ) AS $$
-     SELECT D.order_id, R.rname, D.food_review
+     SELECT D.order_id, FO.date_time, R.rname, D.food_review
      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id join Restaurants R on R.rid = FO.rid
-     WHERE FO.uid = customers_uid;
+     WHERE FO.uid = customers_uid
+     AND D.food_review IS NOT NULL;
  $$ LANGUAGE SQL;
 
 
@@ -47,13 +51,16 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  --List of available food items
  CREATE OR REPLACE FUNCTION list_of_fooditems(restaurant_id INTEGER)
  RETURNS TABLE (
+     food_id INTEGER,
      food_name VARCHAR,
      food_price DECIMAL,
      cuisine_type VARCHAR,
      overall_rating DECIMAL,
-     availability_status BOOLEAN
+     availability_status BOOLEAN,
+     is_deleted BOOLEAN,
+        quantity INTEGER
  ) AS $$
-     SELECT FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status
+     SELECT FI.food_id, FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted, FI.quantity
      FROM FoodItem FI join Sells S on FI.food_id = S.food_id
      WHERE FI.rid = restaurant_id
  $$ LANGUAGE SQL;
@@ -113,10 +120,10 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
   FOR EACH ROW
   EXECUTE FUNCTION update_rider_isdelivering();
 
-CREATE TYPE orderdeliveryid AS (
-  order_id   integer,
-  delivery_id  integer
-);
+--CREATE TYPE orderdeliveryid AS (
+--  order_id   integer,
+--  delivery_id  integer
+--);
 
 --e (i) run this function first
  --function to activate riders that are working NOW
@@ -153,8 +160,8 @@ END
  --returns orderid and deliveryid as a tuple
  --currentorder is a 2d array which consist of the { {foodid,quantity}, {foodid2,quantity} }
 
- CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100))
- RETURNS orderdeliveryid AS $$
+ CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100), delivery_fee DECIMAL)
+ RETURNS VOID AS $$
  DECLARE
     orderid INTEGER;
     deliveryid INTEGER;
@@ -175,9 +182,9 @@ END
                        THEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE  ORDER BY random() LIMIT 1)
                        ELSE (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE ORDER BY random() LIMIT 1)
                        END),
-              5,
+              delivery_fee,
               delivery_location,
-              TRUE) --flat fee of 5 for delivery cost
+              TRUE) --flat fee of 5 for delivery fee
       RETURNING delivery_id into deliveryid;
 
 
@@ -205,11 +212,24 @@ END
        SET points = points + CAST(floor(total_order_cost/5) AS INTEGER) --Gain 1 reward point every $5 spent
        WHERE C.uid = customer_uid;
 
-       RETURN  (orderid,deliveryid);
-
  END
  $$ LANGUAGE PLPGSQL;
 
+ --e(iii)
+ -- get delivery_id and food_id
+ CREATE OR REPLACE FUNCTION get_ids(customer_uid INTEGER, restaurant_id INTEGER, total_order_cost DECIMAL)
+ RETURNS TABLE (
+    orderid INTEGER,
+    deliveryid INTEGER
+    ) AS $$
+        SELECT D.order_id, D.delivery_id
+        FROM Delivery D join FoodOrder FO on FO.order_id = D.order_id
+        WHERE FO.uid = customer_uid
+        AND FO.rid = restaurant_id
+        AND FO.order_cost = total_order_cost
+        ORDER BY D.delivery_id DESC
+        LIMIT 1;
+      $$ LANGUAGE SQL;
 
  -- 5 most recent Location
  CREATE OR REPLACE FUNCTION most_recent_location(input_customer_id INTEGER)
@@ -225,29 +245,26 @@ END
 
 
 ---- apply delivery promo IF HAVE REWARD POINTS, USE TO OFFSET (USE REWARD BUTTON)
-CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, input_delivery_id INTEGER, delivery_cost INTEGER)
+CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, delivery_cost INTEGER)
 RETURNS VOID AS $$
 declare 
     points_check INTEGER;
 begin
     SELECT points
     FROM Customers C 
-    WHERE C.uid = customer_id
+    WHERE C.uid = input_customer_id
     INTO points_check;
 
     IF (points_check = 0) THEN 
         RAISE EXCEPTION 'You have no points to be deducted';
     END IF;
     IF (points_check >= delivery_cost) THEN
-
-        UPDATE Customers
-        SET points = (points - delivery_cost_from_d)
-        WHERE uid = input_customer_id;
-    END IF;
-    IF (points_check < delivery_cost) THEN 
-
         UPDATE Customers
         SET points = (points - delivery_cost)
+        WHERE uid = input_customer_id;
+    ELSIF (points_check < delivery_cost) THEN 
+        UPDATE Customers
+        SET points = 0
         WHERE uid = input_customer_id;
     END IF;
 end

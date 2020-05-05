@@ -16,7 +16,7 @@ CREATE TABLE Riders (
     rating DECIMAL,
     working BOOLEAN, --to know if he's working now or not
     is_delivering BOOLEAN,--to know if he's free or not
-    base_salary DECIMAL, --in terms of per month
+    base_salary DECIMAL, --in terms of per week
     rider_type BOOLEAN, --pt f or ft t
     commission INTEGER, --PT is $2, FT is $3
     PRIMARY KEY(rider_id),
@@ -51,7 +51,7 @@ CREATE TABLE Customers (
 
 CREATE TABLE FoodOrder (
     order_id SERIAL PRIMARY KEY NOT NULL,
-    uid INTEGER REFERENCES Users NOT NULL,
+    uid INTEGER REFERENCES Customers NOT NULL,
     rid INTEGER REFERENCES Restaurants NOT NULL,
     have_credit_card BOOLEAN,
     order_cost DECIMAL NOT NULL,
@@ -254,10 +254,10 @@ INSERT INTO FoodOrder VALUES(DEFAULT, 11, 3, TRUE, 30.0,'2019-05-22 04:00:06', T
 INSERT INTO FoodOrder VALUES(DEFAULT, 1, 4, FALSE, 20.0,'2019-08-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,'2019-05-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,current_timestamp, TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,current_timestamp, TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 3, 2, TRUE, 23.3,current_timestamp, TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 1, 1, TRUE, 23.3,current_timestamp, TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 6, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 6, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 11, 2, TRUE, 23.3,current_timestamp, TRUE);
 
 
 INSERT INTO Sells VALUES (1,1,5.5);
@@ -359,13 +359,15 @@ $$ language plpgsql;
 CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  RETURNS TABLE (
      order_id INTEGER,
+     order_time TIMESTAMP,
      delivery_ratings INTEGER,
      rider_name VARCHAR
  ) AS $$
-     SELECT D.order_id, D.delivery_rating, U.name
+     SELECT D.order_id, FO.date_time, D.delivery_rating, U.name
      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
      join Users U on D.rider_id = U.uid
-     WHERE FO.uid = customers_uid;
+     WHERE FO.uid = customers_uid
+     AND D.delivery_rating IS NOT NULL;
  $$ LANGUAGE SQL;
 
 
@@ -374,12 +376,14 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  CREATE OR REPLACE FUNCTION past_food_reviews(customers_uid INTEGER)
  RETURNS TABLE (
      order_id INTEGER,
+     order_time TIMESTAMP,
      restaurant_name VARCHAR,
      food_review VARCHAR
  ) AS $$
-     SELECT D.order_id, R.rname, D.food_review
+     SELECT D.order_id, FO.date_time, R.rname, D.food_review
      FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id join Restaurants R on R.rid = FO.rid
-     WHERE FO.uid = customers_uid;
+     WHERE FO.uid = customers_uid
+     AND D.food_review IS NOT NULL;
  $$ LANGUAGE SQL;
 
 
@@ -508,8 +512,8 @@ END
  --returns orderid and deliveryid as a tuple
  --currentorder is a 2d array which consist of the { {foodid,quantity}, {foodid2,quantity} }
 
- CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100))
- RETURNS orderdeliveryid AS $$
+CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100), delivery_fee DECIMAL)
+ RETURNS VOID AS $$
  DECLARE
     orderid INTEGER;
     deliveryid INTEGER;
@@ -530,7 +534,7 @@ END
                        THEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE  ORDER BY random() LIMIT 1)
                        ELSE (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE ORDER BY random() LIMIT 1)
                        END),
-              5,
+              delivery_fee,
               delivery_location,
               TRUE) --flat fee of 5 for delivery cost
       RETURNING delivery_id into deliveryid;
@@ -560,10 +564,36 @@ END
        SET points = points + CAST(floor(total_order_cost/5) AS INTEGER) --Gain 1 reward point every $5 spent
        WHERE C.uid = customer_uid;
 
-       RETURN  (orderid,deliveryid);
-
  END
  $$ LANGUAGE PLPGSQL;
+
+ --e(iii)
+ -- get delivery_id and food_id
+ CREATE OR REPLACE FUNCTION get_ids(customer_uid INTEGER, restaurant_id INTEGER, total_order_cost DECIMAL)
+ RETURNS TABLE (
+    orderid INTEGER,
+    deliveryid INTEGER
+    ) AS $$
+        SELECT D.order_id, D.delivery_id
+        FROM Delivery D join FoodOrder FO on FO.order_id = D.order_id
+        WHERE FO.uid = customer_uid
+        AND FO.rid = restaurant_id
+        AND FO.order_cost = total_order_cost
+        ORDER BY D.delivery_id DESC
+        LIMIT 1;
+      $$ LANGUAGE SQL;
+
+ -- 5 most recent Location
+ CREATE OR REPLACE FUNCTION most_recent_location(input_customer_id INTEGER)
+ RETURNS TABLE (
+  recentlocations VARCHAR
+ ) AS $$
+     SELECT D.location
+     FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
+     WHERE FO.uid = input_customer_id
+     ORDER BY D.delivery_end_time desc
+     LIMIT 5;
+ $$ LANGUAGE SQL;
 
   -- 5 most recent Location
  CREATE OR REPLACE FUNCTION most_recent_location(input_customer_id INTEGER)
@@ -577,6 +607,31 @@ END
      LIMIT 5;
  $$ LANGUAGE SQL;
 
+---- apply delivery promo IF HAVE REWARD POINTS, USE TO OFFSET (USE REWARD BUTTON)
+CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, delivery_cost INTEGER)
+RETURNS VOID AS $$
+declare 
+    points_check INTEGER;
+begin
+    SELECT points
+    FROM Customers C 
+    WHERE C.uid = input_customer_id
+    INTO points_check;
+
+    IF (points_check = 0) THEN 
+        RAISE EXCEPTION 'You have no points to be deducted';
+    END IF;
+    IF (points_check >= delivery_cost) THEN
+        UPDATE Customers
+        SET points = (points - delivery_cost)
+        WHERE uid = input_customer_id;
+    ELSIF (points_check < delivery_cost) THEN 
+        UPDATE Customers
+        SET points = 0
+        WHERE uid = input_customer_id;
+    END IF;
+end
+$$ LANGUAGE PLPGSQL;
 
 
  --f)
@@ -940,7 +995,7 @@ $$ LANGUAGE PLPGSQL;
 
 -- g) statistics of riders 
 -- input parameter to filter by month
- CREATE OR REPLACE FUNCTION riders_table(ridertype BOOLEAN)
+  CREATE OR REPLACE FUNCTION riders_table()
  RETURNS TABLE (
      order_month BIGINT,
      order_year BIGINT,
@@ -959,7 +1014,7 @@ $$ LANGUAGE PLPGSQL;
      D.rider_id as rider_id,
      count(*) as count, ROUND((SUM(D.time_for_one_delivery)), 3) as total_hours_worked,
 
-     CASE WHEN ridertype THEN R.base_salary * 4 + count(*) * 6 --salary x 4 weeks + commission 6 for ft
+     CASE WHEN R.rider_type THEN R.base_salary * 4 + count(*) * 6 --salary x 4 weeks + commission 6 for ft
           ELSE R.base_salary * 4 + count(*) * 3 --salary * 4 weeks + commission 3 for pt
      END as total_salary,
 
@@ -971,7 +1026,7 @@ $$ LANGUAGE PLPGSQL;
   END
  $$ LANGUAGE PLPGSQL;
 
-CREATE OR REPLACE FUNCTION filter_riders_table_by_month(input_month INTEGER, input_year INTEGER, ridertype BOOLEAN)
+CREATE OR REPLACE FUNCTION filter_riders_table_by_month(input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     order_month BIGINT,
      order_year BIGINT,
@@ -984,7 +1039,7 @@ RETURNS TABLE (
      average_ratings NUMERIC
 ) AS $$
 SELECT * 
-FROM riders_table(ridertype) as curr_table
+FROM riders_table() as curr_table
 WHERE curr_table.order_month = input_month
 AND curr_table.order_year = input_year;
 $$ LANGUAGE SQL;
@@ -1068,7 +1123,7 @@ $$ LANGUAGE PLPGSQL;
 ------ RIDERS ------
 --a)
  -- get current job
-  CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
+ CREATE OR REPLACE FUNCTION get_current_job(input_rider_id INTEGER)
   RETURNS TABLE (
       order_id INTEGER,
       location VARCHAR(100),
@@ -1083,7 +1138,6 @@ $$ LANGUAGE PLPGSQL;
       join FoodItem FI on FI.food_id = O.food_id
       WHERE input_rider_id = D.rider_id
       AND D.ongoing = TRUE;
-
   $$ LANGUAGE SQL;
 
 --b)
@@ -1104,7 +1158,6 @@ $$ LANGUAGE PLPGSQL;
 
 -- for WWS
 -- --c)
--- -- get previous weekly salaries --for weekly
 CREATE OR REPLACE FUNCTION get_weekly_statistics(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
 RETURNS TABLE (
     week INTEGER,
@@ -1164,6 +1217,8 @@ RETURNS TABLE (
     GROUP BY R.rider_id;
 $$ LANGUAGE SQL;
 
+
+
 --e)
 -- Allow Part Time riders to see their weekly work schedule
 CREATE OR REPLACE FUNCTION get_WWS(input_rider_id INTEGER, input_week INTEGER, input_month INTEGER, input_year INTEGER)
@@ -1201,7 +1256,9 @@ RETURNS TABLE (
     AND WWS.year = input_year;
 $$ LANGUAGE SQL;
 
---g)
+
+
+  --g)
   --Update WWS and MWS for full timer
  --Shift 1: 10am to 2pm and 3pm to 7pm.
  --Shift 2: 11am to 3pm and 4pm to 8pm.
@@ -1449,7 +1506,11 @@ $$ LANGUAGE SQL;
   $$ LANGUAGE PLPGSQL;
 
 
--- for WWS
+
+
+
+
+-- -- for WWS
 CREATE OR REPLACE FUNCTION checkWWS()
   RETURNS trigger AS $$
 DECLARE
@@ -1458,7 +1519,7 @@ BEGIN
    IF (NEW.start_hour > 22 OR NEW.start_hour < 10) OR (NEW.end_hour > 22 AND NEW.end_hour < 10) THEN
        RAISE EXCEPTION 'Time interval has to be between 1000 - 2200';
    END IF;
-     IF (NEW.start_hour > NEW.end_hour) THEN
+   IF (NEW.start_hour > NEW.end_hour) THEN
        RAISE EXCEPTION 'Start time cannot be later than end time';
    END IF;
    IF (NEW.end_hour - NEW.start_hour > 4) THEN
@@ -1507,7 +1568,8 @@ $$ LANGUAGE plpgsql;
 
 
 
-  -- to determine which is the delivery that needs to be found now
+
+-- to determine which is the delivery that needs to be found now
 
 -------------- rider delivery process ----------------
 -- departing to pick food button
@@ -1554,5 +1616,7 @@ $$ LANGUAGE SQL;
   $$ LANGUAGE PLPGSQL;
 
 -------------- rider delivery process ----------------
+
+
 
 ------ RIDERS ------

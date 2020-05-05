@@ -3,6 +3,7 @@ import { ActivatedRoute, Params } from "@angular/router";
 import { LoadingService } from "../loading.service";
 import { ApiService } from "../api.service";
 import { FormGroup, FormControl } from "@angular/forms";
+import { Toast, ToastrService } from "ngx-toastr";
 
 @Component({
   selector: "app-staff",
@@ -48,7 +49,8 @@ export class StaffComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private loadingService: LoadingService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit() {
