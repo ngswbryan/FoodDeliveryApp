@@ -15,20 +15,138 @@
     <div class="col-md-8" style="text-align: center;">
       <tabset>
         <tab heading="Current Ongoing Job" (selectTab)="console.log('ok')">
-          to john at pasir ris from rest timing started delivery price items etc
+          <br />
+          <div *ngIf="currentJob.length == 0">
+            <alert type="danger">
+              <strong>Uh-oh...</strong> You currently have no job assigned to
+              you! 🙇
+            </alert>
+          </div>
         </tab>
 
-        <tab heading="Work Schedule" (selectTab)="console.log('ok')">
+        <tab
+          heading="Weekly Work Schedules"
+          *ngIf="!rider_type[0].rider_type"
+          (selectTab)="console.log('ok')"
+        >
+          <h5>View work schedule for the week of</h5>
+          <select id="week" name="week" [(ngModel)]="selectedWeek">
+            <option *ngFor="let week of weeks" [value]="week"
+              >Week {{ week }}</option
+            >
+          </select>
+          of
+          <select id="month" name="month" [(ngModel)]="selectedMonth">
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+          <select id="year" name="year" [(ngModel)]="selectedYear">
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+          </select>
+        </tab>
+
+        <tab
+          heading="Monthly Work Schedules"
+          *ngIf="rider_type[0].rider_type"
+          (selectTab)="console.log('ok')"
+        >
+          <br />
+          <h5>View work schedule for the month of</h5>
+
+          <select
+            id="month"
+            name="month"
+            [(ngModel)]="selectedMonth"
+            (change)="handlePeriodChange()"
+          >
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+          <select
+            id="year"
+            name="year"
+            [(ngModel)]="selectedYear"
+            (change)="handlePeriodChange()"
+          >
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+          </select>
+          <br />
+          <br />
+          <table *ngIf="MWS.length > 0" class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Week</th>
+                <th scope="col">Day</th>
+                <th scope="col">Start Hour</th>
+                <th scope="col">End Hour</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let mws of MWS; index as i">
+                <th scope="row">{{ i + 1 }}</th>
+                <td>
+                  {{ mws.week }}
+                </td>
+                <td>{{ mws.day }}</td>
+                <td>{{ mws.starthour }}</td>
+                <td>{{ mws.endhour }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="MWS.length == 0">
+            <alert type="danger">
+              <strong>Oh snap!</strong> You have not added your schedule for
+              this month 😢
+            </alert>
+          </div>
+        </tab>
+
+        <tab
+          heading="Weekly Salary"
+          *ngIf="!rider_type[0].rider_type"
+          (selectTab)="console.log('ok')"
+        >
           hi
         </tab>
 
-        <tab heading="Weekly Salary" (selectTab)="console.log('ok')">
+        <tab
+          heading="Monthly Salary"
+          *ngIf="rider_type[0].rider_type"
+          (selectTab)="console.log('ok')"
+        >
           hi
         </tab>
-        <tab heading="Commision" (selectTab)="console.log('ok')">
-          hi
-        </tab>
-        <tab heading="WWS Update Submission" (selectTab)="console.log('ok')">
+
+        <tab
+          heading="WWS Update Submission"
+          *ngIf="!rider_type[0].rider_type"
+          (selectTab)="console.log('ok')"
+        >
           <br />
           <div>
             <form [formGroup]="WWSForm">
@@ -200,6 +318,205 @@
               You have not added any items to your draft schedule!
             </div>
           </div>
+        </tab>
+
+        <tab
+          heading="MWS Update Submission"
+          *ngIf="rider_type[0].rider_type"
+          (selectTab)="console.log('ok')"
+        >
+          <br />
+          <h4>
+            Submit MWS for
+            <select id="month" name="month" [(ngModel)]="MWSMonth">
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+            <select id="year" name="year" [(ngModel)]="MWSYear">
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
+              <option value="2022">2022</option>
+            </select>
+          </h4>
+          <br />
+          <div>
+            <form [formGroup]="MWSForm">
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  Working Days
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="start_hour"
+                    class="form-control form-input"
+                    formControlName="days"
+                  >
+                    <option value="1">Mon, Tues, Weds, Thurs, Fri </option>
+                    <option value="2">Tues, Weds, Thurs, Fri, Sat </option>
+                    <option value="3">
+                      Weds, Thurs, Fri, Sat, Sun
+                    </option>
+                    <option value="4">Thurs, Fri, Sat, Sun, Mon</option>
+                    <option value="5">Fri, Sat, Sun, Mon, Tues</option>
+                    <option value="6">Sat, Sun, Mon, Tues, Weds</option>
+                    <option value="7">Sun, Mon, Tues, Weds, Thurs</option>
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  Day 1 Shift
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="day"
+                    class="form-control form-input"
+                    formControlName="shift1"
+                  >
+                    <option value="1"
+                      >Shift 1: 10am to 2pm and 3pm to 7pm
+                    </option>
+                    <option value="2"
+                      >Shift 2: 11am to 3pm and 4pm to 8pm
+                    </option>
+                    <option value="3">
+                      Shift 3: 12pm to 4pm and 5pm to 9pm
+                    </option>
+                    <option value="4"
+                      >Shift 4: 1pm to 5pm and 6pm to 10pm</option
+                    >
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  Day 2 Shift
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="week"
+                    class="form-control form-input"
+                    formControlName="shift2"
+                  >
+                    <option value="1"
+                      >Shift 1: 10am to 2pm and 3pm to 7pm
+                    </option>
+                    <option value="2"
+                      >Shift 2: 11am to 3pm and 4pm to 8pm
+                    </option>
+                    <option value="3">
+                      Shift 3: 12pm to 4pm and 5pm to 9pm
+                    </option>
+                    <option value="4"
+                      >Shift 4: 1pm to 5pm and 6pm to 10pm</option
+                    >
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  Day 3 Shift
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="month"
+                    class="form-control form-input"
+                    formControlName="shift3"
+                  >
+                    <option value="1"
+                      >Shift 1: 10am to 2pm and 3pm to 7pm
+                    </option>
+                    <option value="2"
+                      >Shift 2: 11am to 3pm and 4pm to 8pm
+                    </option>
+                    <option value="3">
+                      Shift 3: 12pm to 4pm and 5pm to 9pm
+                    </option>
+                    <option value="4"
+                      >Shift 4: 1pm to 5pm and 6pm to 10pm</option
+                    >
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  Day 4 Shift
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="month"
+                    class="form-control form-input"
+                    formControlName="shift4"
+                  >
+                    <option value="1"
+                      >Shift 1: 10am to 2pm and 3pm to 7pm
+                    </option>
+                    <option value="2"
+                      >Shift 2: 11am to 3pm and 4pm to 8pm
+                    </option>
+                    <option value="3">
+                      Shift 3: 12pm to 4pm and 5pm to 9pm
+                    </option>
+                    <option value="4"
+                      >Shift 4: 1pm to 5pm and 6pm to 10pm</option
+                    >
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                  Day 5 Shift
+                </div>
+                <div class="col-md-3">
+                  <select
+                    placeholder="year"
+                    class="form-control form-input"
+                    formControlName="shift5"
+                  >
+                    <option value="1"
+                      >Shift 1: 10am to 2pm and 3pm to 7pm
+                    </option>
+                    <option value="2"
+                      >Shift 2: 11am to 3pm and 4pm to 8pm
+                    </option>
+                    <option value="3">
+                      Shift 3: 12pm to 4pm and 5pm to 9pm
+                    </option>
+                    <option value="4"
+                      >Shift 4: 1pm to 5pm and 6pm to 10pm</option
+                    >
+                  </select>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+            </form>
+            <br />
+            <button class="btn btn-success" (click)="submitMWS()">
+              Submit schedule
+            </button>
+          </div>
+          <br />
         </tab>
       </tabset>
     </div>

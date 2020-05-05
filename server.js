@@ -367,6 +367,121 @@ const deleteCampaign = (request, response) => {
   );
 };
 
+const getCurrentJob = (request, response) => {
+  const rid = request.params.rid;
+
+  pool.query("SELECT * FROM get_current_job($1);", [rid], (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
+const getWeeklyStats = (request, response) => {
+  const rid = request.params.rid;
+  const week = request.query.week;
+  const month = request.query.month;
+  const year = request.query.year;
+
+  pool.query(
+    "SELECT * FROM get_weekly_statistics($1, $2, $3, $4);",
+    [rid, month, week, year],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const getMonthlyStats = (request, response) => {
+  const rid = request.params.rid;
+  const month = request.query.month;
+  const year = request.query.year;
+
+  pool.query(
+    "SELECT * FROM get_monthly_statistics($1, $2, $3);",
+    [rid, month, year],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const getWWS = (request, response) => {
+  const rid = request.params.rid;
+  const week = request.query.week;
+  const month = request.query.month;
+  const year = request.query.year;
+
+  pool.query(
+    "SELECT * FROM get_WWS($1, $2, $3, $4);",
+    [rid, month, week, year],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const getMWS = (request, response) => {
+  const rid = request.params.rid;
+  const month = request.query.month;
+  const year = request.query.year;
+
+  pool.query(
+    "SELECT * FROM get_MWS($1, $2, $3);",
+    [rid, month, year],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const getRiderType = (request, response) => {
+  const rid = request.params.rid;
+
+  pool.query(
+    "SELECT R.rider_type FROM Riders R where R.rider_id = $1;",
+    [rid],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
+const updateMWS = (request, response) => {
+  const rid = request.params.rid;
+  const month = request.query.month;
+  const year = request.query.year;
+  const { days, shift1, shift2, shift3, shift4, shift5 } = request.body;
+
+  pool.query(
+    "select update_fulltime_WWS($1, $2, $3, $4, $5, $6, $7, $8, $9);",
+    [rid, year, month, days, shift1, shift2, shift3, shift4, shift5],
+    (error) => {
+      if (error) {
+        response.status(400).json({ error: "invalid values" });
+        return;
+      }
+      response.status(201).json({ status: "success", message: "User added." });
+    }
+  );
+};
+
 app.route("/test").get(getFoodItems);
 
 app
@@ -374,6 +489,18 @@ app
   .get(getCampaigns)
   .post(addCampaign)
   .delete(deleteCampaign);
+
+app.route("/riders/job/:rid").get(getCurrentJob);
+
+app.route("/riders/weeklystats/:rid").get(getWeeklyStats);
+
+app.route("/riders/monthlystats/:rid").get(getMonthlyStats);
+
+app.route("/riders/wws/:rid").get(getWWS);
+
+app.route("/riders/mws/:rid").get(getMWS).post(updateMWS);
+
+app.route("/riders/type/:rid").get(getRiderType);
 
 app
   .route("/users")
