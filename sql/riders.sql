@@ -6,13 +6,19 @@
       location VARCHAR(100),
       recipient VARCHAR(100),
       food_name VARCHAR(100),
-      total_cost DECIMAL
+      food_quantity INTEGER,
+      total_cost DECIMAL,
+      restaurant_id INTEGER,
+      delivery_id INTEGER,
+      restaurant_name VARCHAR(100),
+      restaurant_location VARCHAR(100)
   ) AS $$
-      SELECT D.order_id, D.location, U.username, FI.food_name, D.delivery_cost + FO.order_cost
+      SELECT D.order_id, D.location, U.username, FI.food_name, O.item_quantity, D.delivery_cost + FO.order_cost, FO.rid, D.delivery_id, R.rname, R.location
       FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
       join Users U on FO.uid = U.uid 
       join Orders O on FO.order_id = O.order_id
       join FoodItem FI on FI.food_id = O.food_id
+      join Restaurants R on R.rid = FO.rid
       WHERE input_rider_id = D.rider_id
       AND D.ongoing = TRUE;
   $$ LANGUAGE SQL;
@@ -85,9 +91,8 @@ RETURNS TABLE (
     total_num_hours_worked BIGINT
 ) AS $$
     SELECT input_month, input_year, R.base_salary * 4, count(delivery_id) * R.commission, count(*), SUM(end_hour - start_hour)
-    FROM Riders R join MonthlyWorkSchedule MWS on R.rider_id = MWS.rider_id
-    join Delivery D on D.rider_id = MWS.rider_id
-    join WeeklyWorkSchedule WWS on WWS.rider_id = MWS.rider_id
+    FROM Riders R join Delivery D on D.rider_id = D.rider_id
+    join WeeklyWorkSchedule WWS on WWS.rider_id = D.rider_id
     WHERE input_rider_id = D.rider_id
     AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
     AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
@@ -490,6 +495,10 @@ $$ LANGUAGE SQL;
           time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = input_delivery_id)/60::DECIMAL
       WHERE delivery_id = input_delivery_id
       AND rider_id = input_rider_id;
+
+      UPDATE Riders
+      SET is_delivering = FALSE
+      WHERE rider_id = input_rider_id;
   END
   $$ LANGUAGE PLPGSQL;
 
