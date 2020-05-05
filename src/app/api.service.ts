@@ -8,7 +8,7 @@ import { Router } from "@angular/router";
 export class ApiService {
   constructor(private http: HttpClient, public router: Router) {}
 
-  url = "http://localhost:3002";
+  url = "";
   public erMsg = new Subject();
 
   getError(): Observable<any> {
@@ -53,6 +53,42 @@ export class ApiService {
 
   getRestaurants() {
     return this.http.get(`${this.url}/restaurants`);
+  }
+
+  updateOrderCount(order) {
+    return this.http.post(`${this.url}/users/restaurant/order`, order).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  getFoodandDeliveryID() {
+    return this.http.get(`${this.url}/users/restaurant/order/ids`, )
+  }
+
+  applyDeliveryPromo(promo) {
+    return this.http.post(`${this.url}/users/restaurant/order/promo`, promo).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  getRewardBalance(uid) {
+    return this.http.get(`${this.url}/users/restaurant/order/rewards/${uid}`);
+  }
+
+  activateRiders() {
+    return this.http.post(`${this.url}/users/restaurant/order/activate`, "").pipe(
+      retry(1),
+      
+      catchError(this.handleError)
+    )
+  }
+
+  getMostRecentLocation(uid) {
+    return this.http.get(`${this.url}/users/restaurant/order/recent/${uid}`);
   }
 
   generateTotalOrders(month, year, rid) {
@@ -185,6 +221,34 @@ export class ApiService {
       retry(1),
 
       catchError(this.handleError)
+    );
+  }
+
+  updateDepartureTime(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/departure?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateCollectedTime(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/collected?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateDelivertStart(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/delivery?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateDone(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/done?rid=${rid}&did=${did}`,
+      {}
     );
   }
 
