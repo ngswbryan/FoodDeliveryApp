@@ -169,17 +169,19 @@ const getMostRecentLocation = (request, response) => {
   const uid = request.params.uid;
   pool.query("select most_recent_location($1)", [uid], (error, results) => {
     if (error) {
-      throw error; 
+      throw error;
     }
     response.status(200).json(results.rows);
-  })
-}
+  });
+};
 
 const getListOfFoodItem = (request, response) => {
   const rid = request.params.rid;
   console.log(rid);
-  pool.query("select * from list_of_fooditems($1);", 
-  [rid], (error, results) => {
+  pool.query(
+    "select * from list_of_fooditems($1);",
+    [rid],
+    (error, results) => {
       if (error) {
         throw error;
       }
@@ -195,8 +197,8 @@ const getRewardBalance = (request, response) => {
       throw error;
     }
     response.status(200).json(results.rows);
-  })
-}
+  });
+};
 
 const addUser = (request, response) => {
   const {
@@ -224,55 +226,69 @@ const updateOrderCount = (request, response) => {
   const {
     currentorder,
     customer_uid,
-    restaurant_id, 
+    restaurant_id,
     have_credit,
     total_order_cost,
     delivery_location,
-    delivery_fee //discounted
+    delivery_fee, //discounted
   } = request.body;
 
   pool.query(
     "select update_order_count($1, $2, $3, $4, $5, $6, $7);",
-    [currentorder, customer_uid, restaurant_id, have_credit, total_order_cost, delivery_location, delivery_fee],
+    [
+      currentorder,
+      customer_uid,
+      restaurant_id,
+      have_credit,
+      total_order_cost,
+      delivery_location,
+      delivery_fee,
+    ],
     (error) => {
       if (error) {
         throw error;
       }
-      response.status(201).json({ status: "success", message: "updated order count "});
+      response
+        .status(201)
+        .json({ status: "success", message: "updated order count " });
     }
-  )
-}
+  );
+};
 
 const applyDeliveryPromo = (request, response) => {
   const {
-    uid, 
-    delivery_cost //5
+    uid,
+    delivery_cost, //5
   } = request.body;
-  
 
-  pool.query("select apply_delivery_promo($1, $2)", [uid, delivery_cost], (error) => {
-    if (error) {
-      throw error; 
+  pool.query(
+    "select apply_delivery_promo($1, $2)",
+    [uid, delivery_cost],
+    (error) => {
+      if (error) {
+        throw error;
+      }
+      response
+        .status(201)
+        .json({ status: "success", message: " delivery promo applied. " });
     }
-    response.status(201).json({ status:"success", message: " delivery promo applied. "});
-  })
-
-}
+  );
+};
 
 // const getFoodandDeliveryID = (request, response) => {
-//   const 
+//   const
 // }
 
 const activateRiders = (request, response) => {
   pool.query("select activate_riders();", (error) => {
     if (error) {
-      throw error; 
+      throw error;
     }
-    response.status(201).json({ status: "success", message: "riders activated. "});
-  })
-}
-
-
+    response
+      .status(201)
+      .json({ status: "success", message: "riders activated. " });
+  });
+};
 
 const addMenuItem = (request, response) => {
   const {
@@ -612,6 +628,11 @@ app
   .get(getCampaigns)
   .post(addCampaign)
   .delete(deleteCampaign);
+
+app.route("/staff/menu/:fid").patch(updateFoodItem);
+app.route("/staff/reports/orders").get(getTotalOrders);
+app.route("/staff/reports/cost").get(getTotalCost);
+app.route("/staff/reports/top").get(getTopFive);
 
 app.route("/riders/delivery/departure").patch(updateDeparture);
 

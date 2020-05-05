@@ -109,6 +109,7 @@ export class RiderComponent implements OnInit {
             this.apiService
               .getCurrentJob(rider[0].uid)
               .subscribe((job: any) => {
+                console.log(job);
                 this.currentJob = job;
                 this.apiService
                   .getWeeklyStatistics(
@@ -261,24 +262,40 @@ export class RiderComponent implements OnInit {
   }
 
   collectingNow() {
-    this.start = false;
-    this.collecting = true;
+    this.loadingService.loading.next(true);
+    this.apiService.updateDepartureTime().subscribe((res: any) => {
+      this.start = false;
+      this.collecting = true;
+      this.loadingService.loading.next(false);
+    });
   }
 
   collectedNow() {
-    this.collected = true;
-    this.collecting = false;
+    this.loadingService.loading.next(true);
+    this.apiService.updateCollectedTime().subscribe((res: any) => {
+      this.collected = true;
+      this.collecting = false;
+      this.loadingService.loading.next(false);
+    });
   }
 
   omwNow() {
-    this.collected = false;
-    this.omw = true;
+    this.loadingService.loading.next(true);
+    this.apiService.updateDeliveryStart().subscribe((res: any) => {
+      this.collected = false;
+      this.omw = true;
+      this.loadingService.loading.next(false);
+    });
   }
 
   done() {
-    this.omw = false;
-    this.start = true;
-    //refresh done logic reload jobs
+    this.loadingService.loading.next(true);
+    this.apiService.updateDone().subscribe((res: any) => {
+      //refresh done logic reload jobs pull currentjob again
+      this.omw = false;
+      this.start = true;
+      this.loadingService.loading.next(false);
+    });
   }
 
   reset() {

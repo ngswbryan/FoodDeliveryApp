@@ -214,23 +214,6 @@ INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'roti john', 2, 0, 0, true, f
 --INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork jizz', 12, 3.3,0,true,false);
 
 
-INSERT INTO FoodOrder VALUES(DEFAULT, 1, 1, TRUE, 50.0,'2018-06-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 2, FALSE, 46.0,'2018-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 11, 3, TRUE, 30.0,'2018-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 1, 4, FALSE, 20.0,'2018-08-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,'2018-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 1, 1, TRUE, 50.0,'2019-06-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 2, FALSE, 46.0,'2019-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 11, 3, TRUE, 30.0,'2019-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 1, 4, FALSE, 20.0,'2019-08-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,'2019-05-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,current_timestamp, TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 1, 1, TRUE, 23.3,current_timestamp, TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 6, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 11, 2, TRUE, 23.3,current_timestamp, TRUE);
-
-
 INSERT INTO Sells VALUES (1,1,5.5);
 INSERT INTO Sells VALUES (1,2,4.5);
 INSERT INTO Sells VALUES (1,3,3.5);
@@ -251,43 +234,6 @@ INSERT INTO Sells VALUES (5,17,5.0);
 INSERT INTO Sells VALUES (5,18,6.3);
 INSERT INTO Sells VALUES (5,19,7.5);
 
-
-INSERT INTO Orders VALUES (6, 2);
-INSERT INTO Orders VALUES (7, 3);
-INSERT INTO Orders VALUES (8, 4);
-INSERT INTO Orders VALUES (9, 5);
-INSERT INTO Orders VALUES (10, 6);
-INSERT INTO Orders VALUES (6, 7);
-INSERT INTO Orders VALUES (7, 8);
-INSERT INTO Orders VALUES (8, 1);
-INSERT INTO Orders VALUES (9, 2);
-INSERT INTO Orders VALUES (10, 3);
-
-
-INSERT INTO Delivery VALUES(DEFAULT, 11, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 12, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 13, 2, 5.0,'2020-04-22 04:00:06','2020-04-22 04:00:06',current_timestamp, current_timestamp, 1, 'yishun', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 14, 2, 5.0, '2020-04-22 04:00:06', '2020-04-22 04:00:06',current_timestamp, current_timestamp, 1, 'khatib', 4.0, 'nice', FALSE);
-
-INSERT INTO Delivery VALUES(DEFAULT, 15, 2, 5.0, current_timestamp, current_timestamp,current_timestamp, current_timestamp, 1, 'bishan', 4.0, 'nice', FALSE);
-
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-19 04:00:06', '2018-06-19 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-23 04:00:06', '2018-06-23 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-24 04:00:06', '2018-06-24 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-25 04:00:06', '2018-06-25 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-26 04:00:06', '2018-06-26 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 6, 2, 5.0, '2018-06-27 04:00:06', '2018-06-27 05:00:06',current_timestamp, current_timestamp, 1, 'kovan', 4.0, 'nice', FALSE);
-
-INSERT INTO Delivery VALUES(DEFAULT, 7, 5, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'serangoon', 4.0, 'nice', FALSE);
-INSERT INTO Delivery VALUES(DEFAULT, 8, 15, 5.0, '2018-06-22 04:00:06', '2018-06-22 05:00:06',current_timestamp, current_timestamp, 1, 'little inda', 4.0, 'nice', FALSE);
-
-INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 2, 11, 15, 2, 2, 5, 2018, 2);
-INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 2, 16, 20, 2, 2, 5, 2018, 2);
-INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 7, 10, 14, 3, 3, 5, 2018, 1);
-INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, 7, 15, 19, 3, 3, 5, 2018, 1);
-
-INSERT INTO MonthlyWorkSchedule VALUES (DEFAULT, 2, 5, 2018, 1, 2, NULL, NULL);
 
 -------- POPULATION -------------
 
