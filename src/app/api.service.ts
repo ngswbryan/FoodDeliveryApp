@@ -64,11 +64,13 @@ export class ApiService {
   }
 
   applyDeliveryPromo(promo) {
-    return this.http.post(`${this.url}/users/restaurant/order/promo`, promo).pipe(
-      retry(1),
+    return this.http
+      .post(`${this.url}/users/restaurant/order/promo`, promo)
+      .pipe(
+        retry(1),
 
-      catchError(this.handleError)
-    );
+        catchError(this.handleError)
+      );
   }
 
   getRewardBalance(uid) {
@@ -76,11 +78,13 @@ export class ApiService {
   }
 
   activateRiders() {
-    return this.http.post(`${this.url}/users/restaurant/order/activate`, "").pipe(
-      retry(1),
-      
-      catchError(this.handleError)
-    )
+    return this.http
+      .post(`${this.url}/users/restaurant/order/activate`, "")
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   getMostRecentLocation(uid) {
@@ -223,6 +227,34 @@ export class ApiService {
       retry(1),
 
       catchError(this.handleError)
+    );
+  }
+
+  updateDepartureTime(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/departure?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateCollectedTime(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/collected?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateDeliveryStart(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/delivery?rid=${rid}&did=${did}`,
+      {}
+    );
+  }
+
+  updateDone(rid, did) {
+    return this.http.patch(
+      `${this.url}/riders/delivery/done?rid=${rid}&did=${did}`,
+      {}
     );
   }
 

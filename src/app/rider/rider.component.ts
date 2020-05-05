@@ -58,6 +58,11 @@ export class RiderComponent implements OnInit {
   WWS;
   MWS;
 
+  start = true;
+  collecting = false;
+  collected = false;
+  omw = false;
+
   constructor(
     private route: ActivatedRoute,
     private loadingService: LoadingService,
@@ -104,6 +109,7 @@ export class RiderComponent implements OnInit {
             this.apiService
               .getCurrentJob(rider[0].uid)
               .subscribe((job: any) => {
+                console.log(job);
                 this.currentJob = job;
                 this.apiService
                   .getWeeklyStatistics(
@@ -144,6 +150,23 @@ export class RiderComponent implements OnInit {
                                 mws.sort((a, b) =>
                                   a.week < b.week ? -1 : a.day > b.day ? 1 : 0
                                 );
+                                for (let i = 0; i < mws.length; i++) {
+                                  if (mws[i].day == 1) {
+                                    mws[i].day = "Monday";
+                                  } else if (mws[i].day == 2) {
+                                    mws[i].day = "Tuesday";
+                                  } else if (mws[i].day == 3) {
+                                    mws[i].day = "Wednesday";
+                                  } else if (mws[i].day == 4) {
+                                    mws[i].day = "Thursday";
+                                  } else if (mws[i].day == 5) {
+                                    mws[i].day = "Friday";
+                                  } else if (mws[i].day == 6) {
+                                    mws[i].day = "Saturday";
+                                  } else {
+                                    mws[i].day = "Sunday";
+                                  }
+                                }
                                 this.MWS = mws;
 
                                 this.loadingService.loading.next(false);
@@ -164,6 +187,23 @@ export class RiderComponent implements OnInit {
       .subscribe((mws: any) => {
         console.log(mws);
         mws.sort((a, b) => (a.week < b.week ? -1 : a.day > b.day ? 1 : 0));
+        for (let i = 0; i < mws.length; i++) {
+          if (mws[i].day == 1) {
+            mws[i].day = "Monday";
+          } else if (mws[i].day == 2) {
+            mws[i].day = "Tuesday";
+          } else if (mws[i].day == 3) {
+            mws[i].day = "Wednesday";
+          } else if (mws[i].day == 4) {
+            mws[i].day = "Thursday";
+          } else if (mws[i].day == 5) {
+            mws[i].day = "Friday";
+          } else if (mws[i].day == 6) {
+            mws[i].day = "Saturday";
+          } else {
+            mws[i].day = "Sunday";
+          }
+        }
         this.MWS = mws;
 
         this.loadingService.loading.next(false);
@@ -219,6 +259,43 @@ export class RiderComponent implements OnInit {
           "Successfully added your schedule for the selected month. You can check it in the 'Monthly Work Schedules' tab!"
         );
       });
+  }
+
+  collectingNow() {
+    this.loadingService.loading.next(true);
+    this.apiService.updateDepartureTime().subscribe((res: any) => {
+      this.start = false;
+      this.collecting = true;
+      this.loadingService.loading.next(false);
+    });
+  }
+
+  collectedNow() {
+    this.loadingService.loading.next(true);
+    this.apiService.updateCollectedTime().subscribe((res: any) => {
+      this.collected = true;
+      this.collecting = false;
+      this.loadingService.loading.next(false);
+    });
+  }
+
+  omwNow() {
+    this.loadingService.loading.next(true);
+    this.apiService.updateDeliveryStart().subscribe((res: any) => {
+      this.collected = false;
+      this.omw = true;
+      this.loadingService.loading.next(false);
+    });
+  }
+
+  done() {
+    this.loadingService.loading.next(true);
+    this.apiService.updateDone().subscribe((res: any) => {
+      //refresh done logic reload jobs pull currentjob again
+      this.omw = false;
+      this.start = true;
+      this.loadingService.loading.next(false);
+    });
   }
 
   reset() {
