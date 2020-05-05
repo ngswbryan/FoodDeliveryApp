@@ -160,7 +160,7 @@ END
  --returns orderid and deliveryid as a tuple
  --currentorder is a 2d array which consist of the { {foodid,quantity}, {foodid2,quantity} }
 
- CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100))
+ CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100), delivery_fee DECIMAL)
  RETURNS VOID AS $$
  DECLARE
     orderid INTEGER;
@@ -182,9 +182,9 @@ END
                        THEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE  ORDER BY random() LIMIT 1)
                        ELSE (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE ORDER BY random() LIMIT 1)
                        END),
-              5,
+              delivery_fee,
               delivery_location,
-              TRUE) --flat fee of 5 for delivery cost
+              TRUE) --flat fee of 5 for delivery fee
       RETURNING delivery_id into deliveryid;
 
 
@@ -245,29 +245,26 @@ END
 
 
 ---- apply delivery promo IF HAVE REWARD POINTS, USE TO OFFSET (USE REWARD BUTTON)
-CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, input_delivery_id INTEGER, delivery_cost INTEGER)
+CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, delivery_cost INTEGER)
 RETURNS VOID AS $$
 declare 
     points_check INTEGER;
 begin
     SELECT points
     FROM Customers C 
-    WHERE C.uid = customer_id
+    WHERE C.uid = input_customer_id
     INTO points_check;
 
     IF (points_check = 0) THEN 
         RAISE EXCEPTION 'You have no points to be deducted';
     END IF;
     IF (points_check >= delivery_cost) THEN
-
-        UPDATE Customers
-        SET points = (points - delivery_cost_from_d)
-        WHERE uid = input_customer_id;
-    END IF;
-    IF (points_check < delivery_cost) THEN 
-
         UPDATE Customers
         SET points = (points - delivery_cost)
+        WHERE uid = input_customer_id;
+    ELSIF (points_check < delivery_cost) THEN 
+        UPDATE Customers
+        SET points = 0
         WHERE uid = input_customer_id;
     END IF;
 end

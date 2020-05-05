@@ -131,6 +131,48 @@ export class ApiService {
     );
   }
 
+  getCurrentJob(rid) {
+    return this.http.get(`${this.url}/riders/job/${rid}`);
+  }
+
+  getWeeklyStatistics(rid, week, month, year) {
+    return this.http.get(
+      `${this.url}/riders/weeklystats/${rid}?month=${month}&year=${year}&week=${week}`
+    );
+  }
+
+  getMonthlyStatistics(rid, month, year) {
+    return this.http.get(
+      `${this.url}/riders/monthlystats/${rid}?month=${month}&year=${year}`
+    );
+  }
+
+  getWWS(rid, week, month, year) {
+    return this.http.get(
+      `${this.url}/riders/wws/${rid}?month=${month}&year=${year}&week=${week}`
+    );
+  }
+
+  getMWS(rid, month, year) {
+    return this.http.get(
+      `${this.url}/riders/mws/${rid}?month=${month}&year=${year}`
+    );
+  }
+
+  updateMWS(rid, month, year, mws) {
+    return this.http
+      .post(`${this.url}/riders/mws/${rid}?month=${month}&year=${year}`, mws)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
+  }
+
+  getRiderByRID(rid) {
+    return this.http.get(`${this.url}/riders/type/${rid}`);
+  }
+
   getCustomers(month, year) {
     return this.http.get(
       `${this.url}/manager/customers?month=${month}&year=${year}`

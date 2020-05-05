@@ -60,6 +60,7 @@ export class ManagerComponent implements OnInit {
   }
 
   seeLocation() {
+    this.currLocation = "all";
     this.location = [];
     this.availableLocations = [];
     this.loadingService.loading.next(true);
