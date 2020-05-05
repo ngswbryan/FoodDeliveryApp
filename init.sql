@@ -51,7 +51,7 @@ CREATE TABLE Customers (
 
 CREATE TABLE FoodOrder (
     order_id SERIAL PRIMARY KEY NOT NULL,
-    uid INTEGER REFERENCES Users NOT NULL,
+    uid INTEGER REFERENCES Customers NOT NULL,
     rid INTEGER REFERENCES Restaurants NOT NULL,
     have_credit_card BOOLEAN,
     order_cost DECIMAL NOT NULL,
@@ -254,10 +254,10 @@ INSERT INTO FoodOrder VALUES(DEFAULT, 11, 3, TRUE, 30.0,'2019-05-22 04:00:06', T
 INSERT INTO FoodOrder VALUES(DEFAULT, 1, 4, FALSE, 20.0,'2019-08-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,'2019-05-22 04:00:06', TRUE);
 INSERT INTO FoodOrder VALUES(DEFAULT, 6, 5, TRUE, 10.0,current_timestamp, TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,current_timestamp, TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 3, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
-INSERT INTO FoodOrder VALUES(DEFAULT, 3, 2, TRUE, 23.3,current_timestamp, TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 1, 1, TRUE, 23.3,current_timestamp, TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 6, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 6, 1, TRUE, 23.3,'2020-04-22 04:00:06', TRUE);
+INSERT INTO FoodOrder VALUES(DEFAULT, 11, 2, TRUE, 23.3,current_timestamp, TRUE);
 
 
 INSERT INTO Sells VALUES (1,1,5.5);
@@ -512,7 +512,7 @@ END
  --returns orderid and deliveryid as a tuple
  --currentorder is a 2d array which consist of the { {foodid,quantity}, {foodid2,quantity} }
 
- CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100))
+CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100), delivery_fee DECIMAL)
  RETURNS VOID AS $$
  DECLARE
     orderid INTEGER;
@@ -534,7 +534,7 @@ END
                        THEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE  ORDER BY random() LIMIT 1)
                        ELSE (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE ORDER BY random() LIMIT 1)
                        END),
-              5,
+              delivery_fee,
               delivery_location,
               TRUE) --flat fee of 5 for delivery cost
       RETURNING delivery_id into deliveryid;
@@ -607,6 +607,31 @@ END
      LIMIT 5;
  $$ LANGUAGE SQL;
 
+---- apply delivery promo IF HAVE REWARD POINTS, USE TO OFFSET (USE REWARD BUTTON)
+CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, delivery_cost INTEGER)
+RETURNS VOID AS $$
+declare 
+    points_check INTEGER;
+begin
+    SELECT points
+    FROM Customers C 
+    WHERE C.uid = input_customer_id
+    INTO points_check;
+
+    IF (points_check = 0) THEN 
+        RAISE EXCEPTION 'You have no points to be deducted';
+    END IF;
+    IF (points_check >= delivery_cost) THEN
+        UPDATE Customers
+        SET points = (points - delivery_cost)
+        WHERE uid = input_customer_id;
+    ELSIF (points_check < delivery_cost) THEN 
+        UPDATE Customers
+        SET points = 0
+        WHERE uid = input_customer_id;
+    END IF;
+end
+$$ LANGUAGE PLPGSQL;
 
 
  --f)
