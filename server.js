@@ -15,7 +15,8 @@ app.use(express.static(distDir));
 const getUsers = (request, response) => {
   pool.query("SELECT * FROM users", (error, results) => {
     if (error) {
-      throw error;
+      response.status(400).json(error.message);
+      return;
     }
     response.status(200).json(results.rows);
   });
@@ -24,7 +25,8 @@ const getUsers = (request, response) => {
 const getRestaurants = (request, response) => {
   pool.query("select list_of_restaurant()", (error, results) => {
     if (error) {
-      throw error;
+      response.status(400).json(error.message);
+      return;
     }
     response.status(200).json(results.rows);
   });
@@ -38,7 +40,8 @@ const getManagerStats = (request, response) => {
     [month, year],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -53,7 +56,8 @@ const getManagerStatsOrder = (request, response) => {
     [month, year],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -65,7 +69,8 @@ const getManagerStatsCost = (request, response) => {
   const year = request.query.year;
   pool.query("select total_cost($1, $2);", [month, year], (error, results) => {
     if (error) {
-      throw error;
+      response.status(400).json(error.message);
+      return;
     }
     response.status(200).json(results.rows);
   });
@@ -80,7 +85,8 @@ const getLocation = (request, response) => {
     [month, year, location],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -95,7 +101,8 @@ const getRiders = (request, response) => {
     [month, year],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -110,7 +117,8 @@ const getCustomers = (request, response) => {
     [month, year],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -123,7 +131,8 @@ const getUserByUsername = (request, response) => {
     `SELECT * FROM users where username = '${username}'`,
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -136,7 +145,8 @@ const getStaffByUsername = (request, response) => {
     `SELECT * FROM RestaurantStaff where uid = '${uid}'`,
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -148,7 +158,8 @@ const getPastDeliveryRating = (request, response) => {
   console.log(uid);
   pool.query("select past_delivery_ratings($1);", [uid], (error, results) => {
     if (error) {
-      throw error;
+      response.status(400).json(error.message);
+      return;
     }
     response.status(200).json(results.rows);
   });
@@ -159,7 +170,8 @@ const getPastFoodReviews = (request, response) => {
   console.log(uid);
   pool.query("select past_food_reviews($1);", [uid], (error, results) => {
     if (error) {
-      throw error;
+      response.status(400).json(error.message);
+      return;
     }
     response.status(200).json(results.rows);
   });
@@ -169,7 +181,8 @@ const getMostRecentLocation = (request, response) => {
   const uid = request.params.uid;
   pool.query("select most_recent_location($1)", [uid], (error, results) => {
     if (error) {
-      throw error;
+      response.status(400).json(error.message);
+      return;
     }
     response.status(200).json(results.rows);
   });
@@ -183,7 +196,8 @@ const getListOfFoodItem = (request, response) => {
     [rid],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -194,7 +208,8 @@ const getRewardBalance = (request, response) => {
   const uid = request.params.uid;
   pool.query("select reward_balance($1);", [uid], (error, results) => {
     if (error) {
-      throw error;
+      response.status(400).json(error.message);
+      return;
     }
     response.status(200).json(results.rows);
   });
@@ -215,7 +230,8 @@ const addUser = (request, response) => {
     [name, username, password, user_role, rider_type, restaurant_name],
     (error) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(201).json({ status: "success", message: "User added." });
     }
@@ -246,7 +262,8 @@ const updateOrderCount = (request, response) => {
     ],
     (error) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response
         .status(201)
@@ -266,7 +283,8 @@ const applyDeliveryPromo = (request, response) => {
     [uid, delivery_cost],
     (error) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response
         .status(201)
@@ -278,7 +296,8 @@ const applyDeliveryPromo = (request, response) => {
 const activateRiders = (request, response) => {
   pool.query("select activate_riders();", (error) => {
     if (error) {
-      throw error;
+      response.status(400).json(error.message);
+      return;
     }
     response
       .status(201)
@@ -301,7 +320,8 @@ const addMenuItem = (request, response) => {
     [name, price, cuisine_type, rid, quantity, availability],
     (error) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(201).json({ status: "success", message: "food added." });
     }
@@ -317,7 +337,8 @@ const deleteMenuItem = (request, response) => {
 
   pool.query("select delete_menu_item($1, $2);", [fname, rid], (error) => {
     if (error) {
-      throw error;
+      response.status(400).json(error.message);
+      return;
     }
     response.status(200).json({ status: "success", message: "food deleted." });
   });
@@ -326,7 +347,8 @@ const deleteMenuItem = (request, response) => {
 const getFoodItems = (request, response) => {
   pool.query("SELECT * FROM fooditem", (error, results) => {
     if (error) {
-      throw error;
+      response.status(400).json(error.message);
+      return;
     }
     response.status(200).json(results.rows);
   });
@@ -339,7 +361,8 @@ const getTopFive = (request, response) => {
     [rid],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -355,7 +378,8 @@ const getTotalCost = (request, response) => {
     [month, year, rid],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -371,7 +395,8 @@ const getTotalOrders = (request, response) => {
     [month, year, rid],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -379,53 +404,48 @@ const getTotalOrders = (request, response) => {
 };
 
 const getFoodandDeliveryID = (request, response) => {
-  const uid = request.params.uid; 
-  const rid = request.params.rid; 
+  const uid = request.params.uid;
+  const rid = request.params.rid;
   const total_order_cost = request.params.total_order_cost;
-  
+
   pool.query(
     "select * from get_ids($1, $2, $3);",
     [uid, rid, total_order_cost],
     (error, results) => {
       if (error) {
         console.log(error);
-        throw error; 
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
-  )
-}
+  );
+};
 
 const getRiderName = (request, response) => {
-  const did = request.params.did; 
-  
-  pool.query(
-    "select * from rider_name($1);",
-    [did],
-    (error, results) => {
-      if (error) {
-        console.log(error);
-        throw error; 
-      }
-      response.status(200).json(results.rows);
+  const did = request.params.did;
+
+  pool.query("select * from rider_name($1);", [did], (error, results) => {
+    if (error) {
+      console.log(error);
+      response.status(400).json(error.message);
+      return;
     }
-  )
-}
+    response.status(200).json(results.rows);
+  });
+};
 
 const getRiderRating = (request, response) => {
   const did = request.params.did;
 
-  pool.query(
-    "select * from rider_rating($1);",
-    [did],
-    (error, results) => {
-      if (error) {
-        throw error; 
-      }
-      response.status(200).json(results.rows);
+  pool.query("select * from rider_rating($1);", [did], (error, results) => {
+    if (error) {
+      response.status(400).json(error.message);
+      return;
     }
-  )
-}
+    response.status(200).json(results.rows);
+  });
+};
 
 const getDeliveryTimings = (request, response) => {
   const did = request.params.did; 
@@ -454,71 +474,54 @@ const checkIfCompleted = (request, response) => {
         throw error; 
       }
       response.status(200).json(results.rows);
-    }
-  )
-}
 
 const getEndTime = (request, response) => {
-  const did = request.params.did; 
+  const did = request.params.did;
 
-  pool.query(
-    "select * from delivery_endtime($1)",
-    [did],
-    (error, results) => {
-      if (error) {
-        throw error; 
-      }
-      response.status(200).json(results.rows);
+  pool.query("select * from delivery_endtime($1)", [did], (error, results) => {
+    if (error) {
+      response.status(400).json(error.message);
+      return;
     }
-  )
-}
+    response.status(200).json(results.rows);
+  });
+};
 
 const foodReviewUpdate = (request, response) => {
-  const {
-    foodreview,
-    deliveryid
-  } = request.body;
+  const { foodreview, deliveryid } = request.body;
 
   pool.query(
     "select food_review_update($1, $2);",
-    [
-      foodreview,
-      deliveryid
-    ],
+    [foodreview, deliveryid],
     (error) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
-      response 
+      response
         .status(201)
         .json({ status: "success", message: "updated food review." });
     }
-  )
-  
-}
+  );
+};
 
 const updateDeliveryRating = (request, response) => {
-  const {
-    deliveryid,
-    deliveryrating 
-  } = request.body;
+  const { deliveryid, deliveryrating } = request.body;
 
   pool.query(
     "select update_delivery_rating($1, $2)",
-    [
-      deliveryid,
-      deliveryrating
-    ], 
+    [deliveryid, deliveryrating],
     (error) => {
       if (error) {
-        throw error; 
+        response.status(400).json(error.message);
+        return;
       }
-      response 
-      .status(201)
-      .json({ status: "success", message: "updated delivery rating." })
+      response
+        .status(201)
+        .json({ status: "success", message: "updated delivery rating." });
     }
-  )
-}
+  );
+};
 
 const updateFoodItem = (request, response) => {
   const fid = request.params.fid;
@@ -534,7 +537,7 @@ const updateFoodItem = (request, response) => {
     [fid, rid, food_name, quantity, food_price, cuisine_type],
     (error) => {
       if (error) {
-        response.status(400).json({ error: "invalid values" });
+        response.status(400).json(error.message);
         return;
       }
       response
@@ -552,7 +555,8 @@ const getCampaigns = (request, response) => {
     [rid],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -583,7 +587,8 @@ const deleteCampaign = (request, response) => {
     [rid],
     (error) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response
         .status(200)
@@ -597,10 +602,27 @@ const getCurrentJob = (request, response) => {
 
   pool.query("SELECT * FROM get_current_job($1);", [rid], (error, results) => {
     if (error) {
-      throw error;
+      response.status(400).json(error.message);
+      return;
     }
     response.status(200).json(results.rows);
   });
+};
+
+const getCurrentDelivery = (request, response) => {
+  const did = request.params.did;
+
+  pool.query(
+    "SELECT * from delivery where delivery_id = $1;",
+    [did],
+    (error, results) => {
+      if (error) {
+        response.status(400).json(error.message);
+        return;
+      }
+      response.status(200).json(results.rows);
+    }
+  );
 };
 
 const getWeeklyStats = (request, response) => {
@@ -614,7 +636,8 @@ const getWeeklyStats = (request, response) => {
     [rid, month, week, year],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -631,7 +654,8 @@ const getMonthlyStats = (request, response) => {
     [rid, month, year],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -644,12 +668,18 @@ const getWWS = (request, response) => {
   const month = request.query.month;
   const year = request.query.year;
 
+  console.log(rid);
+  console.log(week);
+  console.log(month);
+  console.log(year);
+
   pool.query(
     "SELECT * FROM get_WWS($1, $2, $3, $4);",
-    [rid, month, week, year],
+    [rid, week, month, year],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -666,7 +696,8 @@ const getMWS = (request, response) => {
     [rid, month, year],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -681,7 +712,8 @@ const getRiderType = (request, response) => {
     [rid],
     (error, results) => {
       if (error) {
-        throw error;
+        response.status(400).json(error.message);
+        return;
       }
       response.status(200).json(results.rows);
     }
@@ -707,9 +739,40 @@ const updateMWS = (request, response) => {
   );
 };
 
+const updateWWS = async (request, response) => {
+  const { command } = request.body;
+
+  let commandarr = command.split(";");
+  try {
+    await pool.query("BEGIN");
+    for (let i = 0; i < commandarr.length; i++) {
+      await pool.query(commandarr[i]);
+      console.log("executing queries");
+    }
+    console.log("done executing queries");
+    await pool.query("COMMIT");
+    response.status(200).json({ status: "success", message: "food updated." });
+  } catch (error) {
+    try {
+      await pool.query("ROLLBACK");
+    } catch (rollbackError) {
+      console.log("A rollback error occurred:", rollbackError);
+    }
+    console.log("An error occurred:", error);
+    response.status(400).json({ error: "invalid values" });
+    return error;
+  } finally {
+    return;
+  }
+};
+
 const updateDeparture = (request, response) => {
-  const did = request.query.fid;
+  const did = request.query.did;
   const rid = request.query.rid;
+
+  console.log("reached");
+  console.log(rid);
+  console.log(did);
 
   pool.query("select update_departure_time($1, $2);", [rid, did], (error) => {
     if (error) {
@@ -721,7 +784,7 @@ const updateDeparture = (request, response) => {
 };
 
 const updateCollected = (request, response) => {
-  const did = request.query.fid;
+  const did = request.query.did;
   const rid = request.query.rid;
 
   pool.query("select update_collected_time($1, $2);", [rid, did], (error) => {
@@ -734,8 +797,10 @@ const updateCollected = (request, response) => {
 };
 
 const updateDelivery = (request, response) => {
-  const did = request.query.fid;
+  const did = request.query.did;
   const rid = request.query.rid;
+
+  console.log("reached");
 
   pool.query("select update_delivery_start($1, $2);", [rid, did], (error) => {
     if (error) {
@@ -747,7 +812,7 @@ const updateDelivery = (request, response) => {
 };
 
 const updateDone = (request, response) => {
-  const did = request.query.fid;
+  const did = request.query.did;
   const rid = request.query.rid;
 
   pool.query("select update_done_status($1, $2);", [rid, did], (error) => {
@@ -782,6 +847,8 @@ app.route("/riders/delivery/done").patch(updateDone);
 
 app.route("/riders/job/:rid").get(getCurrentJob);
 
+app.route("/riders/delivery/:did").get(getCurrentDelivery);
+
 app.route("/riders/weeklystats/:rid").get(getWeeklyStats);
 
 app.route("/riders/monthlystats/:rid").get(getMonthlyStats);
@@ -791,6 +858,8 @@ app.route("/riders/wws/:rid").get(getWWS);
 app.route("/riders/mws/:rid").get(getMWS).post(updateMWS);
 
 app.route("/riders/type/:rid").get(getRiderType);
+
+app.route("/riders/wws/draft").post(updateWWS);
 
 app
   .route("/users")
@@ -835,7 +904,9 @@ app.route("/users/restaurant/order/rewards/:uid").get(getRewardBalance);
 
 app.route("/users/restaurant/order/promo").post(applyDeliveryPromo);
 
-app.route("/users/restaurant/order/:uid/:rid/:total_order_cost").get(getFoodandDeliveryID);
+app
+  .route("/users/restaurant/order/:uid/:rid/:total_order_cost")
+  .get(getFoodandDeliveryID);
 
 app.route("/users/restaurant/order/ridername/:did").get(getRiderName);
 

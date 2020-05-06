@@ -119,7 +119,7 @@ CREATE TABLE Sells (
     PRIMARY KEY(rid, food_id)
 );
 
-CREATE TABLE Orders (
+CREATE TABLE OrdersContain (
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
     item_quantity INTEGER,
@@ -167,12 +167,12 @@ CREATE TABLE Delivery (
 --    UNIQUE(delivery_id)
 --);
 
-CREATE TABLE Contain (
-    order_id INTEGER REFERENCES FoodOrder(order_id),
-    food_id INTEGER REFERENCES FoodItem(food_id),
-    PRIMARY KEY(order_id, food_id),
-    UNIQUE(order_id, food_id)
-);
+--CREATE TABLE Contain (
+--    order_id INTEGER REFERENCES FoodOrder(order_id),
+--    food_id INTEGER REFERENCES FoodItem(food_id),
+--    PRIMARY KEY(order_id, food_id),
+--    UNIQUE(order_id, food_id)
+--);
 
 --RELATIONSHIPS
 
@@ -287,6 +287,12 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
      AND D.delivery_rating IS NOT NULL;
  $$ LANGUAGE SQL;
 
+ CREATE OR REPLACE FUNCTION start_time(deliveryid INTEGER)
+ RETURNS TIMESTAMP AS $$
+     SELECT D.delivery_start_time
+     FROM Delivery D
+     WHERE D.delivery_id = deliveryid;
+ $$ LANGUAGE SQL;
 
  --b)
  --past food reviews
@@ -482,7 +488,7 @@ CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][],
             SET availability_status = false
             WHERE item[1] = FI.food_id;
           END IF;
-          INSERT INTO Orders(order_id,food_id,item_quantity)
+          INSERT INTO OrdersContain(order_id,food_id,item_quantity)
           VALUES (orderid,item[1],item[2]);
        END loop;
        UPDATE Customers C
@@ -710,7 +716,7 @@ RETURNS VOID AS $$
 BEGIN
     IF new_quantity IS NOT NULL then
     UPDATE FoodItem 
-    SET quantity = new_quantity
+    SET restaurant_quantity = new_quantity
     WHERE rid = current_rid
     AND food_id = id;
     END IF;
@@ -1068,7 +1074,7 @@ $$ LANGUAGE PLPGSQL;
       SELECT D.order_id, D.location, U.username, FI.food_name, O.item_quantity, D.delivery_cost + FO.order_cost, FO.rid, D.delivery_id, R.rname, R.location
       FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
       join Users U on FO.uid = U.uid 
-      join Orders O on FO.order_id = O.order_id
+      join OrdersContain O on FO.order_id = O.order_id
       join FoodItem FI on FI.food_id = O.food_id
       join Restaurants R on R.rid = FO.rid
       WHERE input_rider_id = D.rider_id
@@ -1118,7 +1124,15 @@ begin
     INTO initial_commission;
 
     RETURN QUERY(
-        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission), count(*), SUM(end_hour - start_hour)
+        SELECT input_week, input_month, input_year, salary_base, (count(distinct D.delivery_end_time) * initial_commission), count(distinct D.delivery_end_time),
+        ( SELECT SUM(end_hour - start_hour)
+          FROM WeeklyWorkSchedule WWS
+          WHERE rider_id = input_rider_id
+          AND WWS.week = input_week
+          AND WWS.month = input_month
+          AND WWS.year = input_year
+          GROUP BY rider_id
+        )
         FROM Riders R join Delivery D on D.rider_id = R.rider_id
         join WeeklyWorkSchedule WWS on WWS.rider_id = D.rider_id
         WHERE input_rider_id = D.rider_id
@@ -1599,6 +1613,10 @@ $$ LANGUAGE SQL;
           time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = input_delivery_id)/60::DECIMAL
       WHERE delivery_id = input_delivery_id
       AND rider_id = input_rider_id;
+
+       UPDATE Riders
+      SET is_delivering = FALSE
+      WHERE rider_id = input_rider_id;
   END
   $$ LANGUAGE PLPGSQL;
 
