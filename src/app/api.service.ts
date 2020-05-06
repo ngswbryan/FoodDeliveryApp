@@ -105,8 +105,12 @@ export class ApiService {
     return this.http.get(`${this.url}/users/restaurant/order/riderrating/${did}`);
   }
 
-  getStartTime(did) {
-    return this.http.get(`${this.url}/users/restaurant/order/starttime/${did}`);
+  getDeliveryTimings(did) {
+    return this.http.get(`${this.url}/users/restaurant/order/deliverytimings/${did}`);
+  }
+
+  checkIfCompleted(did) {
+    return this.http.get(`${this.url}/users/restaurant/order/ifcompleted/${did}`);
   }
 
   getEndTime(did) {

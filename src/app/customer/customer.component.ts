@@ -8,6 +8,7 @@ import { ApiService } from "../api.service";
 import { DataService } from "../data.service";
 import { Router } from "@angular/router";
 import { TabsetComponent } from 'ngx-bootstrap/tabs';
+import { ToastrService } from "ngx-toastr";
 
 
 @Component({
@@ -52,10 +53,16 @@ export class CustomerComponent implements OnInit {
 
   riderName; 
   riderRating;
-  startTime; 
+  riderdeparturetime;
+  orderTime;
+  ridercollectedtime;
+  deliverystarttime;
   
-
-  
+  onGoing: boolean; 
+  deliveryendtime;  
+  createReviewForm : FormGroup; 
+  foodreview; 
+  deliveryrating;  
   
   
   constructor(
@@ -64,6 +71,7 @@ export class CustomerComponent implements OnInit {
     private modalService: BsModalService,
     private apiService: ApiService,
     private dataService: DataService,
+    public toastr: ToastrService
     ) { }
 
   ngOnInit() {
@@ -130,6 +138,11 @@ export class CustomerComponent implements OnInit {
       creditCard: new FormControl(""),
       location: new FormControl(""),
     });
+
+    this.createReviewForm= new FormGroup({
+      foodreview: new FormControl(""),
+      deliveryrating: new FormControl("")
+    });
     
   }
 
@@ -140,20 +153,49 @@ export class CustomerComponent implements OnInit {
       this.riderName = name[0]["rider_name"];
       
     })
-    this.apiService.getStartTime(this.deliveryid).subscribe((name : any) => {
-      console.log("start time : " + name);
-      this.startTime = name[0]["start_time"];
-      
+    this.apiService.getDeliveryTimings(this.deliveryid).subscribe((timings : any) => {
+      console.log("delivery timings : " + timings);
+      this.orderTime = timings[0]["ordertime"];
+      this.riderdeparturetime = timings[0]["riderdeparturetime"];
+      this.ridercollectedtime = timings[0]["ridercollectedtime"];
+      this.deliverystarttime = timings[0]["deliverystarttime"];
+    
     })
-    this.apiService.getRiderRating(this.deliveryid).subscribe((name : any) => {
-      console.log("rider rating : " + name);
-      this.riderRating = name[0]["rider_rating"];
+    this.apiService.getRiderRating(this.deliveryid).subscribe((rating : any) => {
+      console.log("rider rating : " + rating);
+      this.riderRating = rating[0]["rider_rating"];
     })
 
 
     this.retrievedDID = true; 
   }
- 
+
+  refresh() {
+    this.apiService.getDeliveryTimings(this.deliveryid).subscribe((timings : any) => {
+      console.log("delivery timings : " + timings);
+      this.orderTime = timings[0]["ordertime"];
+      this.riderdeparturetime = timings[0]["riderdeparturetime"];
+      this.ridercollectedtime = timings[0]["ridercollectedtime"];
+      this.deliverystarttime = timings[0]["deliverystarttime"];
+    
+    })
+    this.apiService.checkIfCompleted(this.deliveryid).subscribe((completed: any) => {
+      console.log("if completed: " + completed);
+      console.log(completed[0]["ongoing"]);
+      if (completed[0]["ongoing"] = "false") {
+        this.onGoing = false; 
+        console.log("delivery is completed");
+        this.apiService.getEndTime(this.deliveryid).subscribe((endtime : any) => {
+          this.deliveryendtime = endtime[0]["delivery_endtime"];
+        })
+      } else {
+        this.toastr.show("Rider is still on the way! Please refresh later. ");
+      }
+    })
+    this.toastr.show("Rider is still on the way! Please refresh later. ");
+    
+  }
+
 
   submitForm() {
     console.log("confirmed list is: " + this.confirmedList); 
@@ -187,10 +229,10 @@ export class CustomerComponent implements OnInit {
     };
     console.log(order);
 
-    // this.apiService.activateRiders().subscribe((res: any) => {
-    //   // console.log("activated riders : " + res);
-    //   this.loadingService.loading.next(false);
-    // })
+    this.apiService.activateRiders().subscribe((res: any) => {
+      // console.log("activated riders : " + res);
+      this.loadingService.loading.next(false);
+    })
 
     this.apiService.updateOrderCount(order).subscribe((res: any) => {
       console.log("after posting" + res);
@@ -211,11 +253,39 @@ export class CustomerComponent implements OnInit {
       this.loadingService.loading.next(false);
     })
    
-    // this.onOrdered();
+    this.onGoing = true; 
   }
 
-  onOrdered() {
-    
+  submitReview() {
+    if (!this.createReviewForm.value.foodreview) {
+      window.alert("Please enter food review.");
+    } else if (!this.createReviewForm.value.deliveryrating) {
+      window.alert("Please rate your delivery experience out of 5");
+    } else {
+      this.foodreview = this.createReviewForm.value.foodreview;
+      this.deliveryrating = this.createReviewForm.value.deliveryrating; 
+    }
+
+    let review = {
+      foodreview: this.foodreview,
+      deliveryid: this.deliveryid
+    };
+    this.apiService.foodReviewUpdate(review).subscribe((res: any) => {
+      console.log(res);
+      this.loadingService.loading.next(false);
+    })
+
+    let deliveryrating = {
+      deliveryid: this.deliveryid,
+      deliveryrating: this.deliveryrating
+    }; 
+    this.apiService.updateDeliveryRating(deliveryrating).subscribe((res: any) => {
+      console.log("delivery rating submitted" + res);
+      this.loadingService.loading.next(false);
+    })
+
+   
+
   }
 
   showYourModal(i) {
@@ -299,5 +369,6 @@ export class CustomerComponent implements OnInit {
   disableEnable() {
     this.staticTabs.tabs[0].disabled = !this.staticTabs.tabs[0].disabled;
   }
+  
 }
 

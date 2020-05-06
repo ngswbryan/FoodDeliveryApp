@@ -427,11 +427,27 @@ const getRiderRating = (request, response) => {
   )
 }
 
-const getStartTime = (request, response) => {
+const getDeliveryTimings = (request, response) => {
   const did = request.params.did; 
 
   pool.query(
-    "select * from start_time($1);",
+    "select * from delivery_timings($1)",
+    [did],
+    (error, results) => {
+      if (error) {
+        throw error; 
+      }
+      response.status(200).json(results.rows);
+    }
+  )
+}
+
+//returns boolean
+const checkIfCompleted = (request, response) => {
+  const did = request.params.did; 
+
+  pool.query(
+    "select * from delivery where delivery.delivery_id = ($1) and delivery.ongoing = FALSE;",
     [did],
     (error, results) => {
       if (error) {
@@ -825,13 +841,15 @@ app.route("/users/restaurant/order/ridername/:did").get(getRiderName);
 
 app.route("/users/restaurant/order/riderrating/:did").get(getRiderRating);
 
-app.route("/users/restaurant/order/starttime/:did").get(getStartTime);
+app.route("/users/restaurant/order/deliverytimings/:did").get(getDeliveryTimings);
 
 app.route("/users/restaurant/order/endtime/:did").get(getEndTime);
 
 app.route("/users/restaurant/order/foodreviewupdate").post(foodReviewUpdate);
 
 app.route("/users/restaurant/order/deliveryrating").post(updateDeliveryRating);
+
+app.route("/users/restaurant/order/ifcompleted/:did").get(checkIfCompleted);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {
