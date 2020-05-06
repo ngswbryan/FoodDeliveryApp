@@ -179,11 +179,11 @@ CREATE TABLE Contain (
 
 -------- POPULATION -------------
 
-INSERT INTO Restaurants VALUES (1, 'kfc', 5.0);
-INSERT INTO Restaurants VALUES (2, 'mac', 8.0);
-INSERT INTO Restaurants VALUES (3, 'sweechoon', 4.0);
-INSERT INTO Restaurants VALUES (4, 'reedz', 10.0);
-INSERT INTO Restaurants VALUES (5, 'nanathai', 6.0);
+INSERT INTO Restaurants VALUES (1, 'kfc', 'PASIR RIS', 5.0);
+INSERT INTO Restaurants VALUES (2, 'mac', 'CHINATOWN', 8.0);
+INSERT INTO Restaurants VALUES (3, 'sweechoon', 'WOODLANDS', 4.0);
+INSERT INTO Restaurants VALUES (4, 'reedz', 'HARBOURFRONT', 10.0);
+INSERT INTO Restaurants VALUES (5, 'nanathai', 'VIVOCITY', 6.0);
 
 INSERT INTO PromotionalCampaign values (DEFAULT, 1, 20, 'this is discount 1', '2018-06-22 04:00:06', '2018-12-19 04:00:06'); 
 
@@ -463,7 +463,7 @@ CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][],
 
        FOREACH item SLICE 1 IN ARRAY currentorder LOOP
           SELECT ordered_count into orderedcount FROM FoodItem WHERE food_id = item[1];
-          SELECT quantity into foodquantity FROM FoodItem WHERE food_id = item[1];
+          SELECT restaurant_quantity into foodquantity FROM FoodItem WHERE food_id = item[1];
           UPDATE FoodItem FI
           SET ordered_count = ordered_count + item[2]
           WHERE item[1] = FI.food_id;
@@ -695,7 +695,7 @@ RETURNS VOID AS $$
 BEGIN
     IF new_quantity IS NOT NULL then
     UPDATE FoodItem 
-    SET quantity = new_quantity
+    SET restaurant_quantity = new_quantity
     WHERE rid = current_rid
     AND food_id = id;
     END IF;
@@ -1537,6 +1537,10 @@ $$ LANGUAGE SQL;
           time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = input_delivery_id)/60::DECIMAL
       WHERE delivery_id = input_delivery_id
       AND rider_id = input_rider_id;
+
+       UPDATE Riders
+      SET is_delivering = FALSE
+      WHERE rider_id = input_rider_id;
   END
   $$ LANGUAGE PLPGSQL;
 
