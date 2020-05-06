@@ -8,7 +8,7 @@ import { Router } from "@angular/router";
 export class ApiService {
   constructor(private http: HttpClient, public router: Router) {}
 
-  url = "http://localhost:3002";
+  url = "";
   public erMsg = new Subject();
 
   getError(): Observable<any> {
@@ -63,10 +63,6 @@ export class ApiService {
     );
   }
 
-  getFoodandDeliveryID() {
-    return this.http.get(`${this.url}/users/restaurant/order/ids`);
-  }
-
   applyDeliveryPromo(promo) {
     return this.http
       .post(`${this.url}/users/restaurant/order/promo`, promo)
@@ -93,6 +89,44 @@ export class ApiService {
 
   getMostRecentLocation(uid) {
     return this.http.get(`${this.url}/users/restaurant/order/recent/${uid}`);
+  }
+
+  getFoodandDeliveryID(uid, rid, total_order_cost) {
+    return this.http.get(
+      `${this.url}/users/restaurant/order/${uid}/${rid}/${total_order_cost}`
+    );
+  }
+
+  getRiderName(did) {
+    return this.http.get(`${this.url}/users/restaurant/order/ridername/${did}`);
+  }
+
+  getRiderRating(did) {
+    return this.http.get(`${this.url}/users/restaurant/order/riderrating/${did}`);
+  }
+
+  getStartTime(did) {
+    return this.http.get(`${this.url}/users/restaurant/order/starttime/${did}`);
+  }
+
+  getEndTime(did) {
+    return this.http.get(`${this.url}/users/restaurant/order/endtime/${did}`);
+  }
+
+  foodReviewUpdate(foodreview) {
+    return this.http.post(`${this.url}/users/restaurant/order/foodreviewupdate`, foodreview).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  updateDeliveryRating(deliveryrating) {
+    return this.http.post(`${this.url}/users/restaurant/order/deliveryrating`, deliveryrating).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   generateTotalOrders(month, year, rid) {

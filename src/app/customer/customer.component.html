@@ -200,7 +200,18 @@ style="align-content: center; background-color:#f3f5f8 ;">
     </tab>
 
     <tab heading="Ongoing Delivery" id="2">
-
+      <div *ngIf="!retrievedDID"> 
+        <button (click)="getDID()"> refresh </button>
+      </div>
+      <div *ngIf="retrievedDID"> 
+        <h1> Delivery Page </h1>
+        <h5> Rider Name : {{ riderName }}</h5>
+        <h5> Delivery ID : {{ deliveryid }} </h5>
+        <h5> Start time : {{ startTime }}  </h5>
+        <h5> Location : {{ location }}</h5>
+        <h5> Riders rating : {{ riderRating }}</h5>
+      </div>
+      
     </tab>
   </tabset>
 </div>

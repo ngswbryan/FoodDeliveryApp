@@ -275,10 +275,6 @@ const applyDeliveryPromo = (request, response) => {
   );
 };
 
-// const getFoodandDeliveryID = (request, response) => {
-//   const
-// }
-
 const activateRiders = (request, response) => {
   pool.query("select activate_riders();", (error) => {
     if (error) {
@@ -381,6 +377,132 @@ const getTotalOrders = (request, response) => {
     }
   );
 };
+
+const getFoodandDeliveryID = (request, response) => {
+  const uid = request.params.uid; 
+  const rid = request.params.rid; 
+  const total_order_cost = request.params.total_order_cost;
+  
+  pool.query(
+    "select * from get_ids($1, $2, $3);",
+    [uid, rid, total_order_cost],
+    (error, results) => {
+      if (error) {
+        console.log(error);
+        throw error; 
+      }
+      response.status(200).json(results.rows);
+    }
+  )
+}
+
+const getRiderName = (request, response) => {
+  const did = request.params.did; 
+  
+  pool.query(
+    "select * from rider_name($1);",
+    [did],
+    (error, results) => {
+      if (error) {
+        console.log(error);
+        throw error; 
+      }
+      response.status(200).json(results.rows);
+    }
+  )
+}
+
+const getRiderRating = (request, response) => {
+  const did = request.params.did;
+
+  pool.query(
+    "select * from rider_rating($1);",
+    [did],
+    (error, results) => {
+      if (error) {
+        throw error; 
+      }
+      response.status(200).json(results.rows);
+    }
+  )
+}
+
+const getStartTime = (request, response) => {
+  const did = request.params.did; 
+
+  pool.query(
+    "select * from start_time($1);",
+    [did],
+    (error, results) => {
+      if (error) {
+        throw error; 
+      }
+      response.status(200).json(results.rows);
+    }
+  )
+}
+
+const getEndTime = (request, response) => {
+  const did = request.params.did; 
+
+  pool.query(
+    "select * from delivery_endtime($1)",
+    [did],
+    (error, results) => {
+      if (error) {
+        throw error; 
+      }
+      response.status(200).json(results.rows);
+    }
+  )
+}
+
+const foodReviewUpdate = (request, response) => {
+  const {
+    foodreview,
+    deliveryid
+  } = request.body;
+
+  pool.query(
+    "select food_review_update($1, $2);",
+    [
+      foodreview,
+      deliveryid
+    ],
+    (error) => {
+      if (error) {
+        throw error;
+      }
+      response 
+        .status(201)
+        .json({ status: "success", message: "updated food review." });
+    }
+  )
+  
+}
+
+const updateDeliveryRating = (request, response) => {
+  const {
+    deliveryid,
+    deliveryrating 
+  } = request.body;
+
+  pool.query(
+    "select update_delivery_rating($1, $2)",
+    [
+      deliveryid,
+      deliveryrating
+    ], 
+    (error) => {
+      if (error) {
+        throw error; 
+      }
+      response 
+      .status(201)
+      .json({ status: "success", message: "updated delivery rating." })
+    }
+  )
+}
 
 const updateFoodItem = (request, response) => {
   const fid = request.params.fid;
@@ -696,6 +818,20 @@ app.route("/users/restaurant/order/recent/:uid").get(getMostRecentLocation);
 app.route("/users/restaurant/order/rewards/:uid").get(getRewardBalance);
 
 app.route("/users/restaurant/order/promo").post(applyDeliveryPromo);
+
+app.route("/users/restaurant/order/:uid/:rid/:total_order_cost").get(getFoodandDeliveryID);
+
+app.route("/users/restaurant/order/ridername/:did").get(getRiderName);
+
+app.route("/users/restaurant/order/riderrating/:did").get(getRiderRating);
+
+app.route("/users/restaurant/order/starttime/:did").get(getStartTime);
+
+app.route("/users/restaurant/order/endtime/:did").get(getEndTime);
+
+app.route("/users/restaurant/order/foodreviewupdate").post(foodReviewUpdate);
+
+app.route("/users/restaurant/order/deliveryrating").post(updateDeliveryRating);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {
