@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Data, Params, Router } from "@angular/router";
 import { LoadingService } from "../loading.service";
 import { ApiService } from "../api.service";
+import { FormGroup, FormControl } from "@angular/forms";
 
 @Component({
   selector: "app-manager",
@@ -26,6 +27,17 @@ export class ManagerComponent implements OnInit {
   riders = [];
   availableLocations = [];
   currLocation = "all";
+  campaigns = [];
+
+  newCampaign;
+
+  createCampaign = new FormGroup({
+    description: new FormControl(""),
+    start: new FormControl(""),
+    end: new FormControl(""),
+    discount: new FormControl(""),
+  });
+
   constructor(
     private route: ActivatedRoute,
     private loadingService: LoadingService,
@@ -40,8 +52,90 @@ export class ManagerComponent implements OnInit {
       this.apiService
         .getUserByUsername(this.username)
         .subscribe((test: any) => {
-          this.loadingService.loading.next(false);
+          this.apiService.getFDSCampaigns().subscribe((campaigns: any) => {
+            for (let k = 0; k < campaigns.length; k++) {
+              let start = campaigns[k].start_date;
+              let end = campaigns[k].end_date;
+              let formatted = start.substring(0, 10);
+              let formmated2 = end.substring(0, 10);
+              let newPromo = {
+                ...campaigns[k],
+                new_start: formatted,
+                new_end: formmated2,
+              };
+              this.campaigns.push(newPromo);
+            }
+            this.loadingService.loading.next(false);
+          });
         });
+    });
+  }
+
+  checkDate(date) {
+    let curr = new Date().toISOString();
+    let currDate = new Date(curr);
+    let input = new Date(date);
+
+    if (currDate > input) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  deleteCampaign(id) {
+    this.loadingService.loading.next(true);
+    this.apiService.deleteFDSCampaign(id).subscribe(() => {
+      this.campaigns = [];
+      this.apiService.getFDSCampaigns().subscribe((campaigns: any) => {
+        for (let k = 0; k < campaigns.length; k++) {
+          let start = campaigns[k].start_date;
+          let end = campaigns[k].end_date;
+          let formatted = start.substring(0, 10);
+          let formmated2 = end.substring(0, 10);
+          let newPromo = {
+            ...campaigns[k],
+            new_start: formatted,
+            new_end: formmated2,
+          };
+          this.campaigns.push(newPromo);
+        }
+        this.loadingService.loading.next(false);
+      });
+    });
+  }
+
+  checkStarted(date) {
+    let curr = new Date().toISOString();
+    let currDate = new Date(curr);
+    let input = new Date(date);
+
+    if (currDate > input) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  addCampaign() {
+    this.loadingService.loading.next(true);
+    this.apiService.addFDSCampaign(this.createCampaign.value).subscribe(() => {
+      this.campaigns = [];
+      this.apiService.getFDSCampaigns().subscribe((campaigns: any) => {
+        for (let k = 0; k < campaigns.length; k++) {
+          let start = campaigns[k].start_date;
+          let end = campaigns[k].end_date;
+          let formatted = start.substring(0, 10);
+          let formmated2 = end.substring(0, 10);
+          let newPromo = {
+            ...campaigns[k],
+            new_start: formatted,
+            new_end: formmated2,
+          };
+          this.campaigns.push(newPromo);
+        }
+        this.loadingService.loading.next(false);
+      });
     });
   }
 

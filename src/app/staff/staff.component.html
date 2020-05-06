@@ -259,6 +259,7 @@
                 <button
                   class="btn btn-danger"
                   (click)="deleteCampaign(campaign.promo_id)"
+                  *ngIf="!campaign.storewide"
                 >
                   Delete
                 </button>

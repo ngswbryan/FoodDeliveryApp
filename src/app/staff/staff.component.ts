@@ -76,12 +76,30 @@ export class StaffComponent implements OnInit {
                       ...campaigns[k],
                       new_start: formatted,
                       new_end: formmated2,
+                      storewide: false,
                     };
                     this.campaigns.push(newPromo);
                   }
-                  console.log(this.campaigns);
-                  this.updateMenu();
-                  this.loadingService.loading.next(false);
+                  this.apiService
+                    .getFDSCampaigns()
+                    .subscribe((fdscampaigns: any) => {
+                      for (let q = 0; q < fdscampaigns.length; q++) {
+                        let start = fdscampaigns[q].start_date;
+                        let end = fdscampaigns[q].end_date;
+                        let formatted = start.substring(0, 10);
+                        let formmated2 = end.substring(0, 10);
+                        let newPromo = {
+                          ...fdscampaigns[q],
+                          new_start: formatted,
+                          new_end: formmated2,
+                          storewide: true,
+                        };
+                        this.campaigns.push(newPromo);
+                      }
+                      console.log(this.campaigns);
+                      this.updateMenu();
+                      this.loadingService.loading.next(false);
+                    });
                 });
             });
         });
@@ -116,11 +134,28 @@ export class StaffComponent implements OnInit {
               ...campaigns[k],
               new_start: formatted,
               new_end: formmated2,
+              storewide: false,
             };
             this.campaigns.push(newPromo);
           }
-          this.updateMenu();
-          this.loadingService.loading.next(false);
+          this.apiService.getFDSCampaigns().subscribe((fdscampaigns: any) => {
+            for (let q = 0; q < fdscampaigns.length; q++) {
+              let start = fdscampaigns[q].start_date;
+              let end = fdscampaigns[q].end_date;
+              let formatted = start.substring(0, 10);
+              let formmated2 = end.substring(0, 10);
+              let newPromo = {
+                ...fdscampaigns[q],
+                new_start: formatted,
+                new_end: formmated2,
+                storewide: true,
+              };
+              this.campaigns.push(newPromo);
+            }
+            console.log(this.campaigns);
+            this.updateMenu();
+            this.loadingService.loading.next(false);
+          });
         });
     });
   }
@@ -272,11 +307,28 @@ export class StaffComponent implements OnInit {
                 ...campaigns[k],
                 new_start: formatted,
                 new_end: formmated2,
+                storewide: false,
               };
               this.campaigns.push(newPromo);
             }
-            this.updateMenu();
-            this.loadingService.loading.next(false);
+            this.apiService.getFDSCampaigns().subscribe((fdscampaigns: any) => {
+              for (let q = 0; q < fdscampaigns.length; q++) {
+                let start = fdscampaigns[q].start_date;
+                let end = fdscampaigns[q].end_date;
+                let formatted = start.substring(0, 10);
+                let formmated2 = end.substring(0, 10);
+                let newPromo = {
+                  ...fdscampaigns[q],
+                  new_start: formatted,
+                  new_end: formmated2,
+                  storewide: true,
+                };
+                this.campaigns.push(newPromo);
+              }
+              console.log(this.campaigns);
+              this.updateMenu();
+              this.loadingService.loading.next(false);
+            });
           });
       });
   }

@@ -547,6 +547,16 @@ const getCampaigns = (request, response) => {
   );
 };
 
+const getFDSCampaigns = (request, response) => {
+  pool.query("SELECT * FROM FDSPromotionalCampaign;", (error, results) => {
+    if (error) {
+      response.status(400).json(error.message);
+      return;
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
 const addCampaign = (request, response) => {
   const rid = request.params.rid;
   const { description, discount, start, end } = request.body;
@@ -564,10 +574,44 @@ const addCampaign = (request, response) => {
   );
 };
 
+const addFDSCampaigns = (request, response) => {
+  console.log("im hereeeeeee");
+  const { description, discount, start, end } = request.body;
+
+  pool.query(
+    "INSERT INTO FDSPromotionalCampaign VALUES(DEFAULT, $1, $2, $3, $4)",
+    [discount, description, start, end],
+    (error) => {
+      if (error) {
+        response.status(400).json({ error: "invalid values" });
+        return;
+      }
+      response.status(201).json({ status: "success", message: "User added." });
+    }
+  );
+};
+
 const deleteCampaign = (request, response) => {
   const rid = request.params.rid;
   pool.query(
     "DELETE from PromotionalCampaign P where P.promo_id = $1;",
+    [rid],
+    (error) => {
+      if (error) {
+        response.status(400).json(error.message);
+        return;
+      }
+      response
+        .status(200)
+        .json({ status: "success", message: "campaign deleted." });
+    }
+  );
+};
+
+const deleteFDSCampaign = (request, response) => {
+  const rid = request.params.rid;
+  pool.query(
+    "DELETE from FDSPromotionalCampaign P where P.promo_id = $1;",
     [rid],
     (error) => {
       if (error) {
@@ -815,6 +859,10 @@ app
   .get(getCampaigns)
   .post(addCampaign)
   .delete(deleteCampaign);
+
+app.route("/manager/campaigns").get(getFDSCampaigns).post(addFDSCampaigns);
+
+app.route("/manager/campaigns/:rid").delete(deleteFDSCampaign);
 
 app.route("/staff/menu/:fid").patch(updateFoodItem);
 app.route("/staff/reports/orders").get(getTotalOrders);

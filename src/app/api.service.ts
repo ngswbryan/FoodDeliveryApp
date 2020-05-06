@@ -389,6 +389,14 @@ export class ApiService {
     );
   }
 
+  deleteFDSCampaign(rid) {
+    return this.http.delete(`${this.url}/manager/campaigns/${rid}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
   addMenuItem(food) {
     return this.http.post(`${this.url}/staff/menu`, food).pipe(
       retry(1),
@@ -415,8 +423,24 @@ export class ApiService {
     );
   }
 
+  getFDSCampaigns() {
+    return this.http.get(`${this.url}/manager/campaigns`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
   addCampaign(rid, campaign) {
     return this.http.post(`${this.url}/staff/campaigns/${rid}`, campaign).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  addFDSCampaign(campaign) {
+    return this.http.post(`${this.url}/manager/campaigns`, campaign).pipe(
       retry(1),
 
       catchError(this.handleError)
