@@ -12,304 +12,422 @@
 
   <div class="row">
     <div class="col-md-2"></div>
-
     <div class="col-md-8" style="text-align: center;">
-      <h5>View data for the month of</h5>
-      <select
-        id="month"
-        name="month"
-        [(ngModel)]="selectedMonth"
-        (change)="handlePeriodChange()"
-      >
-        <option value="1">January</option>
-        <option value="2">February</option>
-        <option value="3">March</option>
-        <option value="4">April</option>
-        <option value="5">May</option>
-        <option value="6">June</option>
-        <option value="7">July</option>
-        <option value="8">August</option>
-        <option value="9">September</option>
-        <option value="10">October</option>
-        <option value="11">November</option>
-        <option value="12">December</option>
-      </select>
-      <select
-        id="year"
-        name="year"
-        [(ngModel)]="selectedYear"
-        (change)="handlePeriodChange()"
-      >
-        <option value="2020">2020</option>
-        <option value="2021">2021</option>
-        <option value="2022">2022</option>
-      </select>
-    </div>
-
-    <div class="col-md-2"></div>
-  </div>
-  <br />
-  <br />
-
-  <div class="row">
-    <div class="col-md-2"></div>
-    <div class="col-md-8">
-      <accordion [isAnimated]="true">
-        <accordion-group heading="View New Customers">
-          Total new customers: {{ newCustomers.length }}
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="isCollapsed = !isCollapsed"
-            [attr.aria-expanded]="!isCollapsed"
-            aria-controls="collapseBasic"
-            style="float: right;"
+      <tabset>
+        <tab heading="View FoodHub Statistics">
+          <br />
+          <h5>View data for the month of</h5>
+          <select
+            id="month"
+            name="month"
+            [(ngModel)]="selectedMonth"
+            (change)="handlePeriodChange()"
           >
-            Show new users
-          </button>
-          <hr />
-          <div id="collapseBasic" [collapse]="isCollapsed" [isAnimated]="true">
-            <table *ngIf="newCustomers.length > 0" class="table table-striped">
-              <thead>
-                <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">Customer ID</th>
-                  <th scope="col">Username</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let customer of newCustomers; index as i">
-                  <th scope="row">{{ i + 1 }}</th>
-                  <td>
-                    {{ customer[0] }}
-                  </td>
-                  <td>{{ customer[1] }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div *ngIf="newCustomers.length == 0">
-              No new users this month! 😭
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+          <select
+            id="year"
+            name="year"
+            [(ngModel)]="selectedYear"
+            (change)="handlePeriodChange()"
+          >
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+          </select>
+
+          <br />
+          <br />
+          <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+              <accordion [isAnimated]="true">
+                <accordion-group heading="View New Customers">
+                  Total new customers: {{ newCustomers.length }}
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    (click)="isCollapsed = !isCollapsed"
+                    [attr.aria-expanded]="!isCollapsed"
+                    aria-controls="collapseBasic"
+                    style="float: right;"
+                  >
+                    Show new users
+                  </button>
+                  <hr />
+                  <div
+                    id="collapseBasic"
+                    [collapse]="isCollapsed"
+                    [isAnimated]="true"
+                  >
+                    <table
+                      *ngIf="newCustomers.length > 0"
+                      class="table table-striped"
+                    >
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Customer ID</th>
+                          <th scope="col">Username</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let customer of newCustomers; index as i">
+                          <th scope="row">{{ i + 1 }}</th>
+                          <td>
+                            {{ customer[0] }}
+                          </td>
+                          <td>{{ customer[1] }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div *ngIf="newCustomers.length == 0">
+                      No new users this month! 😭
+                    </div>
+                  </div>
+                </accordion-group>
+                <accordion-group heading="View Total Orders">
+                  Total orders: {{ totalOrders.length }}
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    (click)="isCollapsedOrders = !isCollapsedOrders"
+                    [attr.aria-expanded]="!isCollapsedOrders"
+                    aria-controls="collapseBasic"
+                    style="float: right;"
+                  >
+                    Show order details
+                  </button>
+                  <hr />
+                  <div
+                    id="collapseBasic"
+                    [collapse]="isCollapsedOrders"
+                    [isAnimated]="true"
+                  >
+                    <table
+                      *ngIf="totalOrders.length > 0"
+                      class="table table-striped"
+                    >
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Order ID</th>
+                          <th scope="col">Customer ID</th>
+                          <th scope="col">Rider ID</th>
+                          <th scope="col">Order Cost</th>
+                          <th scope="col">Order Time</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let order of totalOrders; index as i">
+                          <th scope="row">{{ i + 1 }}</th>
+                          <td>
+                            {{ order[0] }}
+                          </td>
+                          <td>{{ order[1] }}</td>
+                          <td>{{ order[2] }}</td>
+                          <td>{{ order[4] }}</td>
+                          <td>{{ order[5] }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div *ngIf="totalOrders.length == 0">
+                      No new orders this month! 😭
+                    </div>
+                  </div>
+                </accordion-group>
+                <accordion-group heading="View Total Order Cost">
+                  <div *ngIf="totalCost[0].total_cost != null">
+                    Total orders cost: <b>${{ totalCost[0].total_cost }}</b> 😄
+                  </div>
+                  <div *ngIf="totalCost[0].total_cost == null">
+                    There were zero orders for this month! 😞
+                  </div>
+                </accordion-group>
+              </accordion>
             </div>
+            <div class="col-md-2"></div>
           </div>
-        </accordion-group>
-        <accordion-group heading="View Total Orders">
-          Total orders: {{ totalOrders.length }}
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="isCollapsedOrders = !isCollapsedOrders"
-            [attr.aria-expanded]="!isCollapsedOrders"
-            aria-controls="collapseBasic"
-            style="float: right;"
-          >
-            Show order details
-          </button>
-          <hr />
-          <div
-            id="collapseBasic"
-            [collapse]="isCollapsedOrders"
-            [isAnimated]="true"
-          >
-            <table *ngIf="totalOrders.length > 0" class="table table-striped">
-              <thead>
-                <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">Order ID</th>
-                  <th scope="col">Customer ID</th>
-                  <th scope="col">Rider ID</th>
-                  <th scope="col">Order Cost</th>
-                  <th scope="col">Order Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let order of totalOrders; index as i">
-                  <th scope="row">{{ i + 1 }}</th>
-                  <td>
-                    {{ order[0] }}
-                  </td>
-                  <td>{{ order[1] }}</td>
-                  <td>{{ order[2] }}</td>
-                  <td>{{ order[4] }}</td>
-                  <td>{{ order[5] }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div *ngIf="totalOrders.length == 0">
-              No new orders this month! 😭
+
+          <br />
+          <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+              <div class="row">
+                <div class="col-md-4 box">
+                  <div style="background-color: transparent;" class="inner">
+                    <button class="btn btn-primary" (click)="seeLocation()">
+                      See Statistics By Location
+                    </button>
+                  </div>
+                </div>
+                <div class="col-md-4 box">
+                  <div style="background-color: transparent;" class="inner">
+                    <button class="btn btn-primary" (click)="seeCustomers()">
+                      See Statistics Of All Customer
+                    </button>
+                  </div>
+                </div>
+                <div class="col-md-4 box">
+                  <div style="background-color: transparent;" class="inner">
+                    <button class="btn btn-primary" (click)="seeRiders()">
+                      See Statistics For All Riders
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
+            <div class="col-md-1"></div>
           </div>
-        </accordion-group>
-        <accordion-group heading="View Total Order Cost">
-          <div *ngIf="totalCost[0].total_cost != null">
-            Total orders cost: <b>${{ totalCost[0].total_cost }}</b> 😄
-          </div>
-          <div *ngIf="totalCost[0].total_cost == null">
-            There were zero orders for this month! 😞
-          </div>
-        </accordion-group>
-      </accordion>
-    </div>
-    <div class="col-md-2"></div>
-  </div>
-  <br />
-  <div class="row">
-    <div class="col-md-1"></div>
-    <div class="col-md-10">
-      <div class="row">
-        <div class="col-md-4 box">
-          <div style="background-color: transparent;" class="inner">
-            <button class="btn btn-primary" (click)="seeLocation()">
-              See Statistics By Location
-            </button>
-          </div>
-        </div>
-        <div class="col-md-4 box">
-          <div style="background-color: transparent;" class="inner">
-            <button class="btn btn-primary" (click)="seeCustomers()">
-              See Statistics Of All Customer
-            </button>
-          </div>
-        </div>
-        <div class="col-md-4 box">
-          <div style="background-color: transparent;" class="inner">
-            <button class="btn btn-primary" (click)="seeRiders()">
-              See Statistics For All Riders
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-1"></div>
-  </div>
-  <br />
-  <div class="row" *ngIf="showCustomers">
-    <div class="col-md-2"></div>
+          <br />
+          <div class="row" *ngIf="showCustomers">
+            <div class="col-md-2"></div>
 
-    <div class="col-md-8">
-      <h4>Customer Statistics for {{ selectedMonth }}/{{ selectedYear }}</h4>
-      <table *ngIf="customers.length > 0" class="table table-striped">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Customer ID</th>
-            <th scope="col">Total Orders</th>
-            <th scope="col">Total Order Cost</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let customer of customers; index as i">
-            <th>{{ i + 1 }}</th>
-            <td>
-              {{ customer[2] }}
-            </td>
-            <td>{{ customer[3] }}</td>
-            <td>{{ customer[4] }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div *ngIf="customers.length == 0">
-        <alert type="danger">
-          <strong>Oh snap!</strong> No data to display for this month! 😢
-        </alert>
-      </div>
-    </div>
+            <div class="col-md-8">
+              <h4>
+                Customer Statistics for {{ selectedMonth }}/{{ selectedYear }}
+              </h4>
+              <table *ngIf="customers.length > 0" class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Customer ID</th>
+                    <th scope="col">Total Orders</th>
+                    <th scope="col">Total Order Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let customer of customers; index as i">
+                    <th>{{ i + 1 }}</th>
+                    <td>
+                      {{ customer[2] }}
+                    </td>
+                    <td>{{ customer[3] }}</td>
+                    <td>{{ customer[4] }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div *ngIf="customers.length == 0">
+                <alert type="danger">
+                  <strong>Oh snap!</strong> No data to display for this month!
+                  😢
+                </alert>
+              </div>
+            </div>
 
-    <div class="col-md-2"></div>
-  </div>
+            <div class="col-md-2"></div>
+          </div>
 
-  <div class="row" *ngIf="showLocation">
-    <div class="col-md-2"></div>
+          <div class="row" *ngIf="showLocation">
+            <div class="col-md-2"></div>
 
-    <div class="col-md-8">
-      <h4>Location Statistics for {{ selectedMonth }}/{{ selectedYear }}</h4>
-      <h4 style="float: right;">
-        Filter By Location:
-        <select (change)="changeLocation()" [(ngModel)]="currLocation">
-          <option value="all" selected="selected">
-            All
-          </option>
-          <option
-            *ngFor="let location of availableLocations"
-            [value]="location.delivery_location"
-            >{{ location.delivery_location }}</option
-          >
-        </select>
-      </h4>
-      <table *ngIf="location.length > 0" class="table table-striped">
-        <!-- Statistics by location for
+            <div class="col-md-8">
+              <h4>
+                Location Statistics for {{ selectedMonth }}/{{ selectedYear }}
+              </h4>
+              <h4 style="float: right;">
+                Filter By Location:
+                <select (change)="changeLocation()" [(ngModel)]="currLocation">
+                  <option value="all" selected="selected">
+                    All
+                  </option>
+                  <option
+                    *ngFor="let location of availableLocations"
+                    [value]="location.delivery_location"
+                    >{{ location.delivery_location }}</option
+                  >
+                </select>
+              </h4>
+              <table *ngIf="location.length > 0" class="table table-striped">
+                <!-- Statistics by location for
         {{
           customers[0][0]
         }}/{{
           customers[0][1]
         }} -->
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Location</th>
-            <th scope="col">Time</th>
-            <th scope="col">Total Orders</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let location of location; index as i">
-            <th scope="row">{{ i + 1 }}</th>
-            <td>
-              {{ location.delivery_location }}
-            </td>
-            <td>{{ location.hour }}</td>
-            <td>{{ location.count }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div *ngIf="location.length == 0">
-        <alert type="danger">
-          <strong>Oh snap!</strong> No data to display for this month! 😢
-        </alert>
-      </div>
-    </div>
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Location</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Total Orders</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let location of location; index as i">
+                    <th scope="row">{{ i + 1 }}</th>
+                    <td>
+                      {{ location.delivery_location }}
+                    </td>
+                    <td>{{ location.hour }}</td>
+                    <td>{{ location.count }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div *ngIf="location.length == 0">
+                <alert type="danger">
+                  <strong>Oh snap!</strong> No data to display for this month!
+                  😢
+                </alert>
+              </div>
+            </div>
 
-    <div class="col-md-2"></div>
-  </div>
+            <div class="col-md-2"></div>
+          </div>
 
-  <div class="row" *ngIf="showRiders">
-    <div class="col-md-2"></div>
-    <div class="col-md-8">
-      <h4 *ngIf="riderRole">
-        Rider Statistics for {{ selectedMonth }}/{{ selectedYear }}
-      </h4>
-      <table *ngIf="riders.length > 0" class="table table-striped">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Rider ID</th>
-            <th scope="col">Total Orders Delivered</th>
-            <th scope="col">Total Hours Worked</th>
-            <th scope="col">Total Salary Earned</th>
-            <th scope="col">Average Delivery Time</th>
-            <th scope="col">Number of Ratings</th>
-            <th scope="col">Average Rating</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let rider of riders; index as i">
-            <th scope="row">{{ i + 1 }}</th>
-            <td>
-              {{ rider.rider_id }}
-            </td>
-            <td>{{ rider.count }}</td>
-            <td>{{ rider.total_hours_worked }}</td>
-            <td>{{ rider.total_salary }}</td>
-            <td>{{ rider.average_delivery_time }}</td>
-            <td>{{ rider.total_number_ratings }}</td>
-            <td>{{ rider.average_ratings }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div *ngIf="riders.length == 0">
-        <alert type="danger">
-          <strong>Oh snap!</strong> No data to display for this month! 😢
-        </alert>
-      </div>
+          <div class="row" *ngIf="showRiders">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+              <h4 *ngIf="riderRole">
+                Rider Statistics for {{ selectedMonth }}/{{ selectedYear }}
+              </h4>
+              <table *ngIf="riders.length > 0" class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Rider ID</th>
+                    <th scope="col">Total Orders Delivered</th>
+                    <th scope="col">Total Hours Worked</th>
+                    <th scope="col">Total Salary Earned</th>
+                    <th scope="col">Average Delivery Time</th>
+                    <th scope="col">Number of Ratings</th>
+                    <th scope="col">Average Rating</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let rider of riders; index as i">
+                    <th scope="row">{{ i + 1 }}</th>
+                    <td>
+                      {{ rider.rider_id }}
+                    </td>
+                    <td>{{ rider.count }}</td>
+                    <td>{{ rider.total_hours_worked }}</td>
+                    <td>{{ rider.total_salary }}</td>
+                    <td>{{ rider.average_delivery_time }}</td>
+                    <td>{{ rider.total_number_ratings }}</td>
+                    <td>{{ rider.average_ratings }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div *ngIf="riders.length == 0">
+                <alert type="danger">
+                  <strong>Oh snap!</strong> No data to display for this month!
+                  😢
+                </alert>
+              </div>
+            </div>
+          </div>
+        </tab>
+        <tab heading="Manage Promotion Campaigns">
+          <br />
+          <h5>All Promotional Campaigns</h5>
+          <div *ngIf="campaigns.length == 0">
+            <alert type="danger">
+              <strong>None found!</strong> You have not added any campaigns! 😢
+            </alert>
+          </div>
+          <ul class="list-group">
+            <li class="list-group-item" *ngFor="let campaign of campaigns">
+              <p>Description: {{ campaign.description }} 📙</p>
+              <p>Discount Rate: {{ campaign.discount }}% 💰</p>
+              <p>Start Date: {{ campaign.new_start }}</p>
+              <p>End Date: {{ campaign.new_end }}</p>
+              <p>
+                <button
+                  class="btn btn-danger"
+                  (click)="deleteCampaign(campaign.promo_id)"
+                >
+                  Delete
+                </button>
+              </p>
+              <small
+                style="float: right; color: red;"
+                *ngIf="checkDate(campaign.end_date)"
+              >
+                This campaign has expired
+              </small>
+              <small
+                style="float: right; color: green;"
+                *ngIf="
+                  !checkDate(campaign.end_date) &&
+                  !checkStarted(campaign.start_date)
+                "
+              >
+                This campaign is currently ongoing
+              </small>
+              <small
+                style="float: right; color: orange;"
+                *ngIf="checkStarted(campaign.start_date)"
+              >
+                This campaign has not started
+              </small>
+            </li>
+          </ul>
+          <br />
+          <br />
+          <form [formGroup]="createCampaign">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-12">
+                  <label for="description">Description</label>
+                  <input
+                    type="text"
+                    placeholder="Promotion Description"
+                    formControlName="description"
+                    id="description"
+                    class="form-control form-input"
+                  />
+                </div>
+
+                <div class="col-12">
+                  <label for="start">Start Date</label>
+                  <input
+                    id="start"
+                    type="date"
+                    formControlName="start"
+                    class="form-control form-input"
+                  />
+                </div>
+
+                <div class="col-12">
+                  <label for="end">End Date</label>
+                  <input
+                    id="end"
+                    type="date"
+                    formControlName="end"
+                    class="form-control form-input"
+                  />
+                </div>
+
+                <div class="col-12">
+                  <label for="discount">Discount</label>
+                  <input
+                    type="text"
+                    placeholder="Discount Percentage"
+                    formControlName="discount"
+                    class="form-control form-input"
+                  />
+                </div>
+              </div>
+            </div>
+          </form>
+          <br />
+          <button class="btn btn-success" (click)="addCampaign()">
+            Add new campaign
+          </button>
+        </tab>
+      </tabset>
     </div>
     <div class="col-md-2"></div>
   </div>

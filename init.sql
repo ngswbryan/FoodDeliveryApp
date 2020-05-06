@@ -91,6 +91,14 @@ CREATE TABLE PromotionalCampaign (
     end_date TIMESTAMP
 );
 
+CREATE TABLE FDSPromotionalCampaign (
+    promo_id SERIAL PRIMARY KEY,
+    discount INTEGER,
+    description VARCHAR(100),
+    start_date TIMESTAMP,
+    end_date TIMESTAMP
+);
+
 CREATE TABLE WeeklyWorkSchedule (
     wws_id SERIAL PRIMARY KEY NOT NULL,
     rider_id INTEGER references Riders(rider_id),
