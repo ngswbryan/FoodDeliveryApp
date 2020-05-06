@@ -97,7 +97,7 @@ CREATE TABLE WeeklyWorkSchedule (
     year INTEGER
 );
 
-CREATE TABLE Shifts (
+CREATE TABLE MonthlyWorkSchedule (
     rider_id INTEGER references Riders(rider_id),
     start_hour INTEGER,
     end_hour INTEGER,
@@ -108,16 +108,6 @@ CREATE TABLE Shifts (
     PRIMARY KEY(rider_id,start_hour,end_hour,day,month,year)
 );
 
-CREATE TABLE MonthlyWorkSchedule (
-    mws_id SERIAL PRIMARY KEY,
-    rider_id INTEGER REFERENCES Riders(rider_id), 
-    month INTEGER,
-    year INTEGER,
-    firstWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),
-    secondWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),
-    thirdWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id),
-    fourthWWS INTEGER REFERENCES WeeklyWorkSchedule(wws_id)
-);
 --ENTITIES
 
 --RELATIONSHIPS
@@ -1146,21 +1136,28 @@ CREATE OR REPLACE FUNCTION get_monthly_statistics(input_rider_id INTEGER, input_
 RETURNS TABLE (
     month INTEGER,
     year INTEGER,
-    base_salary DECIMAL, --weekly
+    base_salary DECIMAL, --per month
     total_commission BIGINT,
     total_num_orders BIGINT,
     total_num_hours_worked BIGINT
 ) AS $$
-    SELECT input_month, input_year, R.base_salary * 4, count(delivery_id) * R.commission, count(*), SUM(end_hour - start_hour)
-    FROM Riders R join MonthlyWorkSchedule MWS on R.rider_id = MWS.rider_id
-    join Delivery D on D.rider_id = MWS.rider_id
-    join WeeklyWorkSchedule WWS on WWS.rider_id = MWS.rider_id
+    SELECT input_month, input_year, R.base_salary * 4, count(distinct delivery_id) * R.commission, count(distinct delivery_id),
+    ( SELECT SUM(end_hour - start_hour)
+      FROM WeeklyWorkSchedule
+      WHERE rider_id = input_rider_id
+      AND month = input_month
+      AND year = input_year
+      GROUP BY rider_id
+    )
+    FROM Riders R 
+    join Delivery D on D.rider_id = R.rider_id
     WHERE input_rider_id = D.rider_id
     AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
     AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
     AND D.ongoing = False
     GROUP BY R.rider_id;
-$$ LANGUAGE SQL;
+
+  $$ LANGUAGE SQL;
 
 
 
@@ -1262,8 +1259,8 @@ $$ LANGUAGE SQL;
       day5 = 4;
     END IF;
     IF (day1shift = 1) THEN
-      INSERT INTO Shifts VALUES (riderid, 10, 14, day1, WWSmonth, WWSyear, 1);
-      INSERT INTO Shifts VALUES (riderid, 15, 19, day1, WWSmonth, WWSyear, 1);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 10, 14, day1, WWSmonth, WWSyear, 1);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 15, 19, day1, WWSmonth, WWSyear, 1);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day1, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day1, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day1, 2, WWSmonth, WWSyear);
@@ -1273,8 +1270,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day1, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day1, 4, WWSmonth, WWSyear);
     ELSIF (day1shift = 2) THEN
-      INSERT INTO Shifts VALUES (riderid, 11, 15, day1, WWSmonth, WWSyear,2);
-      INSERT INTO Shifts VALUES (riderid, 16, 20, day1, WWSmonth, WWSyear,2);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 11, 15, day1, WWSmonth, WWSyear,2);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 16, 20, day1, WWSmonth, WWSyear,2);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day1, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day1, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day1, 2, WWSmonth, WWSyear);
@@ -1284,8 +1281,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day1, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day1, 4, WWSmonth, WWSyear);
     ELSIF (day1shift = 3) THEN
-      INSERT INTO Shifts VALUES (riderid, 12, 16, day1, WWSmonth, WWSyear, 3);
-      INSERT INTO Shifts VALUES (riderid, 17, 21, day1, WWSmonth, WWSyear, 3);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 12, 16, day1, WWSmonth, WWSyear, 3);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 17, 21, day1, WWSmonth, WWSyear, 3);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day1, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day1, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day1, 2, WWSmonth, WWSyear);
@@ -1295,8 +1292,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day1, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day1, 4, WWSmonth, WWSyear);
     ELSE
-      INSERT INTO Shifts VALUES (riderid, 13, 17, day1, WWSmonth, WWSyear,4);
-      INSERT INTO Shifts VALUES (riderid, 18, 22, day1, WWSmonth, WWSyear,4);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 13, 17, day1, WWSmonth, WWSyear,4);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 18, 22, day1, WWSmonth, WWSyear,4);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day1, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day1, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day1, 2, WWSmonth, WWSyear);
@@ -1307,8 +1304,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day1, 4, WWSmonth, WWSyear);
     END IF;
     IF (day2shift = 1) THEN
-      INSERT INTO Shifts VALUES (riderid, 10, 14, day2, WWSmonth, WWSyear, 1);
-      INSERT INTO Shifts VALUES (riderid, 15, 19, day2, WWSmonth, WWSyear, 1);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 10, 14, day2, WWSmonth, WWSyear, 1);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 15, 19, day2, WWSmonth, WWSyear, 1);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day2, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day2, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day2, 2, WWSmonth, WWSyear);
@@ -1318,8 +1315,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day2, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day2, 4, WWSmonth, WWSyear);
     ELSIF (day2shift = 2) THEN
-      INSERT INTO Shifts VALUES (riderid, 11, 15, day2, WWSmonth, WWSyear,2);
-      INSERT INTO Shifts VALUES (riderid, 16, 20, day2, WWSmonth, WWSyear,2);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 11, 15, day2, WWSmonth, WWSyear,2);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 16, 20, day2, WWSmonth, WWSyear,2);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day2, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day2, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day2, 2, WWSmonth, WWSyear);
@@ -1329,8 +1326,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day2, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day2, 4, WWSmonth, WWSyear);
     ELSIF (day2shift = 3) THEN
-      INSERT INTO Shifts VALUES (riderid, 12, 16, day2, WWSmonth, WWSyear,3);
-      INSERT INTO Shifts VALUES (riderid, 17, 21, day2, WWSmonth, WWSyear,3);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 12, 16, day2, WWSmonth, WWSyear,3);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 17, 21, day2, WWSmonth, WWSyear,3);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day2, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day2, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day2, 2, WWSmonth, WWSyear);
@@ -1340,8 +1337,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day2, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day2, 4, WWSmonth, WWSyear);
     ELSE
-      INSERT INTO Shifts VALUES (riderid, 14, 17, day2, WWSmonth, WWSyear,4);
-      INSERT INTO Shifts VALUES (riderid, 18, 22, day2, WWSmonth, WWSyear,4);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 14, 17, day2, WWSmonth, WWSyear,4);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 18, 22, day2, WWSmonth, WWSyear,4);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day2, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day2, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day2, 2, WWSmonth, WWSyear);
@@ -1352,8 +1349,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day2, 4, WWSmonth, WWSyear);
     END IF;
     IF (day3shift = 1) THEN
-      INSERT INTO Shifts VALUES (riderid, 10, 14, day3, WWSmonth, WWSyear,1);
-      INSERT INTO Shifts VALUES (riderid, 15, 19, day3, WWSmonth, WWSyear,1);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 10, 14, day3, WWSmonth, WWSyear,1);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 15, 19, day3, WWSmonth, WWSyear,1);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day3, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day3, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day3, 2, WWSmonth, WWSyear);
@@ -1363,8 +1360,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day3, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day3, 4, WWSmonth, WWSyear);
     ELSIF (day3shift = 2) THEN
-      INSERT INTO Shifts VALUES (riderid, 11, 15, day3, WWSmonth, WWSyear,2);
-      INSERT INTO Shifts VALUES (riderid, 16, 20, day3, WWSmonth, WWSyear,2);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 11, 15, day3, WWSmonth, WWSyear,2);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 16, 20, day3, WWSmonth, WWSyear,2);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day3, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day3, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day3, 2, WWSmonth, WWSyear);
@@ -1374,8 +1371,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day3, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day3, 4, WWSmonth, WWSyear);
     ELSIF (day3shift = 3) THEN
-      INSERT INTO Shifts VALUES (riderid, 12, 16, day3, WWSmonth, WWSyear,3);
-      INSERT INTO Shifts VALUES (riderid, 17, 21, day3, WWSmonth, WWSyear,3);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 12, 16, day3, WWSmonth, WWSyear,3);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 17, 21, day3, WWSmonth, WWSyear,3);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day3, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day3, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day3, 2, WWSmonth, WWSyear);
@@ -1385,8 +1382,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day3, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day3, 4, WWSmonth, WWSyear);
     ELSE
-      INSERT INTO Shifts VALUES (riderid, 13, 17, day3, WWSmonth, WWSyear,4);
-      INSERT INTO Shifts VALUES (riderid, 18, 22, day3, WWSmonth, WWSyear,4);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 13, 17, day3, WWSmonth, WWSyear,4);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 18, 22, day3, WWSmonth, WWSyear,4);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day3, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day3, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day3, 2, WWSmonth, WWSyear);
@@ -1397,8 +1394,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day3, 4, WWSmonth, WWSyear);
     END IF;
         IF (day4shift = 1) THEN
-      INSERT INTO Shifts VALUES (riderid, 10, 14, day4, WWSmonth, WWSyear,1);
-      INSERT INTO Shifts VALUES (riderid, 15, 19, day4, WWSmonth, WWSyear,1);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 10, 14, day4, WWSmonth, WWSyear,1);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 15, 19, day4, WWSmonth, WWSyear,1);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day4, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day4, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day4, 2, WWSmonth, WWSyear);
@@ -1408,8 +1405,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day4, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day4, 4, WWSmonth, WWSyear);
     ELSIF (day4shift = 2) THEN
-      INSERT INTO Shifts VALUES (riderid, 11, 15, day4, WWSmonth, WWSyear,2);
-      INSERT INTO Shifts VALUES (riderid, 16, 20, day4, WWSmonth, WWSyear,2);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 11, 15, day4, WWSmonth, WWSyear,2);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 16, 20, day4, WWSmonth, WWSyear,2);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day4, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day4, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day4, 2, WWSmonth, WWSyear);
@@ -1419,8 +1416,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day4, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day4, 4, WWSmonth, WWSyear);
     ELSIF (day4shift = 3) THEN
-      INSERT INTO Shifts VALUES (riderid, 12, 16, day4, WWSmonth, WWSyear,3);
-      INSERT INTO Shifts VALUES (riderid, 17, 21, day4, WWSmonth, WWSyear,3);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 12, 16, day4, WWSmonth, WWSyear,3);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 17, 21, day4, WWSmonth, WWSyear,3);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day4, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day4, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day4, 2, WWSmonth, WWSyear);
@@ -1430,8 +1427,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day4, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day4, 4, WWSmonth, WWSyear);
     ELSE
-      INSERT INTO Shifts VALUES (riderid, 13, 17, day4, WWSmonth, WWSyear,4);
-      INSERT INTO Shifts VALUES (riderid, 18, 22, day4, WWSmonth, WWSyear,4);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 13, 17, day4, WWSmonth, WWSyear,4);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 18, 22, day4, WWSmonth, WWSyear,4);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day4, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day4, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day4, 2, WWSmonth, WWSyear);
@@ -1442,8 +1439,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day4, 4, WWSmonth, WWSyear);
     END IF;
         IF (day5shift = 1) THEN
-      INSERT INTO Shifts VALUES (riderid, 10, 14, day5, WWSmonth, WWSyear,1);
-      INSERT INTO Shifts VALUES (riderid, 15, 19, day5, WWSmonth, WWSyear,1);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 10, 14, day5, WWSmonth, WWSyear,1);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 15, 19, day5, WWSmonth, WWSyear,1);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day5, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day5, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day5, 2, WWSmonth, WWSyear);
@@ -1453,8 +1450,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day5, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day5, 4, WWSmonth, WWSyear);
     ELSIF (day5shift = 2) THEN
-      INSERT INTO Shifts VALUES (riderid, 11, 15, day5, WWSmonth, WWSyear,2);
-      INSERT INTO Shifts VALUES (riderid, 16, 20, day5, WWSmonth, WWSyear,2);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 11, 15, day5, WWSmonth, WWSyear,2);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 16, 20, day5, WWSmonth, WWSyear,2);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day5, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day5, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day5, 2, WWSmonth, WWSyear);
@@ -1464,8 +1461,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 11, 15, day5, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 16, 20, day5, 4, WWSmonth, WWSyear);
     ELSIF (day5shift = 3) THEN
-      INSERT INTO Shifts VALUES (riderid, 12, 16, day5, WWSmonth, WWSyear,3);
-      INSERT INTO Shifts VALUES (riderid, 17, 21, day5, WWSmonth, WWSyear,3);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 12, 16, day5, WWSmonth, WWSyear,3);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 17, 21, day5, WWSmonth, WWSyear,3);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day5, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day5, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day5, 2, WWSmonth, WWSyear);
@@ -1475,8 +1472,8 @@ $$ LANGUAGE SQL;
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 12, 16, day5, 4, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 17, 21, day5, 4, WWSmonth, WWSyear);
     ELSE
-      INSERT INTO Shifts VALUES (riderid, 13, 17, day5, WWSmonth, WWSyear,4);
-      INSERT INTO Shifts VALUES (riderid, 18, 22, day5, WWSmonth, WWSyear,4);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 13, 17, day5, WWSmonth, WWSyear,4);
+      INSERT INTO MonthlyWorkSchedule VALUES (riderid, 18, 22, day5, WWSmonth, WWSyear,4);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day5, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 18, 22, day5, 1, WWSmonth, WWSyear);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 13, 17, day5, 2, WWSmonth, WWSyear);
