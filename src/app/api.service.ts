@@ -8,7 +8,7 @@ import { Router } from "@angular/router";
 export class ApiService {
   constructor(private http: HttpClient, public router: Router) {}
 
-  url = "http://localhost:3002";
+  url = "";
   public erMsg = new Subject();
 
   getError(): Observable<any> {
