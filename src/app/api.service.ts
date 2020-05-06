@@ -24,31 +24,59 @@ export class ApiService {
   }
 
   getUsers() {
-    return this.http.get(`${this.url}/users`);
+    return this.http.get(`${this.url}/users`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   addUser(user) {
-    return this.http.post(`${this.url}/users`, user);
+    return this.http.post(`${this.url}/users`, user).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   getUserByUsername(username) {
-    return this.http.get(`${this.url}/users/${username}`);
+    return this.http.get(`${this.url}/users/${username}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   getStaffByUsername(uid) {
-    return this.http.get(`${this.url}/staff/${uid}`);
+    return this.http.get(`${this.url}/staff/${uid}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   getPastDeliveryRating(uid) {
-    return this.http.get(`${this.url}/users/rating/${uid}`);
+    return this.http.get(`${this.url}/users/rating/${uid}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   getPastFoodReviews(uid) {
-    return this.http.get(`${this.url}/users/reviews/${uid}`);
+    return this.http.get(`${this.url}/users/reviews/${uid}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   getListOfFoodItem(rid) {
-    return this.http.get(`${this.url}/users/restaurant/${rid}`);
+    return this.http.get(`${this.url}/users/restaurant/${rid}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   getRestaurants() {
@@ -74,7 +102,13 @@ export class ApiService {
   }
 
   getRewardBalance(uid) {
-    return this.http.get(`${this.url}/users/restaurant/order/rewards/${uid}`);
+    return this.http
+      .get(`${this.url}/users/restaurant/order/rewards/${uid}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   activateRiders() {
@@ -88,41 +122,71 @@ export class ApiService {
   }
 
   getMostRecentLocation(uid) {
-    return this.http.get(`${this.url}/users/restaurant/order/recent/${uid}`);
-  }
-
-  getFoodandDeliveryID(uid, rid, total_order_cost) {
-    return this.http.get(
-      `${this.url}/users/restaurant/order/${uid}/${rid}/${total_order_cost}`
-    );
-  }
-
-  getRiderName(did) {
-    return this.http.get(`${this.url}/users/restaurant/order/ridername/${did}`);
-  }
-
-  getRiderRating(did) {
-    return this.http.get(
-      `${this.url}/users/restaurant/order/riderrating/${did}`
-    );
-  }
-
-  getStartTime(did) {
-    return this.http.get(`${this.url}/users/restaurant/order/starttime/${did}`);
-  }
-
-  getEndTime(did) {
-    return this.http.get(`${this.url}/users/restaurant/order/endtime/${did}`);
-  }
-
-  foodReviewUpdate(foodreview) {
     return this.http
-      .post(`${this.url}/users/restaurant/order/foodreviewupdate`, foodreview)
+      .get(`${this.url}/users/restaurant/order/recent/${uid}`)
       .pipe(
         retry(1),
 
         catchError(this.handleError)
       );
+  }
+
+  getFoodandDeliveryID(uid, rid, total_order_cost) {
+    return this.http
+      .get(
+        `${this.url}/users/restaurant/order/${uid}/${rid}/${total_order_cost}`
+      )
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
+  }
+
+  getRiderName(did) {
+    return this.http
+      .get(`${this.url}/users/restaurant/order/ridername/${did}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
+  }
+
+  getRiderRating(did) {
+    return this.http
+      .get(`${this.url}/users/restaurant/order/riderrating/${did}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
+  }
+
+  getStartTime(did) {
+    return this.http
+      .get(`${this.url}/users/restaurant/order/starttime/${did}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
+  }
+
+  getEndTime(did) {
+    return this.http
+      .get(`${this.url}/users/restaurant/order/endtime/${did}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
+  }
+
+  updateWWS(command) {
+    return this.http
+      .post(`${this.url}/riders/wws/draft`, command)
+      .pipe(catchError(this.handleError));
   }
 
   updateDeliveryRating(deliveryrating) {
@@ -136,75 +200,147 @@ export class ApiService {
   }
 
   generateTotalOrders(month, year, rid) {
-    return this.http.get(
-      `${this.url}/staff/reports/orders?rid=${rid}&month=${month}&year=${year}`
-    );
+    return this.http
+      .get(
+        `${this.url}/staff/reports/orders?rid=${rid}&month=${month}&year=${year}`
+      )
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   generateTotalCost(month, year, rid) {
-    return this.http.get(
-      `${this.url}/staff/reports/cost?rid=${rid}&month=${month}&year=${year}`
-    );
+    return this.http
+      .get(
+        `${this.url}/staff/reports/cost?rid=${rid}&month=${month}&year=${year}`
+      )
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   generateTopFive(rid) {
-    return this.http.get(`${this.url}/staff/reports/top?rid=${rid}`);
+    return this.http.get(`${this.url}/staff/reports/top?rid=${rid}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   fetchMangerStatsByMonthAndYear(month, year) {
-    return this.http.get(`${this.url}/manager?month=${month}&year=${year}`);
+    return this.http
+      .get(`${this.url}/manager?month=${month}&year=${year}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   fetchMangerStatsByMonthAndYearOrders(month, year) {
-    return this.http.get(
-      `${this.url}/manager/orders?month=${month}&year=${year}`
-    );
+    return this.http
+      .get(`${this.url}/manager/orders?month=${month}&year=${year}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   fetchMangerStatsByMonthAndYearCost(month, year) {
-    return this.http.get(
-      `${this.url}/manager/cost?month=${month}&year=${year}`
-    );
+    return this.http
+      .get(`${this.url}/manager/cost?month=${month}&year=${year}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   getLocation(month, year, location) {
-    return this.http.get(
-      `${this.url}/manager/location?month=${month}&year=${year}&location=${location}`
-    );
+    return this.http
+      .get(
+        `${this.url}/manager/location?month=${month}&year=${year}&location=${location}`
+      )
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   getRiders(month, year) {
-    return this.http.get(
-      `${this.url}/manager/riders?month=${month}&year=${year}`
-    );
+    return this.http
+      .get(`${this.url}/manager/riders?month=${month}&year=${year}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   getCurrentJob(rid) {
-    return this.http.get(`${this.url}/riders/job/${rid}`);
+    return this.http.get(`${this.url}/riders/job/${rid}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  getCurrentJobDelivery(did) {
+    return this.http.get(`${this.url}/riders/delivery/${did}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   getWeeklyStatistics(rid, week, month, year) {
-    return this.http.get(
-      `${this.url}/riders/weeklystats/${rid}?month=${month}&year=${year}&week=${week}`
-    );
+    return this.http
+      .get(
+        `${this.url}/riders/weeklystats/${rid}?month=${month}&year=${year}&week=${week}`
+      )
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   getMonthlyStatistics(rid, month, year) {
-    return this.http.get(
-      `${this.url}/riders/monthlystats/${rid}?month=${month}&year=${year}`
-    );
+    return this.http
+      .get(`${this.url}/riders/monthlystats/${rid}?month=${month}&year=${year}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   getWWS(rid, week, month, year) {
-    return this.http.get(
-      `${this.url}/riders/wws/${rid}?month=${month}&year=${year}&week=${week}`
-    );
+    return this.http
+      .get(
+        `${this.url}/riders/wws/${rid}?month=${month}&year=${year}&week=${week}`
+      )
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   getMWS(rid, month, year) {
-    return this.http.get(
-      `${this.url}/riders/mws/${rid}?month=${month}&year=${year}`
-    );
+    return this.http
+      .get(`${this.url}/riders/mws/${rid}?month=${month}&year=${year}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   updateMWS(rid, month, year, mws) {
@@ -218,24 +354,39 @@ export class ApiService {
   }
 
   getRiderByRID(rid) {
-    return this.http.get(`${this.url}/riders/type/${rid}`);
+    return this.http.get(`${this.url}/riders/type/${rid}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   getCustomers(month, year) {
-    return this.http.get(
-      `${this.url}/manager/customers?month=${month}&year=${year}`
-    );
+    return this.http
+      .get(`${this.url}/manager/customers?month=${month}&year=${year}`)
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   deleteMenuItem(fname, rid) {
-    return this.http.patch(
-      `${this.url}/staff/menu?fname=${fname}&rid=${rid}`,
-      {}
-    );
+    return this.http
+      .patch(`${this.url}/staff/menu?fname=${fname}&rid=${rid}`, {})
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   deleteCampaign(rid) {
-    return this.http.delete(`${this.url}/staff/campaigns/${rid}`);
+    return this.http.delete(`${this.url}/staff/campaigns/${rid}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   addMenuItem(food) {
@@ -257,7 +408,11 @@ export class ApiService {
   }
 
   getCampaigns(rid) {
-    return this.http.get(`${this.url}/staff/campaigns/${rid}`);
+    return this.http.get(`${this.url}/staff/campaigns/${rid}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
   }
 
   addCampaign(rid, campaign) {
@@ -269,31 +424,43 @@ export class ApiService {
   }
 
   updateDepartureTime(rid, did) {
-    return this.http.patch(
-      `${this.url}/riders/delivery/departure?rid=${rid}&did=${did}`,
-      {}
-    );
+    return this.http
+      .patch(`${this.url}/riders/delivery/departure?rid=${rid}&did=${did}`, {})
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   updateCollectedTime(rid, did) {
-    return this.http.patch(
-      `${this.url}/riders/delivery/collected?rid=${rid}&did=${did}`,
-      {}
-    );
+    return this.http
+      .patch(`${this.url}/riders/delivery/collected?rid=${rid}&did=${did}`, {})
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   updateDeliveryStart(rid, did) {
-    return this.http.patch(
-      `${this.url}/riders/delivery/delivery?rid=${rid}&did=${did}`,
-      {}
-    );
+    return this.http
+      .patch(`${this.url}/riders/delivery/delivery?rid=${rid}&did=${did}`, {})
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   updateDone(rid, did) {
-    return this.http.patch(
-      `${this.url}/riders/delivery/done?rid=${rid}&did=${did}`,
-      {}
-    );
+    return this.http
+      .patch(`${this.url}/riders/delivery/done?rid=${rid}&did=${did}`, {})
+      .pipe(
+        retry(1),
+
+        catchError(this.handleError)
+      );
   }
 
   handleError(error) {
@@ -308,7 +475,7 @@ export class ApiService {
 
       errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
     }
-    window.alert("You've entered invalid parameters! Please try again 😆");
+    window.alert("Opps something went wrong! Please try again! 😆");
     location.reload();
     return throwError(errorMessage);
   }

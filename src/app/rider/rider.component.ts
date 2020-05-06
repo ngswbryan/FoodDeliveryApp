@@ -5,6 +5,7 @@ import { ApiService } from "../api.service";
 import { FormGroup, FormControl } from "@angular/forms";
 import { Observable } from "rxjs/internal/Observable";
 import { ToastrService } from "ngx-toastr";
+import { ThrowStmt } from "@angular/compiler";
 
 @Component({
   selector: "app-rider",
@@ -49,6 +50,9 @@ export class RiderComponent implements OnInit {
   selectedWeek = 1;
   selectedMonth = 5;
   selectedYear = 2020;
+  selectedWeekSalary = 1;
+  selectedMonthSalary = 5;
+  selectedYearSalary = 2020;
 
   MWSMonth = 5;
   MWSYear = 2020;
@@ -62,6 +66,10 @@ export class RiderComponent implements OnInit {
   collecting = false;
   collected = false;
   omw = false;
+
+  currentDID;
+
+  currentWWSCommand: String = "";
 
   constructor(
     private route: ActivatedRoute,
@@ -109,7 +117,28 @@ export class RiderComponent implements OnInit {
             this.apiService
               .getCurrentJob(rider[0].uid)
               .subscribe((job: any) => {
-                console.log(job);
+                if (job.length > 0) {
+                  this.currentDID = job[0].delivery_id;
+                  this.apiService
+                    .getCurrentJobDelivery(this.currentDID)
+                    .subscribe((delivery: any) => {
+                      console.log(delivery);
+                      if (delivery[0].departure_time) {
+                        this.start = false;
+                        this.collecting = true;
+                      }
+
+                      if (delivery[0].collected_time) {
+                        this.collecting = false;
+                        this.collected = true;
+                      }
+
+                      if (delivery[0].delivery_start_time) {
+                        this.collected = false;
+                        this.omw = true;
+                      }
+                    });
+                }
                 this.currentJob = job;
                 this.apiService
                   .getWeeklyStatistics(
@@ -124,8 +153,8 @@ export class RiderComponent implements OnInit {
                     this.apiService
                       .getMonthlyStatistics(
                         rider[0].uid,
-                        this.selectedMonth,
-                        this.selectedYear
+                        this.selectedMonthSalary,
+                        this.selectedYearSalary
                       )
                       .subscribe((monthly: any) => {
                         this.monthlyStats = monthly;
@@ -139,6 +168,7 @@ export class RiderComponent implements OnInit {
                           )
                           .subscribe((wws: any) => {
                             this.WWS = wws;
+                            console.log(wws);
                             this.apiService
                               .getMWS(
                                 rider[0].uid,
@@ -180,6 +210,21 @@ export class RiderComponent implements OnInit {
     });
   }
 
+  handleWWSChange() {
+    this.loadingService.loading.next(true);
+    this.apiService
+      .getWWS(
+        this.rider[0].uid,
+        this.selectedWeek,
+        this.selectedMonth,
+        this.selectedYear
+      )
+      .subscribe((wws: any) => {
+        this.WWS = wws;
+        this.loadingService.loading.next(false);
+      });
+  }
+
   handlePeriodChange() {
     this.loadingService.loading.next(true);
     this.apiService
@@ -210,6 +255,35 @@ export class RiderComponent implements OnInit {
       });
   }
 
+  handlePeriodChangeSalary() {
+    this.loadingService.loading.next(true);
+    this.apiService
+      .getMonthlyStatistics(
+        this.rider[0].uid,
+        this.selectedMonthSalary,
+        this.selectedYearSalary
+      )
+      .subscribe((stats: any) => {
+        this.monthlyStats = stats;
+        this.loadingService.loading.next(false);
+      });
+  }
+
+  handlePeriodChangeWeeklySalary() {
+    this.loadingService.loading.next(true);
+    this.apiService
+      .getWeeklyStatistics(
+        this.rider[0].uid,
+        this.selectedWeekSalary,
+        this.selectedMonthSalary,
+        this.selectedYearSalary
+      )
+      .subscribe((stats: any) => {
+        this.weeklyStats = stats;
+        this.loadingService.loading.next(false);
+      });
+  }
+
   addDraft() {
     if (!this.WWSForm.value.start_hour) {
       window.alert("Please choose a start hour.");
@@ -234,6 +308,28 @@ export class RiderComponent implements OnInit {
       };
       this.drafts.push(newDraft);
     }
+
+    this.currentWWSCommand =
+      this.currentWWSCommand +
+      "INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, " +
+      this.rider[0].uid +
+      "," +
+      this.WWSForm.value.start_hour / 100 +
+      "," +
+      this.WWSForm.value.end_hour / 100 +
+      "," +
+      this.WWSForm.value.day +
+      "," +
+      this.WWSForm.value.week +
+      "," +
+      this.WWSForm.value.month +
+      "," +
+      this.WWSForm.value.year +
+      ");";
+
+    console.log(this.currentWWSCommand);
+
+    //creating a string then just keep appending
   }
 
   submitMWS() {
@@ -262,40 +358,70 @@ export class RiderComponent implements OnInit {
   }
 
   collectingNow() {
-    // this.loadingService.loading.next(true);
-    // this.apiService.updateDepartureTime().subscribe((res: any) => {
-    //   this.start = false;
-    //   this.collecting = true;
-    //   this.loadingService.loading.next(false);
-    // });
+    this.loadingService.loading.next(true);
+    this.apiService
+      .updateDepartureTime(this.rider[0].uid, this.currentDID)
+      .subscribe((res: any) => {
+        console.log(this.rider[0].uid);
+        console.log(this.currentDID);
+        this.start = false;
+        this.collecting = true;
+        this.loadingService.loading.next(false);
+      });
   }
 
   collectedNow() {
-    // this.loadingService.loading.next(true);
-    // this.apiService.updateCollectedTime().subscribe((res: any) => {
-    //   this.collected = true;
-    //   this.collecting = false;
-    //   this.loadingService.loading.next(false);
-    // });
+    this.loadingService.loading.next(true);
+    this.apiService
+      .updateCollectedTime(this.rider[0].uid, this.currentDID)
+      .subscribe((res: any) => {
+        this.collected = true;
+        this.collecting = false;
+        this.loadingService.loading.next(false);
+      });
   }
 
   omwNow() {
-    // this.loadingService.loading.next(true);
-    // this.apiService.updateDeliveryStart().subscribe((res: any) => {
-    //   this.collected = false;
-    //   this.omw = true;
-    //   this.loadingService.loading.next(false);
-    // });
+    this.loadingService.loading.next(true);
+    this.apiService
+      .updateDeliveryStart(this.rider[0].uid, this.currentDID)
+      .subscribe((res: any) => {
+        this.collected = false;
+        this.omw = true;
+        this.loadingService.loading.next(false);
+      });
   }
 
   done() {
-    // this.loadingService.loading.next(true);
-    // this.apiService.updateDone().subscribe((res: any) => {
-    //   //refresh done logic reload jobs pull currentjob again
-    //   this.omw = false;
-    //   this.start = true;
-    //   this.loadingService.loading.next(false);
-    // });
+    this.loadingService.loading.next(true);
+    this.apiService
+      .updateDone(this.rider[0].uid, this.currentDID)
+      .subscribe((res: any) => {
+        console.log(this.rider[0].uid);
+        console.log(this.currentDID);
+        this.apiService
+          .getCurrentJob(this.rider[0].uid)
+          .subscribe((job: any) => {
+            this.currentJob = job;
+            this.omw = false;
+            this.start = true;
+            this.loadingService.loading.next(false);
+          });
+      });
+  }
+
+  submitWWS() {
+    this.loadingService.loading.next(true);
+    let commandObj = {
+      command: this.currentWWSCommand,
+    };
+    console.log(commandObj.command);
+    this.apiService.updateWWS(commandObj).subscribe((res: any) => {
+      console.log("end req");
+      this.currentWWSCommand = "";
+      this.drafts = [];
+      this.loadingService.loading.next(false);
+    });
   }
 
   reset() {

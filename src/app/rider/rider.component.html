@@ -14,7 +14,7 @@
     <div class="col-md-2" style="text-align: center;"></div>
     <div class="col-md-8" style="text-align: center;">
       <tabset>
-        <tab heading="Current Ongoing Job" (selectTab)="console.log('ok')">
+        <tab heading="Current Ongoing Job">
           <br />
           <div *ngIf="currentJob.length == 0">
             <alert type="danger">
@@ -28,8 +28,14 @@
               current assignment:
             </alert>
             <alert type="info">
-              <p><strong>Restaurant Name:</strong> TBC</p>
-              <p><strong>Pickup Location:</strong> TBC</p>
+              <p>
+                <strong>Restaurant Name:</strong>
+                {{ currentJob[0].restaurant_name }}
+              </p>
+              <p>
+                <strong>Pickup Location:</strong>
+                {{ currentJob[0].restaurant_location }}
+              </p>
               <p>
                 <strong>Delivery Location:</strong> {{ currentJob[0].location }}
               </p>
@@ -53,7 +59,7 @@
                     <td>
                       {{ food.food_name }}
                     </td>
-                    <td>TBC</td>
+                    <td>{{ food.food_quantity }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -81,21 +87,29 @@
               </button>
             </div>
           </div>
+          <br /><br />
         </tab>
 
-        <tab
-          heading="Weekly Work Schedules"
-          *ngIf="!rider_type[0].rider_type"
-          (selectTab)="console.log('ok')"
-        >
+        <tab heading="Weekly Work Schedules" *ngIf="!rider_type[0].rider_type">
+          <br />
           <h5>View work schedule for the week of</h5>
-          <select id="week" name="week" [(ngModel)]="selectedWeek">
+          <select
+            id="week"
+            name="week"
+            [(ngModel)]="selectedWeek"
+            (change)="handleWWSChange()"
+          >
             <option *ngFor="let week of weeks" [value]="week"
               >Week {{ week }}</option
             >
           </select>
           of
-          <select id="month" name="month" [(ngModel)]="selectedMonth">
+          <select
+            id="month"
+            name="month"
+            [(ngModel)]="selectedMonth"
+            (change)="handleWWSChange()"
+          >
             <option value="1">January</option>
             <option value="2">February</option>
             <option value="3">March</option>
@@ -109,18 +123,45 @@
             <option value="11">November</option>
             <option value="12">December</option>
           </select>
-          <select id="year" name="year" [(ngModel)]="selectedYear">
+          <select
+            id="year"
+            name="year"
+            [(ngModel)]="selectedYear"
+            (change)="handleWWSChange()"
+          >
             <option value="2020">2020</option>
             <option value="2021">2021</option>
             <option value="2022">2022</option>
           </select>
+          <br />
+          <br />
+          <table *ngIf="WWS.length > 0" class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Day</th>
+                <th scope="col">Start Time</th>
+                <th scope="col">End Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let mws of MWS; index as i">
+                <th scope="row">{{ i + 1 }}</th>
+                <td>{{ mws.day }}</td>
+                <td>{{ mws.starthour }}:00</td>
+                <td>{{ mws.endhour }}:00</td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="WWS.length == 0">
+            <alert type="danger">
+              <strong>Oh snap!</strong> You have not added your schedule for
+              this week 😢
+            </alert>
+          </div>
         </tab>
 
-        <tab
-          heading="Monthly Work Schedules"
-          *ngIf="rider_type[0].rider_type"
-          (selectTab)="console.log('ok')"
-        >
+        <tab heading="Monthly Work Schedules" *ngIf="rider_type[0].rider_type">
           <br />
           <h5>View work schedule for the month of</h5>
 
@@ -185,34 +226,136 @@
           </div>
         </tab>
 
-        <tab
-          heading="Weekly Salary"
-          *ngIf="!rider_type[0].rider_type"
-          (selectTab)="console.log('ok')"
-        >
-          hi
-        </tab>
-
-        <tab
-          heading="Monthly Salary"
-          *ngIf="rider_type[0].rider_type"
-          (selectTab)="console.log('ok')"
-        >
+        <tab heading="Weekly Salary" *ngIf="!rider_type[0].rider_type">
           <br />
 
-          <div *ngIf="monthlyStats.length == 0">
+          <h5>View your salary for the week of</h5>
+          <select
+            id="week"
+            name="week"
+            [(ngModel)]="selectedWeekSalary"
+            (change)="handlePeriodChangeWeeklySalary()"
+          >
+            <option *ngFor="let week of weeks" [value]="week"
+              >Week {{ week }}</option
+            >
+          </select>
+          of
+
+          <select
+            id="month"
+            name="month"
+            [(ngModel)]="selectedMonthSalary"
+            (change)="handlePeriodChangeWeeklySalary()"
+          >
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+          <select
+            id="year"
+            name="year"
+            [(ngModel)]="selectedYearSalary"
+            (change)="handlePeriodChangeWeeklySalary()"
+          >
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+          </select>
+          <br />
+          <br />
+          <div *ngIf="weeklyStats[0].total_commission == 0">
             <alert type="danger">
-              <strong>Sorry...</strong> You don't have any earnings for this
-              month 🥺👉🏻👈🏻
+              <strong>Sorry...</strong> You don't have any commission yet for
+              this week 🥺👉🏻👈🏻
+              <p>Your weekly base salary is <strong>$100</strong></p>
+            </alert>
+          </div>
+          <div *ngIf="weeklyStats[0].total_commission > 0">
+            <alert type="success">
+              <strong>Nice!</strong> You've earned
+              <strong>${{ weeklyStats[0].total_commission }}</strong> by
+              completing
+              <strong>{{ weeklyStats[0].total_num_orders }}</strong> this week
+              🤑
+
+              <p>
+                Your weekly base salary is
+                <strong>$100</strong>
+              </p>
             </alert>
           </div>
         </tab>
 
-        <tab
-          heading="WWS Update Submission"
-          *ngIf="!rider_type[0].rider_type"
-          (selectTab)="console.log('ok')"
-        >
+        <tab heading="Monthly Salary" *ngIf="rider_type[0].rider_type">
+          <br />
+
+          <h5>View salary for the month of</h5>
+
+          <select
+            id="month"
+            name="month"
+            [(ngModel)]="selectedMonthSalary"
+            (change)="handlePeriodChangeSalary()"
+          >
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+          <select
+            id="year"
+            name="year"
+            [(ngModel)]="selectedYearSalary"
+            (change)="handlePeriodChangeSalary()"
+          >
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+          </select>
+          <br />
+          <br />
+          <div *ngIf="monthlyStats.length == 0">
+            <alert type="danger">
+              <strong>Sorry...</strong> You don't have any commission yet for
+              this month 🥺👉🏻👈🏻
+              <p>Your monthly base salary is <strong>$800</strong></p>
+            </alert>
+          </div>
+          <div *ngIf="monthlyStats.length > 0">
+            <alert type="success">
+              <strong>Nice!</strong> You've earned
+              <strong>${{ monthlyStats[0].total_commission }}</strong> by
+              completing
+              <strong>{{ monthlyStats[0].total_num_orders }}</strong> this month
+              🤑
+
+              <p>
+                Your monthly base salary is
+                <strong>${{ monthlyStats[0].base_salary }}</strong>
+              </p>
+            </alert>
+          </div>
+        </tab>
+
+        <tab heading="WWS Update Submission" *ngIf="!rider_type[0].rider_type">
           <br />
           <div>
             <form [formGroup]="WWSForm">
@@ -264,9 +407,13 @@
                     class="form-control form-input"
                     formControlName="day"
                   >
-                    <option *ngFor="let day of days" [value]="day">{{
-                      day
-                    }}</option>
+                    <option value="1">Mon</option>
+                    <option value="2">Tues</option>
+                    <option value="3">Weds</option>
+                    <option value="4">Thurs</option>
+                    <option value="5">Fri</option>
+                    <option value="6">Sat</option>
+                    <option value="7">Sun</option>
                   </select>
                 </div>
                 <div class="col-md-4"></div>
@@ -300,9 +447,18 @@
                     class="form-control form-input"
                     formControlName="month"
                   >
-                    <option *ngFor="let month of month" [value]="month">{{
-                      month
-                    }}</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
                   </select>
                 </div>
                 <div class="col-md-4"></div>
@@ -374,7 +530,9 @@
                   </tr>
                 </tbody>
               </table>
-              <button class="btn btn-success">Confirm</button>
+              <button class="btn btn-success" (click)="submitWWS()">
+                Confirm
+              </button>
               &nbsp;
               <button class="btn btn-danger" (click)="reset()">
                 Reset
@@ -386,11 +544,7 @@
           </div>
         </tab>
 
-        <tab
-          heading="MWS Update Submission"
-          *ngIf="rider_type[0].rider_type"
-          (selectTab)="console.log('ok')"
-        >
+        <tab heading="MWS Update Submission" *ngIf="rider_type[0].rider_type">
           <br />
           <h4>
             Submit MWS for
@@ -589,3 +743,6 @@
     <div class="col-md-2" style="text-align: center;"></div>
   </div>
 </div>
+<br />
+<br />
+<br />
