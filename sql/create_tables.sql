@@ -94,7 +94,14 @@ CREATE TABLE WeeklyWorkSchedule ( --BCNF
     day INTEGER,
     week INTEGER,
     month INTEGER,
-    year INTEGER,
+    year INTEGER
+    --shift INTEGER
+);
+
+CREATE TABLE Shifts (
+    rider_id INTEGER references Riders(rider),
+    start_hour INTEGER,
+    end_hour INTEGER,
     shift INTEGER
 );
 

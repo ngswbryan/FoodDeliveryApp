@@ -98,6 +98,13 @@ CREATE TABLE WeeklyWorkSchedule (
     shift INTEGER
 );
 
+CREATE TABLE Shifts (
+    rider_id INTEGER references Riders(rider_id),
+    start_hour INTEGER,
+    end_hour INTEGER,
+    shift INTEGER
+);
+
 CREATE TABLE MonthlyWorkSchedule (
     mws_id SERIAL PRIMARY KEY,
     rider_id INTEGER REFERENCES Riders(rider_id), 
@@ -579,11 +586,16 @@ $$ LANGUAGE PLPGSQL;
 
  --delivery id
 
- --start time
- CREATE OR REPLACE FUNCTION start_time(deliveryid INTEGER)
- RETURNS TIMESTAMP AS $$
-     SELECT D.delivery_start_time
-     FROM Delivery D
+ --delivery time
+ CREATE OR REPLACE FUNCTION delivery_timings(deliveryid INTEGER)
+  RETURNS TABLE (
+  ordertime TIMESTAMP,
+  riderdeparturetime TIMESTAMP,
+  ridercollectedtime TIMESTAMP,
+  deliverystarttime TIMESTAMP
+ ) AS $$
+     SELECT FO.date_time, D.departure_time, D.collected_time, D.delivery_start_time
+     FROM Delivery D join FoodOrder FO on FO.order_id = D.order_id
      WHERE D.delivery_id = deliveryid;
  $$ LANGUAGE SQL;
 
@@ -1247,6 +1259,7 @@ $$ LANGUAGE SQL;
       day5 = 4;
     END IF;
     IF (day1shift = 1) THEN
+--      INSERT INTO Shifts VALUES (riderid, 10
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day1, 1, WWSmonth, WWSyear, 1);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 15, 19, day1, 1, WWSmonth, WWSyear, 1);
       INSERT INTO WeeklyWorkSchedule VALUES (DEFAULT, riderid, 10, 14, day1, 2, WWSmonth, WWSyear, 1);
