@@ -159,13 +159,6 @@ CREATE TABLE Delivery ( --BCNF
     UNIQUE(delivery_id)
 );
 
-CREATE TABLE Contain ( --2 attributes thus BCNF
-    order_id INTEGER REFERENCES FoodOrder(order_id),
-    food_id INTEGER REFERENCES FoodItem(food_id),
-    PRIMARY KEY(order_id, food_id),
-    UNIQUE(order_id, food_id)
-);
-
 --RELATIONSHIPS
 
 
