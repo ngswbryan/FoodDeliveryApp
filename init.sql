@@ -1,6 +1,6 @@
 -- ENTITIES
 
-CREATE TABLE Users (
+CREATE TABLE Users ( --BCNF
     uid SERIAL PRIMARY KEY,
     name VARCHAR(100),
     username VARCHAR(100),
@@ -10,7 +10,7 @@ CREATE TABLE Users (
     UNIQUE(username)
 );
 
-CREATE TABLE Riders (
+CREATE TABLE Riders ( --BCNF
     rider_id INTEGER REFERENCES Users(uid)
         ON DELETE CASCADE,
     rating DECIMAL,
@@ -21,14 +21,14 @@ CREATE TABLE Riders (
     UNIQUE(rider_id)
 );
 
-CREATE TABLE RidersSalary (
+CREATE TABLE RidersSalary ( --BCNF
     rider_type BOOLEAN,
     commission INTEGER,
     base_salary DECIMAL,
     PRIMARY KEY(rider_type)
 );
 
-CREATE TABLE Restaurants (
+CREATE TABLE Restaurants ( --BCNF
     rid INTEGER PRIMARY KEY,
     rname VARCHAR(100),
     location VARCHAR(100),
@@ -36,26 +36,26 @@ CREATE TABLE Restaurants (
     unique(rid)
 );
 
-CREATE TABLE RestaurantStaff (
+CREATE TABLE RestaurantStaff ( --BCNF
     uid INTEGER REFERENCES Users
         ON DELETE CASCADE,
     rid INTEGER REFERENCES Restaurants(rid)
         ON DELETE CASCADE
 );
 
-CREATE TABLE FDSManager (
+CREATE TABLE FDSManager ( --BCNF
     uid INTEGER REFERENCES Users
         ON DELETE CASCADE PRIMARY KEY
 );
 
-CREATE TABLE Customers (
+CREATE TABLE Customers ( --BCNF
     uid INTEGER REFERENCES Users
         ON DELETE CASCADE PRIMARY KEY,
     points INTEGER,
     credit_card VARCHAR(100)
 );
 
-CREATE TABLE FoodOrder (
+CREATE TABLE FoodOrder ( --BCNF
     order_id SERIAL PRIMARY KEY NOT NULL,
     uid INTEGER REFERENCES Customers NOT NULL,
     rid INTEGER REFERENCES Restaurants NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE FoodOrder (
     UNIQUE(order_id)
 );
 
-CREATE TABLE FoodItem (
+CREATE TABLE FoodItem ( --BCNF
     food_id SERIAL NOT NULL, 
     rid INTEGER REFERENCES Restaurants
         ON DELETE CASCADE,
@@ -81,7 +81,7 @@ CREATE TABLE FoodItem (
     UNIQUE(food_id)
 );
 
-CREATE TABLE PromotionalCampaign (
+CREATE TABLE PromotionalCampaign ( --BCNF
     promo_id SERIAL PRIMARY KEY,
     rid INTEGER REFERENCES Restaurants 
         ON DELETE CASCADE,
@@ -91,7 +91,7 @@ CREATE TABLE PromotionalCampaign (
     end_date TIMESTAMP
 );
 
-CREATE TABLE FDSPromotionalCampaign (
+CREATE TABLE FDSPromotionalCampaign ( --BCNF
     promo_id SERIAL PRIMARY KEY,
     discount INTEGER,
     description VARCHAR(100),
@@ -99,7 +99,7 @@ CREATE TABLE FDSPromotionalCampaign (
     end_date TIMESTAMP
 );
 
-CREATE TABLE WeeklyWorkSchedule (
+CREATE TABLE WeeklyWorkSchedule ( --BCNF
     wws_id SERIAL PRIMARY KEY NOT NULL,
     rider_id INTEGER references Riders(rider_id),
     start_hour INTEGER,
@@ -110,7 +110,7 @@ CREATE TABLE WeeklyWorkSchedule (
     year INTEGER
 );
 
-CREATE TABLE MonthlyWorkSchedule (
+CREATE TABLE MonthlyWorkSchedule ( --BCNF
     rider_id INTEGER references Riders(rider_id),
     start_hour INTEGER,
     end_hour INTEGER,
@@ -121,30 +121,35 @@ CREATE TABLE MonthlyWorkSchedule (
     PRIMARY KEY(rider_id,start_hour,end_hour,day,month,year)
 );
 
+CREATE TABLE DeliveryDuration ( --BCNF
+    delivery_id INTEGER REFERENCES Delivery(delivery_id),
+    time_for_one_delivery DECIMAL --in hour
+);
+
 --ENTITIES
 
 --RELATIONSHIPS
 
-CREATE TABLE Sells (
+CREATE TABLE Sells ( --BCNF
     rid INTEGER REFERENCES Restaurants(rid) NOT NULL,
     food_id INTEGER REFERENCES FoodItem(food_id) ON DELETE CASCADE,
     price DECIMAL NOT NULL check (price > 0),
     PRIMARY KEY(rid, food_id)
 );
 
-CREATE TABLE OrdersContain (
+CREATE TABLE OrdersContain ( --BCNF
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
     item_quantity INTEGER,
     PRIMARY KEY(order_id,food_id)
 );
 
-CREATE TABLE Receives (
+CREATE TABLE Receives ( --BCNF
     order_id INTEGER REFERENCES FoodOrder(order_id),
     promo_id INTEGER REFERENCES PromotionalCampaign(promo_id)
 );
 
-CREATE TABLE Delivery (
+CREATE TABLE Delivery ( --BCNF
     delivery_id SERIAL NOT NULL,
     order_id INTEGER REFERENCES FoodOrder(order_id) NOT NULL,
     rider_id INTEGER REFERENCES Riders(rider_id) NOT NULL,
@@ -161,10 +166,7 @@ CREATE TABLE Delivery (
     UNIQUE(delivery_id)
 );
 
-CREATE TABLE DeliveryDuration ( --BCNF
-    delivery_id INTEGER REFERENCES Delivery(delivery_id),
-    time_for_one_delivery DECIMAL --in minutes
-);
+
 
 
 --CREATE TABLE Delivery (
@@ -977,7 +979,10 @@ $$ LANGUAGE PLPGSQL;
      ROUND((sum(DD.time_for_one_delivery)/count(*)), 3) as average_delivery_time,
      count(D.delivery_rating) as total_number_ratings, 
      ROUND((sum(D.delivery_rating)::DECIMAL/count(D.delivery_rating)), 3) as average_ratings
-     FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id join DeliveryDuration DD on D.delivery_id = DD.delivery_id join Riders R on R.rider_id = D.rider_id join RidersSalary RS on R.rider_type = RS.rider_type
+     FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id
+     join DeliveryDuration DD on D.delivery_id = DD.delivery_id
+     join Riders R on R.rider_id = D.rider_id
+     join RidersSalary RS on R.rider_type = RS.rider_type
      GROUP BY order_month, D.rider_id, order_year, R.rider_type, RS.base_salary, RS.commission;
   END
  $$ LANGUAGE PLPGSQL;
