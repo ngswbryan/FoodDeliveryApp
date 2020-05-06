@@ -45,8 +45,7 @@ export class CustomerComponent implements OnInit {
   location;   //string
   orderedPairs=[];
   deliveryid; 
-
-  blah; 
+ 
   confirm: boolean;
 
   orderOngoing: boolean; 
@@ -176,7 +175,7 @@ export class CustomerComponent implements OnInit {
     this.disableEnable();
     this.selectTab(1);
     this.apiService.getFoodandDeliveryID(this.uid, this.rid, this.total).subscribe((res: any) => {
-      // console.log("uid : " + this.uid + " rid is :" + this.rid + " total cost is :" + this.total);
+      console.log("uid : " + this.uid + " rid is :" + this.rid + " total cost is :" + this.total);
       console.log(res);
       this.loadingService.loading.next(false);
     })
@@ -244,10 +243,12 @@ export class CustomerComponent implements OnInit {
 
       if (this.rewardsBal <= 5) {
         this.deliveryCost = this.deliveryCost - this.rewardsBal;
+        this.rewardsBal = 5 - this.rewardsBal;
       } else {
         this.deliveryCost = this.deliveryCost - 5; 
+        this.rewardsBal = 0; 
       }
-      this.rewardsBal = 0; 
+      
     } else {
       window.alert("you do not have any reward points!");
     }

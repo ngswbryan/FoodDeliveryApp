@@ -379,9 +379,9 @@ const getTotalOrders = (request, response) => {
 };
 
 const getFoodandDeliveryID = (request, response) => {
-  const uid = request.query.uid; 
-  const rid = request.query.rid; 
-  const total_order_cost = request.query.total;
+  const uid = request.params.uid; 
+  const rid = request.params.rid; 
+  const total_order_cost = request.params.total;
   
   pool.query(
     "select get_ids($1, $2, $3);",
@@ -390,6 +390,7 @@ const getFoodandDeliveryID = (request, response) => {
       if (error) {
         throw error; 
       }
+      console.log(results.rows);
       response.status(200).json(results.rows);
     }
   )

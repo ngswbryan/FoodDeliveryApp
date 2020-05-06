@@ -94,7 +94,7 @@ export class ApiService {
   getFoodandDeliveryID(uid, rid, total_order_cost) {
     return this.http.get(
       `${this.url}/users/restaurant/order/${uid}/${rid}/${total_order_cost}`
-    )
+    );
   }
 
   generateTotalOrders(month, year, rid) {
