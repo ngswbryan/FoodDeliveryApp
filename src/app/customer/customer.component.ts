@@ -28,7 +28,6 @@ export class CustomerComponent implements OnInit {
   user;
   uid;  
   rid; 
-  campaigns; 
 
   pastDeliveries = [];
   pastReviews = [];
@@ -129,22 +128,7 @@ export class CustomerComponent implements OnInit {
             }
             this.loadingService.loading.next(false);
           });
-          
-          this.apiService.getFDSCampaigns().subscribe((campaigns: any) => {
-            for (let k = 0; k < campaigns.length; k++) {
-              let start = campaigns[k].start_date;
-              let end = campaigns[k].end_date;
-              let formatted = start.substring(0, 10);
-              let formmated2 = end.substring(0, 10);
-              let newPromo = {
-                ...campaigns[k],
-                new_start: formatted,
-                new_end: formmated2,
-              };
-              this.campaigns.push(newPromo);
-            }
-            this.loadingService.loading.next(false);
-          });
+        
 
         })
 
@@ -162,29 +146,6 @@ export class CustomerComponent implements OnInit {
     
   }
 
-  checkDate(date) {
-    let curr = new Date().toISOString();
-    let currDate = new Date(curr);
-    let input = new Date(date);
-
-    if (currDate > input) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  checkStarted(date) {
-    let curr = new Date().toISOString();
-    let currDate = new Date(curr);
-    let input = new Date(date);
-
-    if (currDate > input) {
-      return false;
-    } else {
-      return true;
-    }
-  }
 
   getDID() {
     // console.log("received did is :" + this.deliveryid);
@@ -363,10 +324,7 @@ export class CustomerComponent implements OnInit {
     
   }
 
-  test() {
-    console.log("campaign : " + this.campaigns);
-  }
-
+  
   applyPromo() {
     this.promoApplied = true; 
     if (this.rewardsBal != 0) {

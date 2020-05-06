@@ -8,7 +8,7 @@ import { Router } from "@angular/router";
 export class ApiService {
   constructor(private http: HttpClient, public router: Router) {}
 
-  url = "";
+  url = "http://localhost:3002";
   public erMsg = new Subject();
 
   getError(): Observable<any> {
@@ -199,6 +199,22 @@ export class ApiService {
     );
   }
 
+  getFDSCampaigns() {
+    return this.http.get(`${this.url}/manager/campaigns`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  addFDSCampaign(campaign) {
+    return this.http.post(`${this.url}/manager/campaigns`, campaign).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+  
   getMWS(rid, month, year) {
     return this.http.get(
       `${this.url}/riders/mws/${rid}?month=${month}&year=${year}`
