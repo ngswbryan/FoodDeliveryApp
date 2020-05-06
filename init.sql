@@ -287,6 +287,12 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
      AND D.delivery_rating IS NOT NULL;
  $$ LANGUAGE SQL;
 
+ CREATE OR REPLACE FUNCTION start_time(deliveryid INTEGER)
+ RETURNS TIMESTAMP AS $$
+     SELECT D.delivery_start_time
+     FROM Delivery D
+     WHERE D.delivery_id = deliveryid;
+ $$ LANGUAGE SQL;
 
  --b)
  --past food reviews
@@ -710,7 +716,7 @@ RETURNS VOID AS $$
 BEGIN
     IF new_quantity IS NOT NULL then
     UPDATE FoodItem 
-    SET quantity = new_quantity
+    SET restaurant_quantity = new_quantity
     WHERE rid = current_rid
     AND food_id = id;
     END IF;
@@ -1607,6 +1613,10 @@ $$ LANGUAGE SQL;
           time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = input_delivery_id)/60::DECIMAL
       WHERE delivery_id = input_delivery_id
       AND rider_id = input_rider_id;
+
+       UPDATE Riders
+      SET is_delivering = FALSE
+      WHERE rider_id = input_rider_id;
   END
   $$ LANGUAGE PLPGSQL;
 

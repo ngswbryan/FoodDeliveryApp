@@ -44,12 +44,18 @@ export class CustomerComponent implements OnInit {
   creditCard: boolean;  //boolean : if credit card --> true if cash --> false 
   location;   //string
   orderedPairs=[];
+
+  retrievedDID: boolean; //check if did is retrieved
+
   deliveryid; 
+  orderid; 
 
+  riderName; 
+  riderRating;
+  startTime; 
+  
 
-  confirm: boolean;
-
-  orderOngoing: boolean; 
+  
   
   
   constructor(
@@ -63,8 +69,8 @@ export class CustomerComponent implements OnInit {
   ngOnInit() {
     this.deliveryCost = 5; 
     this.locationDropdown = true; 
-    this.orderOngoing = false; 
     this.promoApplied = false; 
+    this.retrievedDID = false;
     this.loadingService.loading.next(true);
     this.dataService.currentMessage.subscribe(hasOrdered => this.hasOrdered = hasOrdered);
     this.dataService.currentList.subscribe(confirmedList => this.confirmedList = confirmedList);
@@ -88,8 +94,8 @@ export class CustomerComponent implements OnInit {
               this.pastDeliveries.push(arr);
               // console.log("past deliveries : " + arr);
             }
-            // console.log("past deliveries : " + this.pastDeliveries[1][2]);
             this.loadingService.loading.next(false);
+            // console.log("past deliveries : " + this.pastDeliveries[1][2]);
           });
 
           this.apiService.getPastFoodReviews(this.uid).subscribe((review: any) => {
@@ -127,6 +133,28 @@ export class CustomerComponent implements OnInit {
     
   }
 
+  getDID() {
+    // console.log("received did is :" + this.deliveryid);
+    this.apiService.getRiderName(this.deliveryid).subscribe((name : any) => {
+      console.log("riders name : " + name);
+      this.riderName = name[0]["rider_name"];
+      
+    })
+    this.apiService.getStartTime(this.deliveryid).subscribe((name : any) => {
+      console.log("start time : " + name);
+      this.startTime = name[0]["start_time"];
+      
+    })
+    this.apiService.getRiderRating(this.deliveryid).subscribe((name : any) => {
+      console.log("rider rating : " + name);
+      this.riderRating = name[0]["rider_rating"];
+    })
+
+
+    this.retrievedDID = true; 
+  }
+ 
+
   submitForm() {
     console.log("confirmed list is: " + this.confirmedList); 
     console.log("foodlist is: " + this.foodItems); 
@@ -159,6 +187,11 @@ export class CustomerComponent implements OnInit {
     };
     console.log(order);
 
+    // this.apiService.activateRiders().subscribe((res: any) => {
+    //   // console.log("activated riders : " + res);
+    //   this.loadingService.loading.next(false);
+    // })
+
     this.apiService.updateOrderCount(order).subscribe((res: any) => {
       console.log("after posting" + res);
       for (let i=0; i<res.length; i++) {
@@ -166,14 +199,23 @@ export class CustomerComponent implements OnInit {
       }
       this.loadingService.loading.next(false);
     });
-    this.apiService.activateRiders().subscribe((res: any) => {
-      // console.log("activated riders : " + res);
-      this.loadingService.loading.next(false);
-    })
     window.alert("Order completed!");
     this.hasOrdered = !this.hasOrdered; 
     this.disableEnable();
     this.selectTab(1);
+    this.apiService.getFoodandDeliveryID(this.uid, this.rid, this.total).subscribe((res: any) => {
+      // console.log("uid : " + this.uid + " rid is :" + this.rid + " total cost is :" + this.total);
+      console.log(res);
+      this.deliveryid = res[0]["deliveryid"];
+      this.orderid = res[0]["orderid"];
+      this.loadingService.loading.next(false);
+    })
+   
+    // this.onOrdered();
+  }
+
+  onOrdered() {
+    
   }
 
   showYourModal(i) {
@@ -207,7 +249,6 @@ export class CustomerComponent implements OnInit {
 
     this.apiService.getRewardBalance(this.uid).subscribe((reward : any) => {
         console.log(reward);
-        
         this.rewardsBal = reward[0]["reward_balance"];
         // console.log("rewards balance is : " + this.rewardsBal);
     })
@@ -216,7 +257,7 @@ export class CustomerComponent implements OnInit {
   }
 
   test() {
-    
+    console.log("delivery id is : " + this.deliveryid + " and oder id is : " + this.orderid);
   }
 
   applyPromo() {
@@ -237,10 +278,12 @@ export class CustomerComponent implements OnInit {
 
       if (this.rewardsBal <= 5) {
         this.deliveryCost = this.deliveryCost - this.rewardsBal;
+        this.rewardsBal = 0; 
       } else {
         this.deliveryCost = this.deliveryCost - 5; 
+        this.rewardsBal = this.rewardsBal - 5; 
       }
-      this.rewardsBal = 0; 
+      
     } else {
       window.alert("you do not have any reward points!");
     }
