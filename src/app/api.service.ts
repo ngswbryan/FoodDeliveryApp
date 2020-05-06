@@ -97,6 +97,38 @@ export class ApiService {
     );
   }
 
+  getRiderName(did) {
+    return this.http.get(`${this.url}/users/restaurant/order/ridername/${did}`);
+  }
+
+  getRiderRating(did) {
+    return this.http.get(`${this.url}/users/restaurant/order/riderrating/${did}`);
+  }
+
+  getStartTime(did) {
+    return this.http.get(`${this.url}/users/restaurant/order/starttime/${did}`);
+  }
+
+  getEndTime(did) {
+    return this.http.get(`${this.url}/users/restaurant/order/endtime/${did}`);
+  }
+
+  foodReviewUpdate(foodreview) {
+    return this.http.post(`${this.url}/users/restaurant/order/foodreviewupdate`, foodreview).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  updateDeliveryRating(deliveryrating) {
+    return this.http.post(`${this.url}/users/restaurant/order/deliveryrating`, deliveryrating).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
   generateTotalOrders(month, year, rid) {
     return this.http.get(
       `${this.url}/staff/reports/orders?rid=${rid}&month=${month}&year=${year}`
