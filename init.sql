@@ -119,7 +119,7 @@ CREATE TABLE Sells (
     PRIMARY KEY(rid, food_id)
 );
 
-CREATE TABLE Orders (
+CREATE TABLE OrdersContain (
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
     item_quantity INTEGER,
@@ -482,7 +482,7 @@ CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][],
             SET availability_status = false
             WHERE item[1] = FI.food_id;
           END IF;
-          INSERT INTO Orders(order_id,food_id,item_quantity)
+          INSERT INTO OrdersContain(order_id,food_id,item_quantity)
           VALUES (orderid,item[1],item[2]);
        END loop;
        UPDATE Customers C
@@ -1068,7 +1068,7 @@ $$ LANGUAGE PLPGSQL;
       SELECT D.order_id, D.location, U.username, FI.food_name, O.item_quantity, D.delivery_cost + FO.order_cost, FO.rid, D.delivery_id, R.rname, R.location
       FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
       join Users U on FO.uid = U.uid 
-      join Orders O on FO.order_id = O.order_id
+      join OrdersContain O on FO.order_id = O.order_id
       join FoodItem FI on FI.food_id = O.food_id
       join Restaurants R on R.rid = FO.rid
       WHERE input_rider_id = D.rider_id
