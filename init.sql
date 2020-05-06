@@ -1118,7 +1118,15 @@ begin
     INTO initial_commission;
 
     RETURN QUERY(
-        SELECT input_week, input_month, input_year, salary_base, (count(D.delivery_end_time) * initial_commission), count(*), SUM(end_hour - start_hour)
+        SELECT input_week, input_month, input_year, salary_base, (count(distinct D.delivery_end_time) * initial_commission), count(distinct D.delivery_end_time),
+        ( SELECT SUM(end_hour - start_hour)
+          FROM WeeklyWorkSchedule WWS
+          WHERE rider_id = input_rider_id
+          AND WWS.week = input_week
+          AND WWS.month = input_month
+          AND WWS.year = input_year
+          GROUP BY rider_id
+        )
         FROM Riders R join Delivery D on D.rider_id = R.rider_id
         join WeeklyWorkSchedule WWS on WWS.rider_id = D.rider_id
         WHERE input_rider_id = D.rider_id
