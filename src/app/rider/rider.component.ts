@@ -80,6 +80,7 @@ export class RiderComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadingService.loading.next(true);
     for (let i = 1; i < 5; i++) {
       this.weeks.push(i);
       if (i <= 12) {
@@ -104,7 +105,6 @@ export class RiderComponent implements OnInit {
       shift5: new FormControl(""),
     });
 
-    this.loadingService.loading.next(true);
     this.route.params.subscribe((params: Params) => {
       this.username = params.username;
       this.apiService
