@@ -28,6 +28,7 @@ export class CustomerComponent implements OnInit {
   user;
   uid;  
   rid; 
+  campaigns; 
 
   pastDeliveries = [];
   pastReviews = [];
@@ -129,7 +130,22 @@ export class CustomerComponent implements OnInit {
             this.loadingService.loading.next(false);
           });
           
-          
+          this.apiService.getFDSCampaigns().subscribe((campaigns: any) => {
+            for (let k = 0; k < campaigns.length; k++) {
+              let start = campaigns[k].start_date;
+              let end = campaigns[k].end_date;
+              let formatted = start.substring(0, 10);
+              let formmated2 = end.substring(0, 10);
+              let newPromo = {
+                ...campaigns[k],
+                new_start: formatted,
+                new_end: formmated2,
+              };
+              this.campaigns.push(newPromo);
+            }
+            this.loadingService.loading.next(false);
+          });
+
         })
 
     })
@@ -144,6 +160,30 @@ export class CustomerComponent implements OnInit {
       deliveryrating: new FormControl("")
     });
     
+  }
+
+  checkDate(date) {
+    let curr = new Date().toISOString();
+    let currDate = new Date(curr);
+    let input = new Date(date);
+
+    if (currDate > input) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  checkStarted(date) {
+    let curr = new Date().toISOString();
+    let currDate = new Date(curr);
+    let input = new Date(date);
+
+    if (currDate > input) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   getDID() {
@@ -229,10 +269,10 @@ export class CustomerComponent implements OnInit {
     };
     console.log(order);
 
-    this.apiService.activateRiders().subscribe((res: any) => {
-      // console.log("activated riders : " + res);
-      this.loadingService.loading.next(false);
-    })
+    // this.apiService.activateRiders().subscribe((res: any) => {
+    //   // console.log("activated riders : " + res);
+    //   this.loadingService.loading.next(false);
+    // })
 
     this.apiService.updateOrderCount(order).subscribe((res: any) => {
       console.log("after posting" + res);
@@ -257,14 +297,10 @@ export class CustomerComponent implements OnInit {
   }
 
   submitReview() {
-    if (!this.createReviewForm.value.foodreview) {
-      window.alert("Please enter food review.");
-    } else if (!this.createReviewForm.value.deliveryrating) {
-      window.alert("Please rate your delivery experience out of 5");
-    } else {
+   
       this.foodreview = this.createReviewForm.value.foodreview;
       this.deliveryrating = this.createReviewForm.value.deliveryrating; 
-    }
+    
 
     let review = {
       foodreview: this.foodreview,
@@ -283,7 +319,8 @@ export class CustomerComponent implements OnInit {
       console.log("delivery rating submitted" + res);
       this.loadingService.loading.next(false);
     })
-
+    this.disableEnable();
+    this.selectTab(0);
    
 
   }
@@ -327,7 +364,7 @@ export class CustomerComponent implements OnInit {
   }
 
   test() {
-    console.log("delivery id is : " + this.deliveryid + " and oder id is : " + this.orderid);
+    console.log("campaign : " + this.campaigns);
   }
 
   applyPromo() {
