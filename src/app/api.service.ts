@@ -8,7 +8,7 @@ import { Router } from "@angular/router";
 export class ApiService {
   constructor(private http: HttpClient, public router: Router) {}
 
-  url = "";
+  url = "http://localhost:3002";
   public erMsg = new Subject();
 
   getError(): Observable<any> {
@@ -102,7 +102,9 @@ export class ApiService {
   }
 
   getRiderRating(did) {
-    return this.http.get(`${this.url}/users/restaurant/order/riderrating/${did}`);
+    return this.http.get(
+      `${this.url}/users/restaurant/order/riderrating/${did}`
+    );
   }
 
   getStartTime(did) {
@@ -114,19 +116,23 @@ export class ApiService {
   }
 
   foodReviewUpdate(foodreview) {
-    return this.http.post(`${this.url}/users/restaurant/order/foodreviewupdate`, foodreview).pipe(
-      retry(1),
+    return this.http
+      .post(`${this.url}/users/restaurant/order/foodreviewupdate`, foodreview)
+      .pipe(
+        retry(1),
 
-      catchError(this.handleError)
-    );
+        catchError(this.handleError)
+      );
   }
 
   updateDeliveryRating(deliveryrating) {
-    return this.http.post(`${this.url}/users/restaurant/order/deliveryrating`, deliveryrating).pipe(
-      retry(1),
+    return this.http
+      .post(`${this.url}/users/restaurant/order/deliveryrating`, deliveryrating)
+      .pipe(
+        retry(1),
 
-      catchError(this.handleError)
-    );
+        catchError(this.handleError)
+      );
   }
 
   generateTotalOrders(month, year, rid) {

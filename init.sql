@@ -287,6 +287,12 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
      AND D.delivery_rating IS NOT NULL;
  $$ LANGUAGE SQL;
 
+ CREATE OR REPLACE FUNCTION start_time(deliveryid INTEGER)
+ RETURNS TIMESTAMP AS $$
+     SELECT D.delivery_start_time
+     FROM Delivery D
+     WHERE D.delivery_id = deliveryid;
+ $$ LANGUAGE SQL;
 
  --b)
  --past food reviews
