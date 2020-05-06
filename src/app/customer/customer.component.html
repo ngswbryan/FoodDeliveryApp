@@ -216,33 +216,35 @@ style="align-content: center; background-color:#f3f5f8 ;">
 
         <button *ngIf="onGoing" (click)="refresh()"> refresh </button>
         <div *ngIf="!onGoing">
+          <br />
           <h1> Your order has arrived. Complete your order by giving it a rating.  </h1>
           <h5> Delivery end time : {{ deliveryendtime }}  </h5>
-          <h2> Review your food </h2>
+          <h2> Order Completion! </h2>
           <form [formGroup]="createReviewForm" > 
             <br /> 
-            <div class="row"> 
-              <div class="col-12"> 
-                <input 
-                type="text"
-                placeholder="comments"
-                formControlName="foodreview"
-                class="form-control form-input" />
-              </div>
-
-              <div class="row">
-                <select
-                type="string"
-                placeholder="rating out of 5"
-                class="form-control form-input"
-                formControlName="deliveryrating"
-                (change)="onChange($event.target.value)"> 
-                <option value="1"> 1 </option>
-                <option value="2"> 2 </option>
-                <option value="3"> 3 </option>
-                <option value="4"> 4 </option>
-                <option value="5"> 5 </option>
-              </select>
+            <div class="container-fluid"> 
+              <div class="row"> 
+                <div class="col-12"> 
+                  <h2> Review your food </h2>
+                  <input 
+                  type="text"
+                  placeholder="comments"
+                  formControlName="foodreview"
+                  class="form-control form-input" />
+                </div>
+                <h2> Rate your experience </h2>
+                  <select
+                  type="string"
+                  placeholder="rating out of 5"
+                  class="form-control form-input"
+                  formControlName="deliveryrating"
+                  (change)="onChange($event.target.value)"> 
+                  <option value="1"> 1 </option>
+                  <option value="2"> 2 </option>
+                  <option value="3"> 3 </option>
+                  <option value="4"> 4 </option>
+                  <option value="5"> 5 </option>
+                </select>
               </div>
             </div>
           </form>
