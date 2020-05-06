@@ -103,6 +103,7 @@ CREATE TABLE Shifts (
     start_hour INTEGER,
     end_hour INTEGER,
     shift INTEGER
+    PRIMARY KEY(rider_id, start_hour
 );
 
 --CREATE TABLE MonthlyWorkSchedule (
