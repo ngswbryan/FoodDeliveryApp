@@ -67,6 +67,7 @@ export class RegisterComponent implements OnInit {
       if (duplicateUser) {
         window.alert("Username already taken!");
       } else {
+        console.log(this.createUserForm.value);
         this.apiService.addUser(this.createUserForm.value).subscribe(() => {
           console.log("user added");
           this.goToLogin();

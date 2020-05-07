@@ -217,14 +217,18 @@ const getRewardBalance = (request, response) => {
 };
 
 const addUser = (request, response) => {
-  const {
-    name,
-    username,
-    password,
-    user_role,
-    rider_type,
-    restaurant_name,
-  } = request.body;
+  const { name, username, password, user_role, rider_type } = request.body;
+
+  let restaurant_name = request.body.restaurant_name;
+
+  console.log(request.body);
+  console.log(restaurant_name);
+
+  if (restaurant_name.charAt(0) == '"') {
+    console.log(true);
+    restaurant_name = restaurant_name.substring(1, restaurant_name.length - 1);
+    console.log(restaurant_name);
+  }
 
   pool.query(
     "select create_user($1, $2, $3, $4, $5, $6);",
