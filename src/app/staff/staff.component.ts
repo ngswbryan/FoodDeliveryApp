@@ -192,8 +192,8 @@ export class StaffComponent implements OnInit {
           ) {
             for (let k = 0; k < this.menu.length; k++) {
               this.menu[k].food_price =
-                this.menu[k].food_price -
-                this.menu[k].food_price * (currentCampaign.discount / 100);
+                (this.menu[k].food_price -
+                this.menu[k].food_price * (currentCampaign.discount / 100)).toFixed(2);
             }
           }
         }
