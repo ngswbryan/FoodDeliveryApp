@@ -76,6 +76,7 @@ export class CustomerComponent implements OnInit {
 
   ngOnInit() {
     this.deliveryCost = 5; 
+    this.deliveryid = -1; 
     this.locationDropdown = true; 
     this.promoApplied = false; 
     this.retrievedDID = false;
@@ -149,26 +150,30 @@ export class CustomerComponent implements OnInit {
 
   getDID() {
     // console.log("received did is :" + this.deliveryid);
-    this.apiService.getRiderName(this.deliveryid).subscribe((name : any) => {
-      console.log("riders name : " + name);
-      this.riderName = name[0]["rider_name"];
+    if (this.deliveryid != -1) {
+      this.apiService.getRiderName(this.deliveryid).subscribe((name : any) => {
+        console.log("riders name : " + name);
+        this.riderName = name[0]["rider_name"];
+
+        
+      })
+      this.apiService.getDeliveryTimings(this.deliveryid).subscribe((timings : any) => {
+        console.log("delivery timings : " + timings);
+        this.orderTime = timings[0]["ordertime"];
+        this.riderdeparturetime = timings[0]["riderdeparturetime"];
+        this.ridercollectedtime = timings[0]["ridercollectedtime"];
+        this.deliverystarttime = timings[0]["deliverystarttime"];
       
-    })
-    this.apiService.getDeliveryTimings(this.deliveryid).subscribe((timings : any) => {
-      console.log("delivery timings : " + timings);
-      this.orderTime = timings[0]["ordertime"];
-      this.riderdeparturetime = timings[0]["riderdeparturetime"];
-      this.ridercollectedtime = timings[0]["ridercollectedtime"];
-      this.deliverystarttime = timings[0]["deliverystarttime"];
-    
-    })
-    this.apiService.getRiderRating(this.deliveryid).subscribe((rating : any) => {
-      console.log("rider rating : " + rating);
-      this.riderRating = rating[0]["rider_rating"];
-    })
+      })
+      this.apiService.getRiderRating(this.deliveryid).subscribe((rating : any) => {
+        console.log("rider rating : " + rating);
+        this.riderRating = rating[0]["rider_rating"];
+      })
 
-
-    this.retrievedDID = true; 
+      this.retrievedDID = true; 
+  } else { 
+    this.toastr.show("No ongoing deliveries at this moment. Please make an order! ");
+  }
   }
 
   refresh() {
@@ -282,7 +287,8 @@ export class CustomerComponent implements OnInit {
     })
     this.disableEnable();
     this.selectTab(0);
-   
+    this.retrievedDID = false; 
+    this.deliveryid = -1; 
 
   }
 
