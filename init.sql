@@ -121,10 +121,7 @@ CREATE TABLE MonthlyWorkSchedule ( --BCNF
     PRIMARY KEY(rider_id,start_hour,end_hour,day,month,year)
 );
 
-CREATE TABLE DeliveryDuration ( --BCNF
-    delivery_id INTEGER REFERENCES Delivery(delivery_id),
-    time_for_one_delivery DECIMAL --in hour
-);
+
 
 --ENTITIES
 
@@ -165,7 +162,10 @@ CREATE TABLE Delivery ( --BCNF
     PRIMARY KEY(delivery_id),
     UNIQUE(delivery_id)
 );
-
+CREATE TABLE DeliveryDuration ( --BCNF
+    delivery_id INTEGER REFERENCES Delivery(delivery_id),
+    time_for_one_delivery DECIMAL --in hour
+);
 
 
 --RELATIONSHIPS
@@ -364,7 +364,8 @@ BEGIN
   SET working = TRUE
   WHERE R.rider_id IN (SELECT WWS.rider_id
                       FROM WeeklyWorkSchedule WWS
-                      WHERE WWS.start_hour = (SELECT EXTRACT(HOUR FROM current_timestamp))
+                      WHERE WWS.start_hour <= (SELECT EXTRACT(HOUR FROM current_timestamp))
+                      AND WWS.end_hour > (SELECT EXTRACT(HOUR FROM current_timestamp))
                       AND WWS.day%7 = (SELECT EXTRACT(DOW FROM current_timestamp))
                       AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp)
                                                       - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
@@ -375,7 +376,8 @@ BEGIN
    SET working = FALSE
    WHERE R.rider_id NOT IN (SELECT WWS.rider_id
                       FROM WeeklyWorkSchedule WWS
-                      WHERE WWS.start_hour = (SELECT EXTRACT(HOUR FROM current_timestamp))
+                      WHERE WWS.start_hour <= (SELECT EXTRACT(HOUR FROM current_timestamp))
+                      AND WWS.end_hour > (SELECT EXTRACT(HOUR FROM current_timestamp))
                       AND WWS.day%7 = (SELECT EXTRACT(DOW FROM current_timestamp))
                       AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp)
                                                       - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
