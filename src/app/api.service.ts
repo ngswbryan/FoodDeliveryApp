@@ -253,6 +253,14 @@ export class ApiService {
     return this.http.delete(`${this.url}/staff/campaigns/${rid}`);
   }
 
+  deleteFDSCampaign(rid) {
+    return this.http.delete(`${this.url}/manager/campaigns/${rid}`).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
   addMenuItem(food) {
     return this.http.post(`${this.url}/staff/menu`, food).pipe(
       retry(1),
