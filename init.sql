@@ -33,6 +33,7 @@ CREATE TABLE Restaurants ( --BCNF
     rname VARCHAR(100),
     location VARCHAR(100),
     min_order_price DECIMAL,
+    is_deleted BOOLEAN,
     unique(rid)
 );
 
@@ -263,9 +264,10 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
      restaurant_id INTEGER,
      restaurant_name VARCHAR,
      min_order_price DECIMAL,
-     location VARCHAR
+     location VARCHAR,
+     is_deleted BOOLEAN
  ) AS $$
-     SELECT R.rid, R.rname, R.min_order_price, R.location
+     SELECT R.rid, R.rname, R.min_order_price, R.location, R.is_deleted
      FROM Restaurants R
  $$ LANGUAGE SQL;
 

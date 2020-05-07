@@ -64,6 +64,7 @@ export class StaffComponent implements OnInit {
             .getStaffByUsername(staff[0].uid)
             .subscribe((staffDetails: any) => {
               this.staff = staffDetails;
+              console.log(staffDetails[0]);
               this.apiService
                 .getCampaigns(this.staff[0].rid)
                 .subscribe((campaigns: any) => {
@@ -191,9 +192,10 @@ export class StaffComponent implements OnInit {
             !this.checkStarted(currentCampaign.start_date)
           ) {
             for (let k = 0; k < this.menu.length; k++) {
-              this.menu[k].food_price =
-                (this.menu[k].food_price -
-                this.menu[k].food_price * (currentCampaign.discount / 100)).toFixed(2);
+              this.menu[k].food_price = (
+                this.menu[k].food_price -
+                this.menu[k].food_price * (currentCampaign.discount / 100)
+              ).toFixed(2);
             }
           }
         }
