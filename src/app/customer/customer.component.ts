@@ -223,6 +223,8 @@ export class CustomerComponent implements OnInit {
 
 
   submitForm() {
+
+    if (!this.onGoing) {
     console.log("confirmed list is: " + this.confirmedList); 
     console.log("foodlist is: " + this.foodItems); 
     var current = [];
@@ -266,7 +268,7 @@ export class CustomerComponent implements OnInit {
       }
       this.loadingService.loading.next(false);
     });
-    window.alert("Order completed!");
+    window.alert("Order completed! 🥳 ");
     this.hasOrdered = !this.hasOrdered; 
     this.disableEnable();
     this.selectTab(1);
@@ -278,6 +280,9 @@ export class CustomerComponent implements OnInit {
       this.loadingService.loading.next(false);
       this.onGoing = true; 
     })
+  } else {
+    window.alert("You cannot order with an on going order 😡 ! Please wait for the current order to be done");
+  }
    
     
   }
@@ -310,7 +315,7 @@ export class CustomerComponent implements OnInit {
     this.retrievedDID = false; 
     this.deliveryid = -1; 
     this.onGoing = false; 
-    window.alert("Thank you for ordering with FoodHub! Enjoy your food ");
+    window.alert("Thank you for ordering with FoodHub! 🤤👍🏼💯🔥 Enjoy your food ");
 
   }
 
