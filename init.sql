@@ -161,6 +161,9 @@ CREATE TABLE Delivery ( --BCNF
     PRIMARY KEY(delivery_id),
     UNIQUE(delivery_id)
 );
+
+--ENTITIES
+
 CREATE TABLE DeliveryDuration ( --BCNF
     delivery_id INTEGER REFERENCES Delivery(delivery_id),
     time_for_one_delivery DECIMAL --in hour
