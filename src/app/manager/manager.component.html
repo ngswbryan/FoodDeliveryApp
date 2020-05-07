@@ -437,19 +437,21 @@
             </alert>
           </div>
           <ul class="list-group">
-            <li class="list-group-item" *ngFor="let rest of restaurants">
-              <p>Name: {{ rest[1] }}</p>
-              <p>Location: {{ rest[3] }}</p>
-              <p>Minimum Order: {{ rest[2] }}</p>
-              <p>
-                <button
-                  class="btn btn-danger"
-                  (click)="deleteRestaurant(rest[0])"
-                >
-                  Delete
-                </button>
-              </p>
-            </li>
+            <ng-container *ngFor="let rest of restaurants">
+              <li class="list-group-item" *ngIf="!rest.is_deleted">
+                <p>Name: {{ rest[1] }}</p>
+                <p>Location: {{ rest[3] }}</p>
+                <p>Minimum Order: {{ rest[2] }}</p>
+                <p>
+                  <button
+                    class="btn btn-danger"
+                    (click)="deleteRestaurant(rest[0])"
+                  >
+                    Delete
+                  </button>
+                </p>
+              </li>
+            </ng-container>
           </ul>
           <br />
           <br />
