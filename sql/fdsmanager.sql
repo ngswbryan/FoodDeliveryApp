@@ -1,8 +1,8 @@
 -- FDS Manager
 --a)
  CREATE OR REPLACE FUNCTION new_customers(input_month INTEGER, input_year INTEGER)
- RETURNS INTEGER AS $$
-     SELECT C.uid 
+ RETURNS setof record AS $$
+     SELECT C.uid, U.username
      FROM Customers C join Users U on C.uid = U.uid
      WHERE (SELECT EXTRACT(MONTH FROM U.date_joined)) = input_month
      AND (SELECT EXTRACT(YEAR FROM U.date_joined)) = input_year;
@@ -10,8 +10,8 @@
 
  --b)
  CREATE OR REPLACE FUNCTION total_orders(input_month INTEGER, input_year INTEGER)
- RETURNS BIGINT AS $$
-     SELECT count(*) AS total_order_numbers
+ RETURNS setof record AS $$
+     SELECT *
      FROM FoodOrder FO
      WHERE (SELECT EXTRACT(MONTH FROM FO.date_time)) = input_month
      AND (SELECT EXTRACT(YEAR FROM FO.date_time)) = input_year
@@ -109,17 +109,18 @@
      SELECT ( EXTRACT(MONTH FROM FO.date_time)::BIGINT) as order_month,
      ( EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, 
      D.rider_id as rider_id,
-     count(*) as count, ROUND((SUM(D.time_for_one_delivery)), 3) as total_hours_worked,
+     count(*) as count,
+     ROUND((SUM(DD.time_for_one_delivery)), 3) as total_hours_worked,
 
-     CASE WHEN R.rider_type THEN R.base_salary * 4 + count(*) * 6 --salary x 4 weeks + commission 6 for ft
-          ELSE R.base_salary * 4 + count(*) * 3 --salary * 4 weeks + commission 3 for pt
+     CASE WHEN R.rider_type THEN RS.base_salary * 4 + count(*) * RS.commission --salary x 4 weeks + commission 6 for ft
+          ELSE RS.base_salary * 4 + count(*) * RS.commission --salary * 4 weeks + commission 3 for pt
      END as total_salary,
 
-     ROUND((sum(D.time_for_one_delivery)/count(*)), 3) as average_delivery_time,
+     ROUND((sum(DD.time_for_one_delivery)/count(*)), 3) as average_delivery_time,
      count(D.delivery_rating) as total_number_ratings, 
      ROUND((sum(D.delivery_rating)::DECIMAL/count(D.delivery_rating)), 3) as average_ratings
-     FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id join Riders R on R.rider_id = D.rider_id
-     GROUP BY order_month, D.rider_id, order_year, rider_type, R.base_salary;
+     FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id join DeliveryDuration DD on D.delivery_id = DD.delivery_id join Riders R on R.rider_id = D.rider_id join RidersSalary RS on R.rider_type = RS.rider_type
+     GROUP BY order_month, D.rider_id, order_year, R.rider_type, RS.base_salary, RS.commission;
   END
  $$ LANGUAGE PLPGSQL;
 
@@ -191,7 +192,7 @@ BEGIN
 END;
 $$ LANGUAGE PLPGSQL;
 
-CREATE OR REPLACE FUNCTION filter_location_table_by_month(input_month INTEGER, input_year INTEGER)
+CREATE OR REPLACE FUNCTION filter_location_table_by_month(input_month INTEGER, input_year INTEGER, input_location VARCHAR)
 RETURNS TABLE (
     delivery_location VARCHAR,
     month INTEGER,
@@ -200,48 +201,38 @@ RETURNS TABLE (
     hour VARCHAR
 ) AS $$
 BEGIN
+    IF input_location = 'all' THEN
     RETURN QUERY
     SELECT * 
     FROM location_table() as curr_table
     WHERE curr_table.month = input_month
     AND curr_table.year = input_year;
+    ELSE 
+    RETURN QUERY
+    SELECT * 
+    FROM location_table() as curr_table
+    WHERE curr_table.month = input_month
+    AND curr_table.year = input_year
+    AND curr_table.delivery_location = input_location;
+    END IF;
 END;
 $$ LANGUAGE PLPGSQL;
 
----- function for fds-wide delivery cost discount
-CREATE OR REPLACE FUNCTION insert_delivery_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
-RETURNS VOID
-AS $$
-BEGIN 
-    INSERT INTO PromotionalCampaign VALUES(DEFAULT, null, discount, description, start_date, end_date);
-END
-$$ LANGUAGE PLPGSQL;
+CREATE OR REPLACE FUNCTION checkTimeInterval()
+  RETURNS TRIGGER as $$
+BEGIN
+   IF (NEW.start_date > NEW.end_date) THEN
+       RAISE EXCEPTION 'Start date should be earlier than End date';
+   END IF;
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
----- button to apply delivery cost discount
--- CREATE OR REPLACE FUNCTION apply_delivery_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
--- RETURNS VOID
--- AS $$
--- BEGIN 
---     UPDATE 
--- END
--- $$ LANGUAGE PLPGSQL;
+DROP TRIGGER IF EXISTS check_time_trigger ON PromotionalCampaign CASCADE;
+CREATE TRIGGER check_time_trigger
+BEFORE UPDATE OR INSERT
+ON FDSPromotionalCampaign
+FOR EACH ROW
+EXECUTE FUNCTION checkTimeInterval();
 
----- function for fds-wide food price discount
-CREATE OR REPLACE FUNCTION insert_food_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
-RETURNS VOID
-AS $$
-BEGIN 
-    INSERT INTO PromotionalCampaign VALUES(DEFAULT, null, discount, description, start_date, end_date);
-END
-$$ LANGUAGE PLPGSQL;
-
------ button to apply food_discount 
-CREATE OR REPLACE FUNCTION apply_food_discount(discount NUMERIC, description VARCHAR, start_date TIMESTAMP, end_date TIMESTAMP)
-RETURNS VOID
-AS $$
-BEGIN 
-    UPDATE Sells S
-    SET price = ROUND(price - (price * discount), 2);
-END
-$$ LANGUAGE PLPGSQL;
-
+------ FDS MANAGER -------

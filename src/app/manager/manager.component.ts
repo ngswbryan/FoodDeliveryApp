@@ -3,6 +3,7 @@ import { ActivatedRoute, Data, Params, Router } from "@angular/router";
 import { LoadingService } from "../loading.service";
 import { ApiService } from "../api.service";
 import { FormGroup, FormControl } from "@angular/forms";
+import { ThrowStmt } from "@angular/compiler";
 
 @Component({
   selector: "app-manager",
@@ -29,6 +30,8 @@ export class ManagerComponent implements OnInit {
   currLocation = "all";
   campaigns = [];
 
+  restaurants = [];
+
   newCampaign;
 
   createCampaign = new FormGroup({
@@ -36,6 +39,12 @@ export class ManagerComponent implements OnInit {
     start: new FormControl(""),
     end: new FormControl(""),
     discount: new FormControl(""),
+  });
+
+  createRestaurant = new FormGroup({
+    rname: new FormControl(""),
+    location: new FormControl(""),
+    minimum: new FormControl(""),
   });
 
   constructor(
@@ -65,9 +74,52 @@ export class ManagerComponent implements OnInit {
               };
               this.campaigns.push(newPromo);
             }
-            this.loadingService.loading.next(false);
+            this.apiService.getRestaurants().subscribe((rest: any) => {
+              for (let i = 0; i < rest.length; i++) {
+                let current = rest[i]["list_of_restaurant"];
+                let result = current.substring(1, current.length - 1);
+                let arr = result.split(",");
+                this.restaurants.push(arr);
+              }
+              console.log(this.restaurants);
+              this.loadingService.loading.next(false);
+            });
           });
         });
+    });
+  }
+
+  deleteRestaurant(i) {
+    this.loadingService.loading.next(true);
+    this.apiService.deleteRestaurant(i).subscribe(() => {
+      this.restaurants = [];
+      this.apiService.getRestaurants().subscribe((rest: any) => {
+        for (let i = 0; i < rest.length; i++) {
+          let current = rest[i]["list_of_restaurant"];
+          let result = current.substring(1, current.length - 1);
+          let arr = result.split(",");
+          this.restaurants.push(arr);
+        }
+        console.log(this.restaurants);
+        this.loadingService.loading.next(false);
+      });
+    });
+  }
+
+  addRestaurant() {
+    this.loadingService.loading.next(true);
+    this.apiService.addRestaurant(this.createRestaurant.value).subscribe(() => {
+      this.restaurants = [];
+      this.apiService.getRestaurants().subscribe((rest: any) => {
+        for (let i = 0; i < rest.length; i++) {
+          let current = rest[i]["list_of_restaurant"];
+          let result = current.substring(1, current.length - 1);
+          let arr = result.split(",");
+          this.restaurants.push(arr);
+        }
+        console.log(this.restaurants);
+        this.loadingService.loading.next(false);
+      });
     });
   }
 
