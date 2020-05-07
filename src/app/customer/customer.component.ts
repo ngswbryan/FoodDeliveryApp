@@ -269,7 +269,7 @@ export class CustomerComponent implements OnInit {
         }
         this.loadingService.loading.next(false);
       });
-      window.alert("Order completed! 🥳 ");
+      window.alert("Trying to place your order... 🥳 ");
       this.hasOrdered = !this.hasOrdered;
       this.disableEnable();
       this.selectTab(1);
