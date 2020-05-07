@@ -82,6 +82,7 @@ export class ModalContentComponent implements OnInit {
           console.log("discount now is: " + this.discount);
         }
         this.apiService.getListOfFoodItem(this.list).subscribe((fooditem: any) => {
+          console.log(this.list);
           this.orderList = Array(fooditem.length).fill(0);
   
           for (let i = 0; i < fooditem.length; i++) {
