@@ -15,6 +15,11 @@ This project was done as part of NUS CS2102 Database Systems.
 * PostgreSQL (version 12.x)
 
 ## Deploying our app
+
+### We have deployed our app on a free dynos on Heroku over at https://mighty-mountain-99792.herokuapp.com/
+
+Alternatively,
+
 1. Clone this repo into your local machine and run `npm install` in the root directory of your clone to install all dependencies.
 2. Create a new PostgreSQL database.
 3. Create a .env file in the root directory and update it with the credentials of your newly created database.
