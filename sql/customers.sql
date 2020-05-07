@@ -1,6 +1,3 @@
-
-
-
 --a)
 -- past delivery ratings
 CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
@@ -17,6 +14,12 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
      AND D.delivery_rating IS NOT NULL;
  $$ LANGUAGE SQL;
 
+ CREATE OR REPLACE FUNCTION start_time(deliveryid INTEGER)
+ RETURNS TIMESTAMP AS $$
+     SELECT D.delivery_start_time
+     FROM Delivery D
+     WHERE D.delivery_id = deliveryid;
+ $$ LANGUAGE SQL;
 
  --b)
  --past food reviews
@@ -60,7 +63,7 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
      is_deleted BOOLEAN,
         quantity INTEGER
  ) AS $$
-     SELECT FI.food_id, FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted, FI.quantity
+     SELECT FI.food_id, FI.food_name, S.price, FI.cuisine_type, FI.overall_rating, FI.availability_status, FI.is_deleted, FI.restaurant_quantity
      FROM FoodItem FI join Sells S on FI.food_id = S.food_id
      WHERE FI.rid = restaurant_id
  $$ LANGUAGE SQL;
@@ -68,7 +71,7 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  --trigger when choosen quantity > available quantity
  CREATE OR REPLACE FUNCTION notify_user() RETURNS TRIGGER AS $$
  BEGIN
-    IF  NEW.ordered_count > OLD.quantity THEN
+    IF  NEW.ordered_count > OLD.restaurant_quantity THEN
         RAISE EXCEPTION 'ordered quantity more than available quantity';
     END IF;
     RETURN NEW;
@@ -81,7 +84,7 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
   FOR EACH ROW
   EXECUTE FUNCTION notify_user();
 
-  --trigger when choosen total order cost < min order
+    --trigger when choosen total order cost < min order
  CREATE OR REPLACE FUNCTION notify_minorder_not_met() RETURNS TRIGGER AS $$
  DECLARE
     minorderprice DECIMAL;
@@ -102,8 +105,6 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
   FOR EACH ROW
   EXECUTE FUNCTION notify_minorder_not_met();
 
-
-
   --trigger to update isdelivering for the particular rider
  CREATE OR REPLACE FUNCTION update_rider_isdelivering() RETURNS TRIGGER AS $$
  BEGIN
@@ -120,10 +121,21 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
   FOR EACH ROW
   EXECUTE FUNCTION update_rider_isdelivering();
 
---CREATE TYPE orderdeliveryid AS (
---  order_id   integer,
---  delivery_id  integer
---);
+ --trigger to check if there are available riders
+ CREATE OR REPLACE FUNCTION check_available_riders() RETURNS TRIGGER AS $$
+ BEGIN
+    IF NEW.rider_id IS NULL THEN
+      RAISE EXCEPTION 'There are no available riders right now';
+    END IF;
+    RETURN NEW;
+ END;
+ $$ LANGUAGE PLPGSQL;
+ DROP TRIGGER IF EXISTS check_available_riders ON Delivery CASCADE;
+ CREATE TRIGGER check_available_riders
+  BEFORE INSERT
+  ON Delivery
+  FOR EACH ROW
+  EXECUTE FUNCTION check_available_riders();
 
 --e (i) run this function first
  --function to activate riders that are working NOW
@@ -136,7 +148,8 @@ BEGIN
                       FROM WeeklyWorkSchedule WWS
                       WHERE WWS.start_hour = (SELECT EXTRACT(HOUR FROM current_timestamp))
                       AND WWS.day%7 = (SELECT EXTRACT(DOW FROM current_timestamp))
-                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp) - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
+                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp)
+                                                      - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
                       AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
                       AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
                       );
@@ -146,7 +159,8 @@ BEGIN
                       FROM WeeklyWorkSchedule WWS
                       WHERE WWS.start_hour = (SELECT EXTRACT(HOUR FROM current_timestamp))
                       AND WWS.day%7 = (SELECT EXTRACT(DOW FROM current_timestamp))
-                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp) - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
+                      AND WWS.week =  (SELECT EXTRACT('day' from date_trunc('week', current_timestamp)
+                                                      - date_trunc('week', date_trunc('month',  current_timestamp))) / 7 + 1 )
                       AND WWS.month = (SELECT EXTRACT(MONTH FROM current_timestamp))
                       AND WWS.year = (SELECT EXTRACT(YEAR FROM current_timestamp))
                       );
@@ -160,7 +174,13 @@ END
  --returns orderid and deliveryid as a tuple
  --currentorder is a 2d array which consist of the { {foodid,quantity}, {foodid2,quantity} }
 
- CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][], customer_uid INTEGER, restaurant_id INTEGER, have_credit BOOLEAN, total_order_cost DECIMAL, delivery_location VARCHAR(100), delivery_fee DECIMAL)
+CREATE OR REPLACE FUNCTION update_order_count(currentorder INTEGER[][],
+                                              customer_uid INTEGER,
+                                              restaurant_id INTEGER,
+                                              have_credit BOOLEAN,
+                                              total_order_cost DECIMAL,
+                                              delivery_location VARCHAR(100),
+                                              delivery_fee DECIMAL)
  RETURNS VOID AS $$
  DECLARE
     orderid INTEGER;
@@ -173,50 +193,39 @@ END
       VALUES (customer_uid, restaurant_id, have_credit, total_order_cost, current_timestamp, FALSE)
       RETURNING order_id into orderid;
 
-      --check for promo
-
-
       INSERT INTO Delivery(order_id, rider_id, delivery_cost, location, ongoing)
       VALUES (orderid,
               (SELECT CASE WHEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE ORDER BY random() LIMIT 1) IS NOT NULL
-                       THEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE  ORDER BY random() LIMIT 1)
-                       ELSE (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE ORDER BY random() LIMIT 1)
-                       END),
+                      THEN (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE AND R.is_delivering = FALSE  ORDER BY random() LIMIT 1)
+                      ELSE (SELECT R.rider_id FROM Riders R WHERE R.working = TRUE ORDER BY random() LIMIT 1)
+                      END),
               delivery_fee,
               delivery_location,
-              TRUE) --flat fee of 5 for delivery fee
+              TRUE) --flat fee of 5 for delivery cost
       RETURNING delivery_id into deliveryid;
-
-
 
        FOREACH item SLICE 1 IN ARRAY currentorder LOOP
           SELECT ordered_count into orderedcount FROM FoodItem WHERE food_id = item[1];
-          SELECT quantity into foodquantity FROM FoodItem WHERE food_id = item[1];
-
+          SELECT restaurant_quantity into foodquantity FROM FoodItem WHERE food_id = item[1];
+          UPDATE FoodItem FI
+          SET ordered_count = ordered_count + item[2]
+          WHERE item[1] = FI.food_id;
+          IF orderedcount + item[2] = foodquantity THEN
             UPDATE FoodItem FI
-            SET ordered_count = ordered_count + item[2]
+            SET availability_status = false
             WHERE item[1] = FI.food_id;
-
-            IF orderedcount + item[2] = foodquantity THEN
-              UPDATE FoodItem FI
-              SET availability_status = false
-              WHERE item[1] = FI.food_id;
-            END IF;
-
-            INSERT INTO Orders(order_id,food_id)
-            VALUES (orderid,item[1]);
-
+          END IF;
+          INSERT INTO OrdersContain(order_id,food_id,item_quantity)
+          VALUES (orderid,item[1],item[2]);
        END loop;
-
        UPDATE Customers C
        SET points = points + CAST(floor(total_order_cost/5) AS INTEGER) --Gain 1 reward point every $5 spent
        WHERE C.uid = customer_uid;
-
  END
  $$ LANGUAGE PLPGSQL;
 
  --e(iii)
- -- get delivery_id and food_id
+ -- get delivery_id and order_id
  CREATE OR REPLACE FUNCTION get_ids(customer_uid INTEGER, restaurant_id INTEGER, total_order_cost DECIMAL)
  RETURNS TABLE (
     orderid INTEGER,
@@ -243,6 +252,17 @@ END
      LIMIT 5;
  $$ LANGUAGE SQL;
 
+  -- 5 most recent Location
+ CREATE OR REPLACE FUNCTION most_recent_location(input_customer_id INTEGER)
+ RETURNS TABLE (
+  recentlocations VARCHAR
+ ) AS $$
+     SELECT D.location
+     FROM Delivery D join FoodOrder FO on D.order_id = FO.order_id
+     WHERE FO.uid = input_customer_id
+     ORDER BY D.delivery_end_time desc
+     LIMIT 5;
+ $$ LANGUAGE SQL;
 
 ---- apply delivery promo IF HAVE REWARD POINTS, USE TO OFFSET (USE REWARD BUTTON)
 CREATE OR REPLACE FUNCTION apply_delivery_promo(input_customer_id INTEGER, delivery_cost INTEGER)
@@ -270,6 +290,7 @@ begin
 end
 $$ LANGUAGE PLPGSQL;
 
+
  --f)
  -- reward balance
  CREATE OR REPLACE FUNCTION reward_balance(customer_id INTEGER)
@@ -278,9 +299,6 @@ $$ LANGUAGE PLPGSQL;
      FROM Customers C
      WHERE C.uid = customer_id;
  $$ LANGUAGE SQL;
-
-
-
 
   --g)
   --delivery page
@@ -294,11 +312,16 @@ $$ LANGUAGE PLPGSQL;
 
  --delivery id
 
- --start time
- CREATE OR REPLACE FUNCTION start_time(deliveryid INTEGER)
- RETURNS TIMESTAMP AS $$
-     SELECT D.delivery_start_time
-     FROM Delivery D
+ --delivery time
+ CREATE OR REPLACE FUNCTION delivery_timings(deliveryid INTEGER)
+  RETURNS TABLE (
+  ordertime TIMESTAMP,
+  riderdeparturetime TIMESTAMP,
+  ridercollectedtime TIMESTAMP,
+  deliverystarttime TIMESTAMP
+ ) AS $$
+     SELECT FO.date_time, D.departure_time, D.collected_time, D.delivery_start_time
+     FROM Delivery D join FoodOrder FO on FO.order_id = D.order_id
      WHERE D.delivery_id = deliveryid;
  $$ LANGUAGE SQL;
 
@@ -313,7 +336,7 @@ $$ LANGUAGE PLPGSQL;
  --rider rating
  CREATE OR REPLACE FUNCTION rider_rating(deliveryid INTEGER)
  RETURNS DECIMAL AS $$
-     SELECT R.rating
+     SELECT round(R.rating, 3)
      FROM Delivery D join Riders R on D.rider_id = R.rider_id
      WHERE D.delivery_id = deliveryid;
  $$ LANGUAGE SQL;
@@ -352,8 +375,7 @@ $$ LANGUAGE PLPGSQL;
     FOR EACH ROW
     EXECUTE FUNCTION update_rider_ratings();
 
--- Update delivery rating which triggers rider rating update
--- this is a button
+--Update delivery rating which triggers rider rating update
   CREATE OR REPLACE FUNCTION update_delivery_rating(deliveryid INTEGER, deliveryrating INTEGER)
   RETURNS VOID AS $$
       UPDATE Delivery

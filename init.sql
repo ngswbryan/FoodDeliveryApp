@@ -166,30 +166,6 @@ CREATE TABLE DeliveryDuration ( --BCNF
     time_for_one_delivery DECIMAL --in minutes
 );
 
-
---CREATE TABLE Delivery (
---    delivery_id SERIAL NOT NULL,
---    order_id INTEGER REFERENCES FoodOrder(order_id),
---    rider_id INTEGER REFERENCES Riders(rider_id),
---    delivery_cost DECIMAL NOT NULL,
---    delivery_start_time TIMESTAMP NOT NULL,
---    delivery_end_time TIMESTAMP,
---    time_for_one_delivery DECIMAL, --in minutes
---    location VARCHAR(100),
---    delivery_rating INTEGER, 
---    food_review varchar(100),
---    ongoing BOOLEAN, --true means delivering, false means done
---    PRIMARY KEY(delivery_id),
---    UNIQUE(delivery_id)
---);
-
---CREATE TABLE Contain (
---    order_id INTEGER REFERENCES FoodOrder(order_id),
---    food_id INTEGER REFERENCES FoodItem(food_id),
---    PRIMARY KEY(order_id, food_id),
---    UNIQUE(order_id, food_id)
---);
-
 --RELATIONSHIPS
 
 
@@ -226,13 +202,6 @@ INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'mookata', 12, 0, 0, true, fals
 INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'garlic naan', 13, 0, 0, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'chicken taandori', 9, 0, 0, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'roti john', 2, 0, 0, true, false);
-
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'good stuff', 12, 2,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'stuff good', 12, 3,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork loin', 12, 5,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork bone', 12, 4,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork jizz', 12, 3.3,0,true,false);
-
 
 INSERT INTO Sells VALUES (1,1,5.5);
 INSERT INTO Sells VALUES (1,2,4.5);
@@ -854,6 +823,23 @@ BEGIN
 END;
 $$ LANGUAGE PLPGSQL;
 
+CREATE OR REPLACE FUNCTION checkTimeInterval()
+  RETURNS TRIGGER as $$
+BEGIN
+   IF (NEW.start_date > NEW.end_date) THEN
+       RAISE EXCEPTION 'Start date should be earlier than End date';
+   END IF;
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_time_trigger ON PromotionalCampaign CASCADE;
+CREATE TRIGGER check_time_trigger
+BEFORE UPDATE OR INSERT
+ON PromotionalCampaign
+FOR EACH ROW
+EXECUTE FUNCTION checkTimeInterval();
+
 ------ RESTAURANT STAFF ------
 
 -- FDS Manager
@@ -1075,7 +1061,26 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE FUNCTION checkTimeInterval()
+  RETURNS TRIGGER as $$
+BEGIN
+   IF (NEW.start_date > NEW.end_date) THEN
+       RAISE EXCEPTION 'Start date should be earlier than End date';
+   END IF;
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_time_trigger ON PromotionalCampaign CASCADE;
+CREATE TRIGGER check_time_trigger
+BEFORE UPDATE OR INSERT
+ON FDSPromotionalCampaign
+FOR EACH ROW
+EXECUTE FUNCTION checkTimeInterval();
+
 ------ FDS MANAGER -------
+
 ------ RIDERS ------
 -- --a)
 --  -- get current job
@@ -1637,7 +1642,4 @@ $$ LANGUAGE SQL;
   $$ LANGUAGE PLPGSQL;
 
 -------------- rider delivery process ----------------
-
-
-
 ------ RIDERS ------
