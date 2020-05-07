@@ -170,57 +170,11 @@ CREATE TABLE DeliveryDuration ( --BCNF
 
 
 -------- POPULATION -------------
-INSERT INTO Restaurants VALUES (DEFAULT, 'kfc', 'PASIR RIS', 5.0);
-INSERT INTO Restaurants VALUES (DEFAULT, 'mac', 'CHINATOWN', 8.0);
-INSERT INTO Restaurants VALUES (DEFAULT, 'sweechoon', 'WOODLANDS', 4.0);
-INSERT INTO Restaurants VALUES (DEFAULT, 'reedz', 'HARBOURFRONT', 10.0);
-INSERT INTO Restaurants VALUES (DEFAULT, 'nanathai', 'VIVOCITY', 6.0);
 
 --*********important******************---
 INSERT INTO RidersSalary VALUES (true, 6, 200);
 INSERT INTO RidersSalary VALUES (false, 3, 100);
 
-INSERT INTO PromotionalCampaign values (DEFAULT, 1, 20, 'this is discount 1', '2018-06-22 04:00:06', '2018-12-19 04:00:06'); 
-
-INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken rice', 20, 0, 2, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken noodles', 30, 0, 1, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'chicken kway teow', 15, 0, 1, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 1, 'asian', 'fried chicken thigh', 15, 0, 14, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'porkchop', 15, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'chicken chop', 16, 0, 2, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'fish n chips', 17, 0, 4, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'grilled fish', 18, 0, 5, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 2, 'western', 'steak', 19, 0, 6, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 3, 'mexican', 'tacos', 15, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 3, 'mexican', 'burrito', 15, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 3, 'mexican', 'burrito bowl', 10, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'pineapple rice', 12, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'pad thai', 12, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'tom yum soup', 12, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'mookata', 12, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'garlic naan', 13, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'chicken taandori', 9, 0, 0, true, false);
-INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'roti john', 2, 0, 0, true, false);
-
-INSERT INTO Sells VALUES (1,1,5.5);
-INSERT INTO Sells VALUES (1,2,4.5);
-INSERT INTO Sells VALUES (1,3,3.5);
-INSERT INTO Sells VALUES (1,4,2.5);
-INSERT INTO Sells VALUES (2,5,4.5);
-INSERT INTO Sells VALUES (2,6,5.5);
-INSERT INTO Sells VALUES (2,7,1.5);
-INSERT INTO Sells VALUES (2,8,4.5);
-INSERT INTO Sells VALUES (2,9,4.5);
-INSERT INTO Sells VALUES (3,10,2.5);
-INSERT INTO Sells VALUES (3,11,3.5);
-INSERT INTO Sells VALUES (3,12,2.0);
-INSERT INTO Sells VALUES (4,13,3.3);
-INSERT INTO Sells VALUES (4,14,2.5);
-INSERT INTO Sells VALUES (4,15,3.1);
-INSERT INTO Sells VALUES (4,16,3.4);
-INSERT INTO Sells VALUES (5,17,5.0);
-INSERT INTO Sells VALUES (5,18,6.3);
-INSERT INTO Sells VALUES (5,19,7.5);
 
 
 -------- POPULATION -------------

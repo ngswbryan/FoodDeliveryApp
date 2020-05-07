@@ -248,7 +248,7 @@ export class StaffComponent implements OnInit {
       price: Number(this.createFoodForm.value.price),
       cuisine_type: this.createFoodForm.value.cuisine_type,
       quantity: Number(this.createFoodForm.value.quantity),
-      availability: this.createFoodForm.value.availability == "true",
+      availability: true,
       rid: Number(this.staff[0].rid),
     };
     console.log(newFood);
