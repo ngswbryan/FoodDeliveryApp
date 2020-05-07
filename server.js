@@ -239,6 +239,22 @@ const addUser = (request, response) => {
   );
 };
 
+const addRestaurant = (request, response) => {
+  const { rname, location, minimum } = request.body;
+
+  pool.query(
+    "INSERT INTO RESTAURANTS VALUES(DEFAULT, $1, $2, $3)",
+    [rname, location, minimum],
+    (error) => {
+      if (error) {
+        response.status(400).json(error.message);
+        return;
+      }
+      response.status(201).json({ status: "success", message: "User added." });
+    }
+  );
+};
+
 const updateOrderCount = (request, response) => {
   const {
     currentorder,
@@ -338,6 +354,21 @@ const deleteMenuItem = (request, response) => {
   console.log(rid);
 
   pool.query("select delete_menu_item($1, $2);", [fname, rid], (error) => {
+    if (error) {
+      response.status(400).json(error.message);
+      return;
+    }
+    response.status(200).json({ status: "success", message: "food deleted." });
+  });
+};
+
+const deleteRestaurant = (request, response) => {
+  const rid = request.params.rid;
+
+  console.log("delete rest");
+  console.log(rid);
+
+  pool.query("DELETE from RESTAURANTS where rid = $1;", [rid], (error) => {
     if (error) {
       response.status(400).json(error.message);
       return;
@@ -479,7 +510,7 @@ const checkIfCompleted = (request, response) => {
 };
 
 const checkOngoing = (request, response) => {
-  const uid = request.params.uid; 
+  const uid = request.params.uid;
 
   pool.query(
     "SELECT cast(case WHEN EXISTS (select d.delivery_id from delivery d join foodorder fo on fo.order_id = d.order_id where fo.uid = ($1) and d.ongoing = TRUE and fo.completion_status = FALSE) THEN 1 ELSE 0 END as bit);",
@@ -487,17 +518,16 @@ const checkOngoing = (request, response) => {
     (error, results) => {
       if (error) {
         response.status(400).json(error.message);
-        return; 
+        return;
       }
       response.status(200).json(results.rows);
     }
-  )
-}
+  );
+};
 
-
-//only if ongoing 
+//only if ongoing
 const getDIDfromUID = (request, response) => {
-  const uid = request.params.uid; 
+  const uid = request.params.uid;
 
   pool.query(
     "SELECT (case WHEN EXISTS (select d.delivery_id from delivery d join foodorder fo on fo.order_id = d.order_id where fo.uid = ($1) and d.ongoing = TRUE and fo.completion_status = FALSE) THEN d.delivery_id ELSE -1::integer END) from delivery d;",
@@ -505,13 +535,12 @@ const getDIDfromUID = (request, response) => {
     (error, results) => {
       if (error) {
         response.status(400).json(error.message);
-        return; 
+        return;
       }
       response.status(200).json(results.rows);
     }
-  )
-}
-
+  );
+};
 
 const getEndTime = (request, response) => {
   const did = request.params.did;
@@ -915,6 +944,10 @@ app
   .delete(deleteCampaign);
 
 app.route("/manager/campaigns").get(getFDSCampaigns).post(addFDSCampaigns);
+
+app.route("/manager/restaurants/:rid").patch(deleteRestaurant);
+
+app.route("/manager/restaurants").post(addRestaurant);
 
 app.route("/manager/campaigns/:rid").delete(deleteFDSCampaign);
 

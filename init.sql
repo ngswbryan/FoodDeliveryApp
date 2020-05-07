@@ -29,7 +29,7 @@ CREATE TABLE RidersSalary (
 );
 
 CREATE TABLE Restaurants (
-    rid INTEGER PRIMARY KEY,
+    rid SERIAL PRIMARY KEY,
     rname VARCHAR(100),
     location VARCHAR(100),
     min_order_price DECIMAL,
@@ -126,7 +126,7 @@ CREATE TABLE MonthlyWorkSchedule (
 --RELATIONSHIPS
 
 CREATE TABLE Sells (
-    rid INTEGER REFERENCES Restaurants(rid) NOT NULL,
+    rid INTEGER REFERENCES Restaurants(rid) ON DELETE CASCADE,
     food_id INTEGER REFERENCES FoodItem(food_id) ON DELETE CASCADE,
     price DECIMAL NOT NULL check (price > 0),
     PRIMARY KEY(rid, food_id)
@@ -194,12 +194,11 @@ CREATE TABLE DeliveryDuration ( --BCNF
 
 
 -------- POPULATION -------------
-
-INSERT INTO Restaurants VALUES (1, 'kfc', 'PASIR RIS', 5.0);
-INSERT INTO Restaurants VALUES (2, 'mac', 'CHINATOWN', 8.0);
-INSERT INTO Restaurants VALUES (3, 'sweechoon', 'WOODLANDS', 4.0);
-INSERT INTO Restaurants VALUES (4, 'reedz', 'HARBOURFRONT', 10.0);
-INSERT INTO Restaurants VALUES (5, 'nanathai', 'VIVOCITY', 6.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'kfc', 'PASIR RIS', 5.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'mac', 'CHINATOWN', 8.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'sweechoon', 'WOODLANDS', 4.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'reedz', 'HARBOURFRONT', 10.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'nanathai', 'VIVOCITY', 6.0);
 
 --*********important******************---
 INSERT INTO RidersSalary VALUES (true, 6, 200);
@@ -330,15 +329,16 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  $$ LANGUAGE SQL;
 
 
- --c)
+--c)
  --List of restaurants
   CREATE OR REPLACE FUNCTION list_of_restaurant()
  RETURNS TABLE (
      restaurant_id INTEGER,
      restaurant_name VARCHAR,
-     min_order_price DECIMAL
+     min_order_price DECIMAL,
+     location VARCHAR
  ) AS $$
-     SELECT R.rid, R.rname, R.min_order_price
+     SELECT R.rid, R.rname, R.min_order_price, R.location
      FROM Restaurants R
  $$ LANGUAGE SQL;
 
