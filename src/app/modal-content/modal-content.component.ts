@@ -51,7 +51,10 @@ export class ModalContentComponent implements OnInit {
         console.log(newPromo);
         this.fdscampaigns.push(newPromo);
       }
-      this.applyFDSCampaign();
+      if (this.fdscampaigns.length != 0) {
+        this.applyFDSCampaign();
+      }
+      
 
       this.apiService.getCampaigns(this.list).subscribe((cam: any) => {
         for (let k = 0; k < cam.length; k++) {
@@ -68,8 +71,10 @@ export class ModalContentComponent implements OnInit {
           this.campaigns.push(newPromo);
         }
       })
-
-      this.applyCampaign();
+      if (this.campaigns.length != 0) {
+        this.applyCampaign();
+      }
+      
     
       this.apiService.getListOfFoodItem(this.list).subscribe((fooditem: any) => {
         this.orderList = Array(fooditem.length).fill(0);
