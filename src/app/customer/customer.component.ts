@@ -258,10 +258,9 @@ export class CustomerComponent implements OnInit {
       };
       console.log("order askja" + order);
 
-      // this.apiService.activateRiders().subscribe((res: any) => {
-      //   // console.log("activated riders : " + res);
-      //   this.loadingService.loading.next(false);
-      // })
+      this.apiService.activateRiders().subscribe((res: any) => {
+        console.log("activated riders : " + res);
+      });
 
       this.apiService.updateOrderCount(order).subscribe((res: any) => {
         console.log("after posting" + res);
@@ -367,18 +366,17 @@ export class CustomerComponent implements OnInit {
   }
 
   applyPromo() {
-
-    this.promoApplied = true; 
+    this.promoApplied = true;
     if (!this.onGoing) {
       if (this.rewardsBal != 0) {
         let promo = {
           uid: this.uid,
-          delivery_cost: 5
+          delivery_cost: 5,
         };
 
         this.apiService.applyDeliveryPromo(promo).subscribe((res: any) => {
           console.log("after applying" + res);
-          for (let i=0; i<res.length; i++) {
+          for (let i = 0; i < res.length; i++) {
             console.log("testing " + res[i]);
           }
           this.loadingService.loading.next(false);
@@ -386,19 +384,17 @@ export class CustomerComponent implements OnInit {
 
         if (this.rewardsBal <= 5) {
           this.deliveryCost = this.deliveryCost - this.rewardsBal;
-          this.rewardsBal = 0; 
+          this.rewardsBal = 0;
         } else {
-          this.deliveryCost = this.deliveryCost - 5; 
-          this.rewardsBal = this.rewardsBal - 5; 
+          this.deliveryCost = this.deliveryCost - 5;
+          this.rewardsBal = this.rewardsBal - 5;
         }
-        
       } else {
         window.alert("you do not have any reward points!");
       }
-  } else {
-    window.alert("You have an on going order!");
-  }
-
+    } else {
+      window.alert("You have an on going order!");
+    }
   }
 
   manualEntry() {
