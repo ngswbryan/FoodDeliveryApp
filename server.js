@@ -262,6 +262,7 @@ const updateOrderCount = (request, response) => {
     ],
     (error) => {
       if (error) {
+        console.log(error);
         response.status(400).json(error.message);
         return;
       }
@@ -479,6 +480,41 @@ const checkIfCompleted = (request, response) => {
     }
   )
 };
+
+const checkOngoing = (request, response) => {
+  const uid = request.params.uid; 
+
+  pool.query(
+    "SELECT cast(case WHEN EXISTS (select d.delivery_id from delivery d join foodorder fo on fo.order_id = d.order_id where fo.uid = ($1) and d.ongoing = TRUE and fo.completion_status = FALSE) THEN 1 ELSE 0 END as bit);",
+    [uid],
+    (error, results) => {
+      if (error) {
+        response.status(400).json(error.message);
+        return; 
+      }
+      response.status(200).json(results.rows);
+    }
+  )
+}
+
+
+//only if ongoing 
+const getDIDfromUID = (request, response) => {
+  const uid = request.params.uid; 
+
+  pool.query(
+    "SELECT (case WHEN EXISTS (select d.delivery_id from delivery d join foodorder fo on fo.order_id = d.order_id where fo.uid = ($1) and d.ongoing = TRUE and fo.completion_status = FALSE) THEN d.delivery_id ELSE -1::integer END) from delivery d;",
+    [uid],
+    (error, results) => {
+      if (error) {
+        response.status(400).json(error.message);
+        return; 
+      }
+      response.status(200).json(results.rows);
+    }
+  )
+}
+
 
 const getEndTime = (request, response) => {
   const did = request.params.did; 
@@ -982,6 +1018,10 @@ app.route("/users/restaurant/order/foodreviewupdate").post(foodReviewUpdate);
 app.route("/users/restaurant/order/deliveryrating").post(updateDeliveryRating);
 
 app.route("/users/restaurant/order/ifcompleted/:did").get(checkIfCompleted);
+
+app.route("/users/ongoing/:uid").get(checkOngoing);
+
+app.route("/users/ongoing/did/:uid").get(getDIDfromUID);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {

@@ -629,7 +629,7 @@ $$ LANGUAGE PLPGSQL;
  --rider rating
  CREATE OR REPLACE FUNCTION rider_rating(deliveryid INTEGER)
  RETURNS DECIMAL AS $$
-     SELECT R.rating
+     SELECT round(R.rating, 3)
      FROM Delivery D join Riders R on D.rider_id = R.rider_id
      WHERE D.delivery_id = deliveryid;
  $$ LANGUAGE SQL;
