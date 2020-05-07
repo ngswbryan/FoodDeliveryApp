@@ -22,6 +22,7 @@ export class RiderComponent implements OnInit {
     "1300",
     "1400",
     "1500",
+    "1600",
     "1700",
     "1800",
     "1900",
