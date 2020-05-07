@@ -350,6 +350,7 @@ export class RiderComponent implements OnInit {
           shift4: new FormControl(""),
           shift5: new FormControl(""),
         });
+        this.handlePeriodChange();
         this.loadingService.loading.next(false);
         this.toastr.show(
           "Successfully added your schedule for the selected month. You can check it in the 'Monthly Work Schedules' tab!"
@@ -420,6 +421,7 @@ export class RiderComponent implements OnInit {
       console.log("end req");
       this.currentWWSCommand = "";
       this.drafts = [];
+      this.handleWWSChange();
       this.loadingService.loading.next(false);
     });
   }
