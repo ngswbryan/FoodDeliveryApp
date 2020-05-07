@@ -16,11 +16,16 @@ CREATE TABLE Riders (
     rating DECIMAL,
     working BOOLEAN, --to know if he's working now or not
     is_delivering BOOLEAN,--to know if he's free or not
-    base_salary DECIMAL, --in terms of per week
     rider_type BOOLEAN, --pt f or ft t
-    commission INTEGER, --PT is $2, FT is $3
     PRIMARY KEY(rider_id),
     UNIQUE(rider_id)
+);
+
+CREATE TABLE RidersSalary (
+    rider_type BOOLEAN,
+    commission INTEGER,
+    base_salary DECIMAL,
+    PRIMARY KEY(rider_type)
 );
 
 CREATE TABLE Restaurants (
@@ -139,7 +144,6 @@ CREATE TABLE Receives (
     promo_id INTEGER REFERENCES PromotionalCampaign(promo_id)
 );
 
---new updated delivery table
 CREATE TABLE Delivery (
     delivery_id SERIAL NOT NULL,
     order_id INTEGER REFERENCES FoodOrder(order_id) NOT NULL,
@@ -149,13 +153,17 @@ CREATE TABLE Delivery (
     collected_time TIMESTAMP,
     delivery_start_time TIMESTAMP, --start delivering to customer
     delivery_end_time TIMESTAMP,
-    time_for_one_delivery DECIMAL, --in hours
     location VARCHAR(100),
     delivery_rating INTEGER, 
     food_review varchar(100),
     ongoing BOOLEAN, --true means delivering, false means done
     PRIMARY KEY(delivery_id),
     UNIQUE(delivery_id)
+);
+
+CREATE TABLE DeliveryDuration ( --BCNF
+    delivery_id INTEGER REFERENCES Delivery(delivery_id),
+    time_for_one_delivery DECIMAL --in minutes
 );
 
 
@@ -192,6 +200,10 @@ INSERT INTO Restaurants VALUES (2, 'mac', 'CHINATOWN', 8.0);
 INSERT INTO Restaurants VALUES (3, 'sweechoon', 'WOODLANDS', 4.0);
 INSERT INTO Restaurants VALUES (4, 'reedz', 'HARBOURFRONT', 10.0);
 INSERT INTO Restaurants VALUES (5, 'nanathai', 'VIVOCITY', 6.0);
+
+--*********important******************---
+INSERT INTO RidersSalary VALUES (true, 6, 200);
+INSERT INTO RidersSalary VALUES (false, 3, 100);
 
 INSERT INTO PromotionalCampaign values (DEFAULT, 1, 20, 'this is discount 1', '2018-06-22 04:00:06', '2018-12-19 04:00:06'); 
 
@@ -258,9 +270,9 @@ INSERT INTO users (name, username, password, role_type, date_joined) VALUES (new
 select U.uid into uid from users U where U.username = new_username;
 if new_role_type = 'rider' then
     if rider_type = 'part' then
-        INSERT INTO RIDERS VALUES (uid, 0.0, FALSE, FALSE, 0, FALSE, 2);
+        INSERT INTO RIDERS VALUES (uid, 0.0, FALSE, FALSE, FALSE);
     else 
-        INSERT INTO RIDERS VALUES (uid, 0.0, FALSE, FALSE, 10, TRUE, 3);
+        INSERT INTO RIDERS VALUES (uid, 0.0, FALSE, FALSE, TRUE);
     end if;
 end if;
 if new_role_type = 'customer' then
@@ -955,17 +967,18 @@ $$ LANGUAGE PLPGSQL;
      SELECT ( EXTRACT(MONTH FROM FO.date_time)::BIGINT) as order_month,
      ( EXTRACT(YEAR FROM FO.date_time)::BIGINT) as order_year, 
      D.rider_id as rider_id,
-     count(*) as count, ROUND((SUM(D.time_for_one_delivery)), 3) as total_hours_worked,
+     count(*) as count,
+     ROUND((SUM(DD.time_for_one_delivery)), 3) as total_hours_worked,
 
-     CASE WHEN R.rider_type THEN R.base_salary * 4 + count(*) * 6 --salary x 4 weeks + commission 6 for ft
-          ELSE R.base_salary * 4 + count(*) * 3 --salary * 4 weeks + commission 3 for pt
+     CASE WHEN R.rider_type THEN RS.base_salary * 4 + count(*) * RS.commission --salary x 4 weeks + commission 6 for ft
+          ELSE RS.base_salary * 4 + count(*) * RS.commission --salary * 4 weeks + commission 3 for pt
      END as total_salary,
 
-     ROUND((sum(D.time_for_one_delivery)/count(*)), 3) as average_delivery_time,
+     ROUND((sum(DD.time_for_one_delivery)/count(*)), 3) as average_delivery_time,
      count(D.delivery_rating) as total_number_ratings, 
      ROUND((sum(D.delivery_rating)::DECIMAL/count(D.delivery_rating)), 3) as average_ratings
-     FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id join Riders R on R.rider_id = D.rider_id
-     GROUP BY order_month, D.rider_id, order_year, rider_type, R.base_salary;
+     FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id join DeliveryDuration DD on D.delivery_id = DD.delivery_id join Riders R on R.rider_id = D.rider_id join RidersSalary RS on R.rider_type = RS.rider_type
+     GROUP BY order_month, D.rider_id, order_year, R.rider_type, RS.base_salary, RS.commission;
   END
  $$ LANGUAGE PLPGSQL;
 
@@ -1115,34 +1128,26 @@ RETURNS TABLE (
     base_salary DECIMAL, --weekly
     total_commission BIGINT,
     total_num_orders BIGINT,
-    total_num_hours_worked BIGINT
+    total_num_hours_worked NUMERIC
 ) AS $$
 declare 
     salary_base DECIMAL;
     initial_commission BIGINT;
 begin
-    SELECT R.base_salary
-    FROM Riders R
+    SELECT RS.base_salary
+    FROM Riders R join RidersSalary RS on R.rider_type = RS.rider_type
     WHERE R.rider_id = input_rider_id
     INTO salary_base;
 
-    SELECT R.commission
-    FROM Riders R
+    SELECT RS.commission
+    FROM Riders R join RidersSalary RS on R.rider_type = RS.rider_type
     WHERE R.rider_id = input_rider_id
     INTO initial_commission;
 
     RETURN QUERY(
-        SELECT input_week, input_month, input_year, salary_base, (count(distinct D.delivery_end_time) * initial_commission), count(distinct D.delivery_end_time),
-        ( SELECT SUM(end_hour - start_hour)
-          FROM WeeklyWorkSchedule WWS
-          WHERE rider_id = input_rider_id
-          AND WWS.week = input_week
-          AND WWS.month = input_month
-          AND WWS.year = input_year
-          GROUP BY rider_id
-        )
+        SELECT input_week, input_month, input_year, salary_base, (count(distinct D.delivery_end_time) * initial_commission), count(distinct D.delivery_end_time), ROUND((SUM(DD.time_for_one_delivery)), 3)
         FROM Riders R join Delivery D on D.rider_id = R.rider_id
-        join WeeklyWorkSchedule WWS on WWS.rider_id = D.rider_id
+        join DeliveryDuration DD on D.delivery_id = DD.delivery_id
         WHERE input_rider_id = D.rider_id
         AND (SELECT EXTRACT('day' from date_trunc('week', D.delivery_end_time) - date_trunc('week', date_trunc('month',  D.delivery_end_time))) / 7 + 1 ) = input_week --take in user do manipulation
         AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
@@ -1161,23 +1166,18 @@ RETURNS TABLE (
     base_salary DECIMAL, --per month
     total_commission BIGINT,
     total_num_orders BIGINT,
-    total_num_hours_worked BIGINT
+    total_num_hours_worked NUMERIC
 ) AS $$
-    SELECT input_month, input_year, R.base_salary * 4, count(distinct delivery_id) * R.commission, count(distinct delivery_id),
-    ( SELECT SUM(end_hour - start_hour)
-      FROM WeeklyWorkSchedule
-      WHERE rider_id = input_rider_id
-      AND month = input_month
-      AND year = input_year
-      GROUP BY rider_id
-    )
+    SELECT input_month, input_year, RS.base_salary * 4, count(distinct D.delivery_id) * RS.commission, count(distinct D.delivery_id),ROUND((SUM(DD.time_for_one_delivery)), 3)
     FROM Riders R 
     join Delivery D on D.rider_id = R.rider_id
+    join DeliveryDuration DD on D.delivery_id = DD.delivery_id
+    join RidersSalary RS on R.rider_type = RS.rider_type
     WHERE input_rider_id = D.rider_id
     AND (SELECT EXTRACT(MONTH FROM D.delivery_end_time)) = input_month
     AND (SELECT EXTRACT(YEAR FROM D.delivery_end_time)) = input_year
     AND D.ongoing = False
-    GROUP BY R.rider_id;
+    GROUP BY R.rider_id, RS.base_salary, RS.commission;
 
   $$ LANGUAGE SQL;
 
@@ -1610,6 +1610,8 @@ $$ LANGUAGE SQL;
   --change ongoing to false in Delivery
   CREATE OR REPLACE FUNCTION update_done_status(input_rider_id INTEGER, input_delivery_id INTEGER)
   RETURNS VOID AS $$
+  DECLARE
+  duration DECIMAL;
   BEGIN 
       UPDATE FoodOrder
       SET completion_status = TRUE
@@ -1617,10 +1619,16 @@ $$ LANGUAGE SQL;
  
       UPDATE Delivery
       SET ongoing = FALSE,
-          delivery_end_time = CURRENT_TIMESTAMP,
-          time_for_one_delivery = (SELECT EXTRACT(EPOCH FROM (current_timestamp - D.delivery_start_time)) FROM Delivery D WHERE D.delivery_id = input_delivery_id)/60::DECIMAL
+          delivery_end_time = CURRENT_TIMESTAMP
       WHERE delivery_id = input_delivery_id
       AND rider_id = input_rider_id;
+
+      SELECT (SELECT EXTRACT(EPOCH FROM (D.delivery_end_time - D.delivery_start_time))
+              FROM Delivery D
+              WHERE D.delivery_id = input_delivery_id)
+              /3600::DECIMAL INTO duration;
+
+      INSERT INTO DeliveryDuration VALUES (input_delivery_id, duration);
 
        UPDATE Riders
       SET is_delivering = FALSE
