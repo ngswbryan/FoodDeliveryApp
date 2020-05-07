@@ -192,8 +192,8 @@ export class StaffComponent implements OnInit {
           ) {
             for (let k = 0; k < this.menu.length; k++) {
               this.menu[k].food_price =
-                this.menu[k].food_price -
-                this.menu[k].food_price * (currentCampaign.discount / 100);
+                (this.menu[k].food_price -
+                this.menu[k].food_price * (currentCampaign.discount / 100)).toFixed(2);
             }
           }
         }
@@ -248,7 +248,7 @@ export class StaffComponent implements OnInit {
       price: Number(this.createFoodForm.value.price),
       cuisine_type: this.createFoodForm.value.cuisine_type,
       quantity: Number(this.createFoodForm.value.quantity),
-      availability: this.createFoodForm.value.availability == "true",
+      availability: true,
       rid: Number(this.staff[0].rid),
     };
     console.log(newFood);

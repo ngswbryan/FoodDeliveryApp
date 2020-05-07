@@ -9,6 +9,7 @@ import { DataService } from "../data.service";
 import { Router } from "@angular/router";
 import { TabsetComponent } from "ngx-bootstrap/tabs";
 import { ToastrService } from "ngx-toastr";
+import { min } from "rxjs/operators";
 
 @Component({
   selector: "app-customer",
@@ -129,6 +130,7 @@ export class CustomerComponent implements OnInit {
               let arr = result.split(",");
               this.restaurants.push(arr);
             }
+            console.log(this.restaurants);
             this.loadingService.loading.next(false);
           });
 
@@ -269,7 +271,7 @@ export class CustomerComponent implements OnInit {
         }
         this.loadingService.loading.next(false);
       });
-      window.alert("Order completed! 🥳 ");
+      window.alert("Trying to place your order... 🥳 ");
       this.hasOrdered = !this.hasOrdered;
       this.disableEnable();
       this.selectTab(1);
@@ -332,11 +334,16 @@ export class CustomerComponent implements OnInit {
 
   showYourModal(i) {
     this.recentLocations = [];
-    const rid = i + 1;
-    this.rid = rid;
-    const min = this.restaurants[i][2];
+    this.rid = i;
+    let min;
+    for (let restaurant of this.restaurants) {
+      if (restaurant[0] == i) {
+        min = restaurant[2];
+      }
+    }
+    console.log(min);
     var initialState = {
-      list: [rid],
+      list: [this.rid],
       orderList: [],
       minOrder: [min],
       title: "List of food items",

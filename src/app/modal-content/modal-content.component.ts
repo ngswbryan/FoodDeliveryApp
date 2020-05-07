@@ -82,6 +82,7 @@ export class ModalContentComponent implements OnInit {
           console.log("discount now is: " + this.discount);
         }
         this.apiService.getListOfFoodItem(this.list).subscribe((fooditem: any) => {
+          console.log(this.list);
           this.orderList = Array(fooditem.length).fill(0);
   
           for (let i = 0; i < fooditem.length; i++) {
@@ -93,7 +94,7 @@ export class ModalContentComponent implements OnInit {
               if (this.discount > 0.9) {
                 this.discount = 0.9;
               }
-            this.foodItems[j]["food_price"] = this.foodItems[j]["food_price"] * (1-this.discount);
+            this.foodItems[j]["food_price"] = (this.foodItems[j]["food_price"] * (1-this.discount)).toFixed(2);
             }
           }
           // console.log("food items testing " + this.foodItems); 

@@ -46,7 +46,7 @@
             </div>
             <div class="row">
                 <div class="col-sm-6 m-b-xs">
-                    <button *ngIf="total > minOrder" type="button" class="btn btn-primary btn-block" (click)="confirm()">{{ ' Confirm Order '}}</button>
+                    <button *ngIf="total >= minOrder" type="button" class="btn btn-primary btn-block" (click)="confirm()">{{ ' Confirm Order '}}</button>
                 </div>
                 <div class="col-sm-6">
                     <button class="btn btn-dark btn-block" type="button" (click)="close()">{{ 'Cancel' }}</button>
