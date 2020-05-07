@@ -134,7 +134,8 @@ export class CustomerComponent implements OnInit {
           this.apiService.checkOngoing(this.uid).subscribe((boolean: any) => {
             console.log("is going + " + boolean);
             let answer = boolean[0]["bit"];
-            if (answer = "1") {
+            console.log("answer is : " + answer);
+            if (answer == "1") {
               this.onGoing = true; 
               console.log("ongoing varable is : "  + this.onGoing);
               this.apiService.getDIDfromUID(this.uid).subscribe((did: any) => {
