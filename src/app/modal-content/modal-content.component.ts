@@ -93,7 +93,7 @@ export class ModalContentComponent implements OnInit {
               if (this.discount > 0.9) {
                 this.discount = 0.9;
               }
-            this.foodItems[j]["food_price"] = this.foodItems[j]["food_price"] * (1-this.discount);
+            this.foodItems[j]["food_price"] = (this.foodItems[j]["food_price"] * (1-this.discount)).toFixed(2);
             }
           }
           // console.log("food items testing " + this.foodItems); 
