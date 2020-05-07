@@ -361,31 +361,35 @@ export class CustomerComponent implements OnInit {
   
   applyPromo() {
     this.promoApplied = true; 
-    if (this.rewardsBal != 0) {
-      let promo = {
-        uid: this.uid,
-        delivery_cost: 5
-      };
+    if (!this.onGoing) {
+      if (this.rewardsBal != 0) {
+        let promo = {
+          uid: this.uid,
+          delivery_cost: 5
+        };
 
-      this.apiService.applyDeliveryPromo(promo).subscribe((res: any) => {
-        console.log("after applying" + res);
-        for (let i=0; i<res.length; i++) {
-          console.log("testing " + res[i]);
+        this.apiService.applyDeliveryPromo(promo).subscribe((res: any) => {
+          console.log("after applying" + res);
+          for (let i=0; i<res.length; i++) {
+            console.log("testing " + res[i]);
+          }
+          this.loadingService.loading.next(false);
+        });
+
+        if (this.rewardsBal <= 5) {
+          this.deliveryCost = this.deliveryCost - this.rewardsBal;
+          this.rewardsBal = 0; 
+        } else {
+          this.deliveryCost = this.deliveryCost - 5; 
+          this.rewardsBal = this.rewardsBal - 5; 
         }
-        this.loadingService.loading.next(false);
-      });
-
-      if (this.rewardsBal <= 5) {
-        this.deliveryCost = this.deliveryCost - this.rewardsBal;
-        this.rewardsBal = 0; 
+        
       } else {
-        this.deliveryCost = this.deliveryCost - 5; 
-        this.rewardsBal = this.rewardsBal - 5; 
+        window.alert("you do not have any reward points!");
       }
-      
-    } else {
-      window.alert("you do not have any reward points!");
-    }
+  } else {
+    window.alert("You have an on going order!");
+  }
   }
 
   manualEntry() {
