@@ -29,7 +29,7 @@ CREATE TABLE RidersSalary ( --BCNF
 );
 
 CREATE TABLE Restaurants ( --BCNF
-    rid INTEGER PRIMARY KEY,
+    rid SERIAL PRIMARY KEY,
     rname VARCHAR(100),
     location VARCHAR(100),
     min_order_price DECIMAL,
@@ -164,6 +164,13 @@ CREATE TABLE Delivery ( --BCNF
     ongoing BOOLEAN, --true means delivering, false means done
     PRIMARY KEY(delivery_id),
     UNIQUE(delivery_id)
+);
+
+
+
+CREATE TABLE DeliveryDuration ( --BCNF
+    delivery_id INTEGER REFERENCES Delivery(delivery_id),
+    time_for_one_delivery DECIMAL --in minutes
 );
 
 
