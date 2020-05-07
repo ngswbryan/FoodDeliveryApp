@@ -436,6 +436,22 @@ export class ApiService {
       );
   }
 
+  deleteRestaurant(rid) {
+    return this.http.patch(`${this.url}/manager/restaurants/${rid}`, {}).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
+  addRestaurant(restaurant) {
+    return this.http.post(`${this.url}/manager/restaurants`, restaurant).pipe(
+      retry(1),
+
+      catchError(this.handleError)
+    );
+  }
+
   deleteCampaign(rid) {
     return this.http.delete(`${this.url}/staff/campaigns/${rid}`).pipe(
       retry(1),
