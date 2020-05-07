@@ -724,9 +724,14 @@ const getWWS = (request, response) => {
   const month = request.query.month;
   const year = request.query.year;
 
+  console.log(rid);
+  console.log(week);
+  console.log(month);
+  console.log(year);
+
   pool.query(
     "SELECT * FROM get_WWS($1, $2, $3, $4);",
-    [rid, month, week, year],
+    [rid, week, month, year],
     (error, results) => {
       if (error) {
         response.status(400).json(error.message);
