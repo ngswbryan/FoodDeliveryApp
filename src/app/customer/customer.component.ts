@@ -135,9 +135,11 @@ export class CustomerComponent implements OnInit {
           this.apiService.checkOngoing(this.uid).subscribe((boolean: any) => {
             console.log("is going + " + boolean);
             let answer = boolean[0]["bit"];
+
             if (answer == "1") {
               this.onGoing = true;
               console.log("ongoing varable is : " + this.onGoing);
+
               this.apiService.getDIDfromUID(this.uid).subscribe((did: any) => {
                 console.log("did is: " + did[0]["case"]);
                 this.deliveryid = did[0]["case"];
@@ -365,31 +367,38 @@ export class CustomerComponent implements OnInit {
   }
 
   applyPromo() {
-    this.promoApplied = true;
-    if (this.rewardsBal != 0) {
-      let promo = {
-        uid: this.uid,
-        delivery_cost: 5,
-      };
 
-      this.apiService.applyDeliveryPromo(promo).subscribe((res: any) => {
-        console.log("after applying" + res);
-        for (let i = 0; i < res.length; i++) {
-          console.log("testing " + res[i]);
+    this.promoApplied = true; 
+    if (!this.onGoing) {
+      if (this.rewardsBal != 0) {
+        let promo = {
+          uid: this.uid,
+          delivery_cost: 5
+        };
+
+        this.apiService.applyDeliveryPromo(promo).subscribe((res: any) => {
+          console.log("after applying" + res);
+          for (let i=0; i<res.length; i++) {
+            console.log("testing " + res[i]);
+          }
+          this.loadingService.loading.next(false);
+        });
+
+        if (this.rewardsBal <= 5) {
+          this.deliveryCost = this.deliveryCost - this.rewardsBal;
+          this.rewardsBal = 0; 
+        } else {
+          this.deliveryCost = this.deliveryCost - 5; 
+          this.rewardsBal = this.rewardsBal - 5; 
         }
-        this.loadingService.loading.next(false);
-      });
-
-      if (this.rewardsBal <= 5) {
-        this.deliveryCost = this.deliveryCost - this.rewardsBal;
-        this.rewardsBal = 0;
+        
       } else {
-        this.deliveryCost = this.deliveryCost - 5;
-        this.rewardsBal = this.rewardsBal - 5;
+        window.alert("you do not have any reward points!");
       }
-    } else {
-      window.alert("you do not have any reward points!");
-    }
+  } else {
+    window.alert("You have an on going order!");
+  }
+
   }
 
   manualEntry() {
