@@ -121,10 +121,6 @@ CREATE TABLE MonthlyWorkSchedule ( --BCNF
     PRIMARY KEY(rider_id,start_hour,end_hour,day,month,year)
 );
 
-CREATE TABLE DeliveryDuration ( --BCNF
-    delivery_id INTEGER REFERENCES Delivery(delivery_id),
-    time_for_one_delivery DECIMAL --in hour
-);
 
 --ENTITIES
 
@@ -166,11 +162,9 @@ CREATE TABLE Delivery ( --BCNF
     UNIQUE(delivery_id)
 );
 
-
-
 CREATE TABLE DeliveryDuration ( --BCNF
     delivery_id INTEGER REFERENCES Delivery(delivery_id),
-    time_for_one_delivery DECIMAL --in minutes
+    time_for_one_delivery DECIMAL --in hour
 );
 
 
