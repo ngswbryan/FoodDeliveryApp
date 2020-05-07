@@ -5,6 +5,28 @@ RETURNS INTEGER AS $$
     FROM RestaurantStaff RS join Users U on U.uid = RS.uid
     WHERE input_username = U.username;
  $$ LANGUAGE SQL; 
+
+
+----- add menu item
+CREATE OR REPLACE FUNCTION add_menu_item(new_food_name VARCHAR, food_price DECIMAL, food_cuisine VARCHAR, restaurant_id INTEGER, food_quantity INTEGER, food_available BOOLEAN)
+RETURNS VOID AS $$
+declare 
+    fid INTEGER;
+begin 
+    INSERT into FoodItem VALUES(DEFAULT, restaurant_id, food_cuisine, new_food_name, food_quantity, 0, 0, food_available, false);
+    SELECT F.food_id into fid from FoodItem F where F.food_name = new_food_name and F.rid = restaurant_id;
+    INSERT into Sells VALUES(restaurant_id, fid, food_price);
+end
+$$ LANGUAGE PLPGSQL;
+
+----- delete menu item
+CREATE OR REPLACE FUNCTION delete_menu_item(delete_name VARCHAR, rest_id INTEGER)
+RETURNS VOID AS $$
+begin 
+    UPDATE FoodItem F SET is_deleted = true where F.rid = rest_id and F.food_name = delete_name; 
+end
+$$ LANGUAGE PLPGSQL;
+
  
 -- -- a) see menu items that belong to me
 CREATE OR REPLACE FUNCTION bring_menu_up(staff_username VARCHAR)
@@ -28,31 +50,39 @@ end
 $$ LANGUAGE PLPGSQL;
 
 -- b) update menu items that belong -> can change count of food items, cuisine_type, food_name
-CREATE OR REPLACE FUNCTION update_count(food_item INTEGER, current_rid INTEGER, new_count INTEGER)
+CREATE OR REPLACE FUNCTION update_food(id INTEGER, current_rid INTEGER, new_name VARCHAR, new_quantity INTEGER, new_price DECIMAL, new_type VARCHAR)
 RETURNS VOID AS $$
-    UPDATE FoodItem  
-    SET quantity = new_count
+BEGIN
+    IF new_quantity IS NOT NULL then
+    UPDATE FoodItem 
+    SET restaurant_quantity = new_quantity
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
+    AND food_id = id;
+    END IF;
 
---update cuisine_type
-CREATE OR REPLACE FUNCTION update_type(food_item INTEGER, current_rid INTEGER, new_type VARCHAR)
-RETURNS VOID AS $$
-    UPDATE FoodItem  
-    SET cuisine_type = new_type
+    IF new_price IS NOT NULL then
+    UPDATE Sells 
+    SET price = new_price
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
-
--- --update food_name
-CREATE OR REPLACE FUNCTION update_name(food_item INTEGER, current_rid INTEGER, new_name VARCHAR)
-RETURNS VOID AS $$
-    UPDATE FoodItem  
+    AND food_id = id;
+    END IF;
+    
+    IF new_name IS NOT NULL then
+    UPDATE FoodItem 
     SET food_name = new_name
     WHERE rid = current_rid
-    AND food_id = food_item;
-$$ LANGUAGE SQL;
+    AND food_id = id;
+    END IF;
+
+    IF new_type IS NOT NULL then
+    UPDATE FoodItem 
+    SET cuisine_type = new_type
+    WHERE rid = current_rid
+    AND food_id = id;
+    END IF;
+
+END;
+$$ LANGUAGE PLPGSQL;
 
 --generates top five based on highest rating
 CREATE OR REPLACE FUNCTION generate_top_five(current_rid INTEGER)
@@ -102,7 +132,7 @@ RETURNS TABLE (
         time_frame INTEGER;
     begin
         SELECT (DATE_PART('day', (PC.end_date::timestamp - PC.start_date::timestamp)))
-        FROM PromotionalCampaign
+        FROM PromotionalCampaign PC
         INTO time_frame;
         
         RETURN QUERY(
@@ -112,7 +142,6 @@ RETURNS TABLE (
         );
     end
 $$ LANGUAGE PLPGSQL;
-
 
 --AVERAGE ORDERS DURING THIS PROMO
 CREATE OR REPLACE FUNCTION average_orders_during_promo(current_rid INTEGER, input_start_date TIMESTAMP, input_end_date TIMESTAMP)
@@ -140,16 +169,23 @@ CREATE OR REPLACE FUNCTION add_promo(current_rid INTEGER, discount NUMERIC, desc
 RETURNS VOID 
 AS $$
 BEGIN
-    INSERT INTO PromotionalCampaign VALUES(DEFAULT, current_rid, discount, description, start_date, end_date);   
+    INSERT INTO PromotionalCampaign VALUES(DEFAULT, current_rid, discount, description, start_date, end_date);  
 END;
 $$ LANGUAGE PLPGSQL;
 
-CREATE OR REPLACE FUNCTION apply_promo(current_rid INTEGER, discount NUMERIC, description VARCHAR(100), start_date TIMESTAMP, end_date TIMESTAMP) 
-RETURNS VOID 
-AS $$
+CREATE OR REPLACE FUNCTION checkTimeInterval()
+  RETURNS TRIGGER as $$
 BEGIN
-    UPDATE Sells S
-    SET price = ROUND(price - (price * discount), 2)
-    WHERE S.rid = current_rid;    
+   IF (NEW.start_date > NEW.end_date) THEN
+       RAISE EXCEPTION 'Start date should be earlier than End date';
+   END IF;
+   RETURN NEW;
 END;
-$$ LANGUAGE PLPGSQL;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_time_trigger ON PromotionalCampaign CASCADE;
+CREATE TRIGGER check_time_trigger
+BEFORE UPDATE OR INSERT
+ON PromotionalCampaign
+FOR EACH ROW
+EXECUTE FUNCTION checkTimeInterval();

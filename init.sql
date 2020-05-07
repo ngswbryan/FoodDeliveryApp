@@ -131,7 +131,7 @@ CREATE TABLE DeliveryDuration ( --BCNF
 --RELATIONSHIPS
 
 CREATE TABLE Sells ( --BCNF
-    rid INTEGER REFERENCES Restaurants(rid) NOT NULL,
+    rid INTEGER REFERENCES Restaurants(rid) ON DELETE CASCADE,
     food_id INTEGER REFERENCES FoodItem(food_id) ON DELETE CASCADE,
     price DECIMAL NOT NULL check (price > 0),
     PRIMARY KEY(rid, food_id)
@@ -168,40 +168,15 @@ CREATE TABLE Delivery ( --BCNF
 
 
 
-
---CREATE TABLE Delivery (
---    delivery_id SERIAL NOT NULL,
---    order_id INTEGER REFERENCES FoodOrder(order_id),
---    rider_id INTEGER REFERENCES Riders(rider_id),
---    delivery_cost DECIMAL NOT NULL,
---    delivery_start_time TIMESTAMP NOT NULL,
---    delivery_end_time TIMESTAMP,
---    time_for_one_delivery DECIMAL, --in minutes
---    location VARCHAR(100),
---    delivery_rating INTEGER, 
---    food_review varchar(100),
---    ongoing BOOLEAN, --true means delivering, false means done
---    PRIMARY KEY(delivery_id),
---    UNIQUE(delivery_id)
---);
-
---CREATE TABLE Contain (
---    order_id INTEGER REFERENCES FoodOrder(order_id),
---    food_id INTEGER REFERENCES FoodItem(food_id),
---    PRIMARY KEY(order_id, food_id),
---    UNIQUE(order_id, food_id)
---);
-
 --RELATIONSHIPS
 
 
 -------- POPULATION -------------
-
-INSERT INTO Restaurants VALUES (1, 'kfc', 'PASIR RIS', 5.0);
-INSERT INTO Restaurants VALUES (2, 'mac', 'CHINATOWN', 8.0);
-INSERT INTO Restaurants VALUES (3, 'sweechoon', 'WOODLANDS', 4.0);
-INSERT INTO Restaurants VALUES (4, 'reedz', 'HARBOURFRONT', 10.0);
-INSERT INTO Restaurants VALUES (5, 'nanathai', 'VIVOCITY', 6.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'kfc', 'PASIR RIS', 5.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'mac', 'CHINATOWN', 8.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'sweechoon', 'WOODLANDS', 4.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'reedz', 'HARBOURFRONT', 10.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'nanathai', 'VIVOCITY', 6.0);
 
 --*********important******************---
 INSERT INTO RidersSalary VALUES (true, 6, 200);
@@ -228,13 +203,6 @@ INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'mookata', 12, 0, 0, true, fals
 INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'garlic naan', 13, 0, 0, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'chicken taandori', 9, 0, 0, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'roti john', 2, 0, 0, true, false);
-
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'good stuff', 12, 2,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'stuff good', 12, 3,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork loin', 12, 5,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork bone', 12, 4,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork jizz', 12, 3.3,0,true,false);
-
 
 INSERT INTO Sells VALUES (1,1,5.5);
 INSERT INTO Sells VALUES (1,2,4.5);
@@ -332,15 +300,16 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  $$ LANGUAGE SQL;
 
 
- --c)
+--c)
  --List of restaurants
   CREATE OR REPLACE FUNCTION list_of_restaurant()
  RETURNS TABLE (
      restaurant_id INTEGER,
      restaurant_name VARCHAR,
-     min_order_price DECIMAL
+     min_order_price DECIMAL,
+     location VARCHAR
  ) AS $$
-     SELECT R.rid, R.rname, R.min_order_price
+     SELECT R.rid, R.rname, R.min_order_price, R.location
      FROM Restaurants R
  $$ LANGUAGE SQL;
 
@@ -631,7 +600,7 @@ $$ LANGUAGE PLPGSQL;
  --rider rating
  CREATE OR REPLACE FUNCTION rider_rating(deliveryid INTEGER)
  RETURNS DECIMAL AS $$
-     SELECT R.rating
+     SELECT round(R.rating, 3)
      FROM Delivery D join Riders R on D.rider_id = R.rider_id
      WHERE D.delivery_id = deliveryid;
  $$ LANGUAGE SQL;
@@ -855,6 +824,23 @@ BEGIN
     INSERT INTO PromotionalCampaign VALUES(DEFAULT, current_rid, discount, description, start_date, end_date);  
 END;
 $$ LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE FUNCTION checkTimeInterval()
+  RETURNS TRIGGER as $$
+BEGIN
+   IF (NEW.start_date > NEW.end_date) THEN
+       RAISE EXCEPTION 'Start date should be earlier than End date';
+   END IF;
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_time_trigger ON PromotionalCampaign CASCADE;
+CREATE TRIGGER check_time_trigger
+BEFORE UPDATE OR INSERT
+ON PromotionalCampaign
+FOR EACH ROW
+EXECUTE FUNCTION checkTimeInterval();
 
 ------ RESTAURANT STAFF ------
 
@@ -1080,7 +1066,26 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE FUNCTION checkTimeInterval()
+  RETURNS TRIGGER as $$
+BEGIN
+   IF (NEW.start_date > NEW.end_date) THEN
+       RAISE EXCEPTION 'Start date should be earlier than End date';
+   END IF;
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_time_trigger ON PromotionalCampaign CASCADE;
+CREATE TRIGGER check_time_trigger
+BEFORE UPDATE OR INSERT
+ON FDSPromotionalCampaign
+FOR EACH ROW
+EXECUTE FUNCTION checkTimeInterval();
+
 ------ FDS MANAGER -------
+
 ------ RIDERS ------
 -- --a)
 --  -- get current job
@@ -1642,7 +1647,4 @@ $$ LANGUAGE SQL;
   $$ LANGUAGE PLPGSQL;
 
 -------------- rider delivery process ----------------
-
-
-
 ------ RIDERS ------

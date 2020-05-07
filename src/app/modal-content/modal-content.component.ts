@@ -22,6 +22,7 @@ export class ModalContentComponent implements OnInit {
   fdscampaigns=[];
   campaigns=[];
   discount; 
+  gotDiscount: boolean;  
 
   constructor(
     private bsModalRef: BsModalRef,
@@ -32,6 +33,8 @@ export class ModalContentComponent implements OnInit {
 
   ngOnInit() {
     this.total = 0; 
+    this.discount = 0; 
+    this.gotDiscount = false; 
     this.dataService.currentMessage.subscribe(hasOrdered => this.hasOrdered = hasOrdered);
     this.dataService.currentFoodItems.subscribe(foodItems => this.foodItems = foodItems);
     this.dataService.changeFoodItems([]);
@@ -48,11 +51,13 @@ export class ModalContentComponent implements OnInit {
           new_start: formatted,
           new_end: formmated2,
         };
-        console.log(newPromo);
+        console.log("fds: " + newPromo);
         this.fdscampaigns.push(newPromo);
+        console.log("fds campaigns list: "  + this.fdscampaigns[0]["discount"]);
       }
       if (this.fdscampaigns.length != 0) {
         this.applyFDSCampaign();
+        console.log("discount now is: " + this.discount);
       }
       
 
@@ -67,27 +72,37 @@ export class ModalContentComponent implements OnInit {
             new_start: formatted,
             new_end: formmated2,
           };
-          console.log(newPromo);
-          this.campaigns.push(newPromo);
+            console.log("campaign : " + newPromo);
+       
+            this.campaigns.push(newPromo);
+    
         }
+        if (this.campaigns.length != 0) {
+          this.applyCampaign();
+          console.log("discount now is: " + this.discount);
+        }
+        this.apiService.getListOfFoodItem(this.list).subscribe((fooditem: any) => {
+          this.orderList = Array(fooditem.length).fill(0);
+  
+          for (let i = 0; i < fooditem.length; i++) {
+            this.foodItems.push(fooditem[i]);
+            // console.log(fooditem[i]);
+          }
+          for (let j = 0; j< this.foodItems.length; j++) {
+            if (this.gotDiscount) {
+              if (this.discount > 0.9) {
+                this.discount = 0.9;
+              }
+            this.foodItems[j]["food_price"] = this.foodItems[j]["food_price"] * (1-this.discount);
+            }
+          }
+          // console.log("food items testing " + this.foodItems); 
+        });
       })
-      if (this.campaigns.length != 0) {
-        this.applyCampaign();
-      }
+      
       
     
-      this.apiService.getListOfFoodItem(this.list).subscribe((fooditem: any) => {
-        this.orderList = Array(fooditem.length).fill(0);
-
-        for (let i = 0; i < fooditem.length; i++) {
-          this.foodItems.push(fooditem[i]);
-          // console.log(fooditem[i]);
-        }
-        for (let j = 0; j< this.foodItems.length; j++) {
-          this.foodItems[j]["food_price"] = this.foodItems[j]["food_price"] * this.discount;
-        }
-        // console.log("food items testing " + this.foodItems); 
-      });
+      
 
       this.loadingService.loading.next(false);
     });
@@ -96,23 +111,30 @@ export class ModalContentComponent implements OnInit {
   }
 
   applyFDSCampaign() {
-    let startdate = this.fdscampaigns[0]["start_date"];
-    let enddate = this.fdscampaigns[0]["end_date"];
-    let discount = 1-this.fdscampaigns[0]["discount"];
-    if (this.checkDate(startdate)) {
-      this.discount = discount; 
-    } else {
-      this.discount = 0; 
-    }
+
+    for (let i=0; i<this.fdscampaigns.length; i++) {
+      let startdate = this.fdscampaigns[i]["start_date"];
+      let enddate = this.fdscampaigns[i]["end_date"];
+      let discount = this.fdscampaigns[i]["discount"]/100;
+      if (this.checkDate(startdate)) {
+          this.discount = this.discount + discount; 
+          console.log("applying fds: "  + this.discount);
+          this.gotDiscount = true; 
+      }
+  }
     
   }
   applyCampaign() {
-    let startdate = this.campaigns[0]["start_date"];
-    let enddate = this.campaigns[0]["end_date"];
-    let discount = 1-this.campaigns[0]["discount"];
-    if (this.checkDate(startdate)) {
-      this.discount = this.discount + discount; 
-    }
+    for (let i=0; i<this.campaigns.length; i++) {
+      let startdate = this.campaigns[i]["start_date"];
+      let enddate = this.campaigns[i]["end_date"];
+      let discount = this.campaigns[i]["discount"]/100;
+      if (this.checkDate(startdate)) {
+
+          this.discount = this.discount + discount; 
+          this.gotDiscount = true; 
+      }
+    } 
     
   }
 
