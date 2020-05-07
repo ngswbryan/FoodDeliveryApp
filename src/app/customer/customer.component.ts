@@ -335,7 +335,7 @@ export class CustomerComponent implements OnInit {
     const rid = i + 1;
     this.rid = rid;
     console.log(rid);
-    const min = this.restaurants[i][2];
+    const min = this.restaurants[i+1][2];
     var initialState = {
       list: [rid+1],
       orderList: [],
