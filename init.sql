@@ -1514,11 +1514,6 @@ $$ LANGUAGE SQL;
   END
   $$ LANGUAGE PLPGSQL;
 
-
-
-
-
-
 -- -- for WWS
 CREATE OR REPLACE FUNCTION checkWWS()
   RETURNS trigger AS $$
