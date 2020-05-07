@@ -91,7 +91,7 @@ const getLocation = (request, response) => {
       response.status(200).json(results.rows);
     }
   );
-};
+}
 
 const getRiders = (request, response) => {
   const month = request.query.month;
@@ -447,28 +447,53 @@ const getRiderRating = (request, response) => {
   });
 };
 
-const getStartTime = (request, response) => {
-  const did = request.params.did;
+const getDeliveryTimings = (request, response) => {
+  const did = request.params.did; 
 
-  pool.query("select * from start_time($1);", [did], (error, results) => {
-    if (error) {
-      response.status(400).json(error.message);
-      return;
+  pool.query(
+    "select * from delivery_timings($1)",
+    [did],
+    (error, results) => {
+      if (error) {
+        response.status(400).json(error.message);
+        return; 
+      }
+      response.status(200).json(results.rows);
     }
-    response.status(200).json(results.rows);
-  });
+  )
+}
+
+//returns boolean
+const checkIfCompleted = (request, response) => {
+  const did = request.params.did; 
+
+  pool.query(
+    "select * from delivery where delivery.delivery_id = ($1) and delivery.ongoing = FALSE;",
+    [did],
+    (error, results) => {
+      if (error) {
+        response.status(400).json(error.message);
+        return; 
+      }
+      response.status(200).json(results.rows);
+    }
+  )
 };
 
 const getEndTime = (request, response) => {
-  const did = request.params.did;
+  const did = request.params.did; 
 
-  pool.query("select * from delivery_endtime($1)", [did], (error, results) => {
-    if (error) {
-      response.status(400).json(error.message);
-      return;
+  pool.query(
+    "select * from delivery_endtime($1)",
+    [did],
+    (error, results) => {
+      if (error) {
+        response.status(400).json(error.message);
+        return; 
+      }
+      response.status(200).json(results.rows);
     }
-    response.status(200).json(results.rows);
-  });
+  )
 };
 
 const foodReviewUpdate = (request, response) => {
@@ -494,18 +519,18 @@ const updateDeliveryRating = (request, response) => {
 
   pool.query(
     "select update_delivery_rating($1, $2)",
-    [deliveryid, deliveryrating],
+    [deliveryid, deliveryrating], 
     (error) => {
       if (error) {
         response.status(400).json(error.message);
-        return;
+        return; 
       }
-      response
-        .status(201)
-        .json({ status: "success", message: "updated delivery rating." });
+      response 
+      .status(201)
+      .json({ status: "success", message: "updated delivery rating." })
     }
-  );
-};
+  )
+}
 
 const updateFoodItem = (request, response) => {
   const fid = request.params.fid;
@@ -546,6 +571,7 @@ const getCampaigns = (request, response) => {
     }
   );
 };
+
 
 const getFDSCampaigns = (request, response) => {
   pool.query("SELECT * FROM FDSPromotionalCampaign;", (error, results) => {
@@ -672,6 +698,7 @@ const getWeeklyStats = (request, response) => {
   );
 };
 
+
 const getMonthlyStats = (request, response) => {
   const rid = request.params.rid;
   const month = request.query.month;
@@ -689,6 +716,7 @@ const getMonthlyStats = (request, response) => {
     }
   );
 };
+
 
 const getWWS = (request, response) => {
   const rid = request.params.rid;
@@ -794,6 +822,7 @@ const updateWWS = async (request, response) => {
   }
 };
 
+
 const updateDeparture = (request, response) => {
   const did = request.query.did;
   const rid = request.query.rid;
@@ -810,6 +839,7 @@ const updateDeparture = (request, response) => {
     response.status(200).json({ status: "success", message: "food updated." });
   });
 };
+
 
 const updateCollected = (request, response) => {
   const did = request.query.did;
@@ -838,6 +868,7 @@ const updateDelivery = (request, response) => {
     response.status(200).json({ status: "success", message: "food updated." });
   });
 };
+
 
 const updateDone = (request, response) => {
   const did = request.query.did;
@@ -936,21 +967,21 @@ app.route("/users/restaurant/order/rewards/:uid").get(getRewardBalance);
 
 app.route("/users/restaurant/order/promo").post(applyDeliveryPromo);
 
-app
-  .route("/users/restaurant/order/:uid/:rid/:total_order_cost")
-  .get(getFoodandDeliveryID);
+app.route("/users/restaurant/order/:uid/:rid/:total_order_cost").get(getFoodandDeliveryID);
 
 app.route("/users/restaurant/order/ridername/:did").get(getRiderName);
 
 app.route("/users/restaurant/order/riderrating/:did").get(getRiderRating);
 
-app.route("/users/restaurant/order/starttime/:did").get(getStartTime);
+app.route("/users/restaurant/order/deliverytimings/:did").get(getDeliveryTimings);
 
 app.route("/users/restaurant/order/endtime/:did").get(getEndTime);
 
 app.route("/users/restaurant/order/foodreviewupdate").post(foodReviewUpdate);
 
 app.route("/users/restaurant/order/deliveryrating").post(updateDeliveryRating);
+
+app.route("/users/restaurant/order/ifcompleted/:did").get(checkIfCompleted);
 
 // Start server
 app.listen(process.env.PORT || 3002, () => {

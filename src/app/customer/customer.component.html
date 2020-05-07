@@ -96,12 +96,7 @@ style="align-content: center; background-color:#f3f5f8 ;">
           </tbody>
         </table>
       </div>
-
-    
-
-
-
-
+        <button (click)="test()"> test </button>
   </div>
   </div>
 
@@ -207,11 +202,53 @@ style="align-content: center; background-color:#f3f5f8 ;">
         <h1> Delivery Page </h1>
         <h5> Rider Name : {{ riderName }}</h5>
         <h5> Delivery ID : {{ deliveryid }} </h5>
-        <h5> Start time : {{ startTime }}  </h5>
+        <h5> Order time : {{ orderTime }}  </h5>
+        <h5> Rider departure time : {{ riderdeparturetime }}  </h5>
+        <h5> Rider collected time : {{ ridercollectedtime }}  </h5>
+        <h5> Delivery Start time : {{ deliverystarttime }}  </h5>
         <h5> Location : {{ location }}</h5>
         <h5> Riders rating : {{ riderRating }}</h5>
+
+        <button *ngIf="onGoing" (click)="refresh()"> refresh </button>
+        <div *ngIf="!onGoing">
+          <br />
+          <h1> Your order has arrived. Complete your order by giving it a rating.  </h1>
+          <h5> Delivery end time : {{ deliveryendtime }}  </h5>
+          <h2> Order Completion! </h2>
+          <form [formGroup]="createReviewForm" > 
+            <br /> 
+            <div class="container-fluid"> 
+              <div class="row"> 
+                <div class="col-12"> 
+                  <h2> Review your food </h2>
+                  <input 
+                  type="text"
+                  placeholder="comments"
+                  formControlName="foodreview"
+                  class="form-control form-input" />
+                </div>
+                <h2> Rate your experience </h2>
+                  <select
+                  type="string"
+                  placeholder="rating out of 5"
+                  class="form-control form-input"
+                  formControlName="deliveryrating"
+                  (change)="onChange($event.target.value)"> 
+                  <option value="1"> 1 </option>
+                  <option value="2"> 2 </option>
+                  <option value="3"> 3 </option>
+                  <option value="4"> 4 </option>
+                  <option value="5"> 5 </option>
+                </select>
+              </div>
+            </div>
+          </form>
+          <button (click)="submitReview()"> Complete order </button>
+        </div> 
+
       </div>
-      
+
     </tab>
   </tabset>
+
 </div>
