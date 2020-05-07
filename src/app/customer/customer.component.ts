@@ -28,6 +28,7 @@ export class CustomerComponent implements OnInit {
   user;
   uid;  
   rid; 
+  
 
   pastDeliveries = [];
   pastReviews = [];
@@ -129,9 +130,27 @@ export class CustomerComponent implements OnInit {
             }
             this.loadingService.loading.next(false);
           });
+
+          this.apiService.checkOngoing(this.uid).subscribe((boolean: any) => {
+            console.log("is going + " + boolean);
+            let answer = boolean[0]["bit"];
+            if (answer = "1") {
+              this.onGoing = true; 
+              console.log("ongoing varable is : "  + this.onGoing);
+              this.apiService.getDIDfromUID(this.uid).subscribe((did: any) => {
+                console.log("did is: "+ did[0]["case"]);
+                this.deliveryid = did[0]["case"];
+              })
+            } else {
+              this.onGoing = false; 
+              console.log("ongoing vairable is : "  + this.onGoing);
+            }
+            this.loadingService.loading.next(false);
+          });
         
 
         })
+        
 
     })
 
@@ -204,6 +223,8 @@ export class CustomerComponent implements OnInit {
 
 
   submitForm() {
+
+    if (!this.onGoing) {
     console.log("confirmed list is: " + this.confirmedList); 
     console.log("foodlist is: " + this.foodItems); 
     var current = [];
@@ -233,7 +254,7 @@ export class CustomerComponent implements OnInit {
       delivery_location: this.location,
       delivery_fee: this.deliveryCost
     };
-    console.log(order);
+    console.log("order askja" + order);
 
     // this.apiService.activateRiders().subscribe((res: any) => {
     //   // console.log("activated riders : " + res);
@@ -247,19 +268,23 @@ export class CustomerComponent implements OnInit {
       }
       this.loadingService.loading.next(false);
     });
-    window.alert("Order completed!");
+    window.alert("Order completed! 🥳 ");
     this.hasOrdered = !this.hasOrdered; 
     this.disableEnable();
     this.selectTab(1);
     this.apiService.getFoodandDeliveryID(this.uid, this.rid, this.total).subscribe((res: any) => {
-      // console.log("uid : " + this.uid + " rid is :" + this.rid + " total cost is :" + this.total);
+      console.log("uid : " + this.uid + " rid is :" + this.rid + " total cost is :" + this.total);
       console.log(res);
       this.deliveryid = res[0]["deliveryid"];
       this.orderid = res[0]["orderid"];
       this.loadingService.loading.next(false);
+      this.onGoing = true; 
     })
+  } else {
+    window.alert("You cannot order with an on going order 😡 ! Please wait for the current order to be done");
+  }
    
-    this.onGoing = true; 
+    
   }
 
   submitReview() {
@@ -289,6 +314,8 @@ export class CustomerComponent implements OnInit {
     this.selectTab(0);
     this.retrievedDID = false; 
     this.deliveryid = -1; 
+    this.onGoing = false; 
+    window.alert("Thank you for ordering with FoodHub! 🤤👍🏼💯🔥 Enjoy your food ");
 
   }
 
