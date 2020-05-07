@@ -23,7 +23,7 @@ This project was done as part of NUS CS2102 Database Systems.
   `DB_PASSWORD=password`\
   `DB_HOST=localhost`\
   `DB_PORT=5432`\
-  `DB_DATABASE=databasename`\
+  `DB_DATABASE=databasename`
 4. Run init.sql in the root directory to seed your new database.
 5. Run `node server.js` in the food of the app to start the Express server.
 6. Run `ng serve --open` to deploy the Angular app locally. 
