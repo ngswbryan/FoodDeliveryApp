@@ -22,6 +22,7 @@ export class ModalContentComponent implements OnInit {
   fdscampaigns=[];
   campaigns=[];
   discount; 
+  gotDiscount: boolean;  
 
   constructor(
     private bsModalRef: BsModalRef,
@@ -32,6 +33,8 @@ export class ModalContentComponent implements OnInit {
 
   ngOnInit() {
     this.total = 0; 
+    this.discount = 0; 
+    this.gotDiscount = false; 
     this.dataService.currentMessage.subscribe(hasOrdered => this.hasOrdered = hasOrdered);
     this.dataService.currentFoodItems.subscribe(foodItems => this.foodItems = foodItems);
     this.dataService.changeFoodItems([]);
@@ -68,7 +71,9 @@ export class ModalContentComponent implements OnInit {
             new_end: formmated2,
           };
           console.log(newPromo);
-          this.campaigns.push(newPromo);
+       
+            this.campaigns.push(newPromo);
+    
         }
       })
       if (this.campaigns.length != 0) {
@@ -84,7 +89,9 @@ export class ModalContentComponent implements OnInit {
           // console.log(fooditem[i]);
         }
         for (let j = 0; j< this.foodItems.length; j++) {
+          if (this.gotDiscount) {
           this.foodItems[j]["food_price"] = this.foodItems[j]["food_price"] * this.discount;
+          }
         }
         // console.log("food items testing " + this.foodItems); 
       });
@@ -99,10 +106,9 @@ export class ModalContentComponent implements OnInit {
     let startdate = this.fdscampaigns[0]["start_date"];
     let enddate = this.fdscampaigns[0]["end_date"];
     let discount = 1-this.fdscampaigns[0]["discount"];
-    if (this.checkDate(startdate)) {
-      this.discount = discount; 
-    } else {
-      this.discount = 0; 
+    if (this.checkDate(startdate) && this.gotDiscount) {
+      this.discount = this.discount + discount; 
+      this.gotDiscount = true; 
     }
     
   }
@@ -110,8 +116,9 @@ export class ModalContentComponent implements OnInit {
     let startdate = this.campaigns[0]["start_date"];
     let enddate = this.campaigns[0]["end_date"];
     let discount = 1-this.campaigns[0]["discount"];
-    if (this.checkDate(startdate)) {
+    if (this.checkDate(startdate) && this.gotDiscount) {
       this.discount = this.discount + discount; 
+      this.gotDiscount = true; 
     }
     
   }

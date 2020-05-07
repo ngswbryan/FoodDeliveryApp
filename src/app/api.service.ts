@@ -39,6 +39,14 @@ export class ApiService {
     return this.http.get(`${this.url}/staff/${uid}`);
   }
 
+  checkOngoing(uid) {
+    return this.http.get(`${this.url}/users/ongoing/${uid}`);
+  }
+
+  getDIDfromUID(uid) {
+    return this.http.get(`${this.url}/users/ongoing/did/${uid}`);
+  }
+
   getPastDeliveryRating(uid) {
     return this.http.get(`${this.url}/users/rating/${uid}`);
   }
