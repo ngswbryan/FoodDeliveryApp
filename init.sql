@@ -29,7 +29,7 @@ CREATE TABLE RidersSalary ( --BCNF
 );
 
 CREATE TABLE Restaurants ( --BCNF
-    rid INTEGER PRIMARY KEY,
+    rid SERIAL PRIMARY KEY,
     rname VARCHAR(100),
     location VARCHAR(100),
     min_order_price DECIMAL,
@@ -120,7 +120,6 @@ CREATE TABLE MonthlyWorkSchedule ( --BCNF
     shift INTEGER,
     PRIMARY KEY(rider_id,start_hour,end_hour,day,month,year)
 );
-
 
 
 --ENTITIES

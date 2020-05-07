@@ -1,58 +1,59 @@
-<div class="container-fluid" 
-style="align-content: center; background-color:#f3f5f8 ;">
-  <div class="row"> 
+<div
+  class="container-fluid"
+  style="align-content: center; background-color: #f3f5f8;"
+>
+  <div class="row">
     <div class="col-md-12" style="text-align: center;">
-      <h1> Welcome to FoodHub, {{ username }}</h1>
+      <h1>Welcome to FoodHub, {{ username }}</h1>
     </div>
-  </div>  
-        <br/>
-  <tabset #staticTabs> 
-    <tab heading="FoodHub" id="1">
-  <div *ngIf="!hasOrdered" class="container" > 
-    <div class="row"> 
-        <h5>Past Delivery Ratings</h5>
-    </div>
-
-  
-          <div class="col-md-12">
-            <table class="table table-striped"> 
-              <thead> 
-                <tr>
-                  <th scope="col"> # </th>
-                  <th scope="col"> Order ID </th>
-                  <th scope="col"> Time </th>
-                  <th scope="col"> Rating </th>
-                  <th scope="col"> Rider </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let delivery of pastDeliveries; index as i">
-                  <th scope="row">{{ i + 1 }}</th>
-                  <td>
-                    {{ delivery[0] }}
-                  </td>
-                  <td>{{ delivery[1] }}</td>
-                  <td>{{ delivery[2] }}</td>
-                  <td>{{ delivery[3] }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-    <div>
-  <br />
-  <div class="row"> 
-      <h5>Past Food Orders and Reviews</h5>
   </div>
-       
+  <br />
+  <tabset #staticTabs>
+    <tab heading="FoodHub" id="1">
+      <div *ngIf="!hasOrdered" class="container">
+        <div class="row">
+          <h5>Past Delivery Ratings</h5>
+        </div>
+
+        <div class="col-md-12">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Order ID</th>
+                <th scope="col">Time</th>
+                <th scope="col">Rating</th>
+                <th scope="col">Rider</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let delivery of pastDeliveries; index as i">
+                <th scope="row">{{ i + 1 }}</th>
+                <td>
+                  {{ delivery[0] }}
+                </td>
+                <td>{{ delivery[1] }}</td>
+                <td>{{ delivery[2] }}</td>
+                <td>{{ delivery[3] }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <br />
+          <div class="row">
+            <h5>Past Food Orders and Reviews</h5>
+          </div>
+
           <div class="col-md-12">
-            <table class="table table-striped"> 
-              <thead> 
+            <table class="table table-striped">
+              <thead>
                 <tr>
-                  <th scope="col"> # </th>
-                  <th scope="col"> Order ID </th>
-                  <th scope="col"> Time </th>
-                  <th scope="col"> Restaurant name </th>
-                  <th scope="col"> Review </th>
+                  <th scope="col">#</th>
+                  <th scope="col">Order ID</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Restaurant name</th>
+                  <th scope="col">Review</th>
                 </tr>
               </thead>
               <tbody>
@@ -71,168 +72,184 @@ style="align-content: center; background-color:#f3f5f8 ;">
 
           <br />
 
-  <div class="row"> 
-    <h5> List of Menus </h5>
-  </div>
-      <div class="col-md-12">
-        <table class="table table-striped"> 
-          <thead> 
-            <tr>
-              <th scope="col"> # </th>
-              <th scope="col"> Restaurant ID </th>
-              <th scope="col"> Restaurant name </th>
-              <th scope="col"> Min Order ($) </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let restaurant of restaurants; index as i" class="clickable-row" (click)="showYourModal(i)">
-              <th scope="row">{{ i + 1 }}</th>
-              <td>
-                {{ restaurant[0] }}
-              </td>
-              <td>{{ restaurant[1] }}</td>
-              <td>{{ restaurant[2] }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-  </div>
-  </div>
-
-
-  <div *ngIf="hasOrdered" class="container"> 
-    <h1> Order confirmation </h1>
-    <div> 
-    <div class="col-md-12">
-      <table class="table table-striped"> 
-      <thead> 
-          <tr>
-          <th scope="col"> # </th>
-          <th scope="col"> Food name </th>
-          <th scope="col"> Food Price  </th>
-          <th scope="col"> Cuisine type </th>
-          <th scope="col"> Overall Rating </th>
-          <th scope="col"> Available </th>
-          <th scope="col"> Quantity </th>
-          </tr>
-      </thead>
-      <tbody>
-          <tr *ngFor="let food of foodItems; index as i">
-          <th scope="row">{{ i + 1 }}</th>
-          <td>
-            {{ food["food_name"] }}
-           </td>
-          <td>{{ food["food_price"] }}</td>
-          <td>{{ food["cuisine_type"] }}</td>
-          <td>{{ food["overall_rating"] }}</td>
-          <td>{{ food["availability_status"] }}</td>
-          <td>{{ confirmedList[i] }}</td>
-          </tr>
-      </tbody>
-      </table>
-    </div>
-    <div> 
-      <h5> Amount : {{total}}</h5>
-      <h5> Delivery Fee : {{ deliveryCost }} </h5>
-      <h5> Total cost : {{ total + deliveryCost }}  </h5>
-      <h5> Available rewards balance: {{ rewardsBal }}</h5>
-      <button *ngIf="!promoApplied" (click)="applyPromo()"> Apply promo </button>
-      <form [formGroup]="createOrderForm"> 
-        <div class="row"> 
-          <div class="col-12"> 
-            <select
-            type="boolean"
-            placeholder="credit card?"
-            class="form-control form-input"
-            formControlName="creditCard"
-            (change)="onChange($event.target.value)">
-              <option value ="true"> credit card</option>
-              <option value ="false"> cash </option>
-            </select>
+          <div class="row">
+            <h5>List of Menus</h5>
           </div>
-
-          <div class="col-12"> 
-            <input
-              type="text"
-              placeholder="location"
-              formControlName="location"
-              class="form-control form-input"
-              (change)=manualEntry()
-              value={{this.createOrderForm.value.location}}/> 
-
-              <div *ngIf=locationDropdown>
-                <select
-                  type="string"
-                  placeholde="last 5 locations"
-                  class="form-control form-input"
-                  formControlName="location"
-                  (change)="onChange($event.target.value)"
-                  value={{this.createOrderForm.value.location}} > 
-                  <option value={{recentLocations[0]}}> {{recentLocations[0]}} </option>
-                  <option value={{recentLocations[1]}}> {{recentLocations[1]}} </option>
-                  <option value={{recentLocations[2]}}> {{recentLocations[2]}} </option>
-                  <option value={{recentLocations[3]}}> {{recentLocations[3]}} </option>
-                  <option value={{recentLocations[4]}}> {{recentLocations[4]}} </option>
-                </select> 
-              </div> 
-              
-          </div>
-          <div class="col-12"> 
-             
+          <div class="col-md-12">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Restaurant ID</th>
+                  <th scope="col">Restaurant name</th>
+                  <th scope="col">Min Order ($)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="let restaurant of restaurants; index as i"
+                  class="clickable-row"
+                  (click)="showYourModal(restaurant[0])"
+                >
+                  <th scope="row">{{ i + 1 }}</th>
+                  <td>
+                    {{ restaurant[0] }}
+                  </td>
+                  <td>{{ restaurant[1] }}</td>
+                  <td>{{ restaurant[2] }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-      </form>
-
-      <button (click)="submitForm()"> order </button>
-      <div *ngIf="confirm"> 
-
       </div>
-    </div>
-  </div>
-  </div>
-  
+
+      <div *ngIf="hasOrdered" class="container">
+        <h1>Order confirmation</h1>
+        <div>
+          <div class="col-md-12">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Food name</th>
+                  <th scope="col">Food Price</th>
+                  <th scope="col">Cuisine type</th>
+                  <th scope="col">Overall Rating</th>
+                  <th scope="col">Available</th>
+                  <th scope="col">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let food of foodItems; index as i">
+                  <th scope="row">{{ i + 1 }}</th>
+                  <td>
+                    {{ food["food_name"] }}
+                  </td>
+                  <td>{{ food["food_price"] }}</td>
+                  <td>{{ food["cuisine_type"] }}</td>
+                  <td>{{ food["overall_rating"] }}</td>
+                  <td>{{ food["availability_status"] }}</td>
+                  <td>{{ confirmedList[i] }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h5>Amount : {{ total }}</h5>
+            <h5>Delivery Fee : {{ deliveryCost }}</h5>
+            <h5>Total cost : {{ total + deliveryCost }}</h5>
+            <h5>Available rewards balance: {{ rewardsBal }}</h5>
+            <button *ngIf="!promoApplied" (click)="applyPromo()">
+              Apply promo
+            </button>
+            <form [formGroup]="createOrderForm">
+              <div class="row">
+                <div class="col-12">
+                  <select
+                    type="boolean"
+                    placeholder="credit card?"
+                    class="form-control form-input"
+                    formControlName="creditCard"
+                    (change)="onChange($event.target.value)"
+                  >
+                    <option value="true"> credit card</option>
+                    <option value="false"> cash </option>
+                  </select>
+                </div>
+
+                <div class="col-12">
+                  <input
+                    type="text"
+                    placeholder="location"
+                    formControlName="location"
+                    class="form-control form-input"
+                    (change)="manualEntry()"
+                    value="{{ this.createOrderForm.value.location }}"
+                  />
+
+                  <div *ngIf="locationDropdown">
+                    <select
+                      type="string"
+                      placeholde="last 5 locations"
+                      class="form-control form-input"
+                      formControlName="location"
+                      (change)="onChange($event.target.value)"
+                      value="{{ this.createOrderForm.value.location }}"
+                    >
+                      <option value="{{ recentLocations[0] }}">
+                        {{ recentLocations[0] }}
+                      </option>
+                      <option value="{{ recentLocations[1] }}">
+                        {{ recentLocations[1] }}
+                      </option>
+                      <option value="{{ recentLocations[2] }}">
+                        {{ recentLocations[2] }}
+                      </option>
+                      <option value="{{ recentLocations[3] }}">
+                        {{ recentLocations[3] }}
+                      </option>
+                      <option value="{{ recentLocations[4] }}">
+                        {{ recentLocations[4] }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-12"></div>
+              </div>
+            </form>
+
+            <button (click)="submitForm()">order</button>
+            <div *ngIf="confirm"></div>
+          </div>
+        </div>
+      </div>
     </tab>
 
     <tab heading="Ongoing Delivery" id="2">
-      <div *ngIf="!retrievedDID"> 
-        <button (click)="getDID()"> refresh </button>
+      <div *ngIf="!retrievedDID">
+        <button (click)="getDID()">refresh</button>
       </div>
-      <div *ngIf="retrievedDID"> 
-        <h1> Delivery Page </h1>
-        <h5> Rider Name : {{ riderName }}</h5>
-        <h5> Delivery ID : {{ deliveryid }} </h5>
-        <h5> Order time : {{ orderTime }}  </h5>
-        <h5> Rider departure time : {{ riderdeparturetime }}  </h5>
-        <h5> Rider collected time : {{ ridercollectedtime }}  </h5>
-        <h5> Delivery Start time : {{ deliverystarttime }}  </h5>
-        <h5> Location : {{ location }}</h5>
-        <h5> Riders rating : {{ riderRating }}</h5>
+      <div *ngIf="retrievedDID">
+        <h1>Delivery Page</h1>
+        <h5>Rider Name : {{ riderName }}</h5>
+        <h5>Delivery ID : {{ deliveryid }}</h5>
+        <h5>Order time : {{ orderTime }}</h5>
+        <h5>Rider departure time : {{ riderdeparturetime }}</h5>
+        <h5>Rider collected time : {{ ridercollectedtime }}</h5>
+        <h5>Delivery Start time : {{ deliverystarttime }}</h5>
+        <h5>Location : {{ location }}</h5>
+        <h5>Riders rating : {{ riderRating }}</h5>
 
-        <button *ngIf="onGoing" (click)="refresh()"> refresh </button>
+        <button *ngIf="onGoing" (click)="refresh()">refresh</button>
         <div *ngIf="!onGoing">
           <br />
-          <h1> Your order has arrived. Complete your order by giving it a rating.  </h1>
-          <h5> Delivery end time : {{ deliveryendtime }}  </h5>
-          <h2> Order Completion! </h2>
-          <form [formGroup]="createReviewForm" > 
-            <br /> 
-            <div class="container-fluid"> 
-              <div class="row"> 
-                <div class="col-12"> 
-                  <h2> Review your food </h2>
-                  <input 
-                  type="text"
-                  placeholder="comments"
-                  formControlName="foodreview"
-                  class="form-control form-input" />
+          <h1>
+            Your order has arrived. Complete your order by giving it a rating.
+          </h1>
+          <h5>Delivery end time : {{ deliveryendtime }}</h5>
+          <h2>Order Completion!</h2>
+          <form [formGroup]="createReviewForm">
+            <br />
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-12">
+                  <h2>Review your food</h2>
+                  <input
+                    type="text"
+                    placeholder="comments"
+                    formControlName="foodreview"
+                    class="form-control form-input"
+                  />
                 </div>
-                <h2> Rate your experience </h2>
-                  <select
+                <h2>Rate your experience</h2>
+                <select
                   type="string"
                   placeholder="rating out of 5"
                   class="form-control form-input"
                   formControlName="deliveryrating"
-                  (change)="onChange($event.target.value)"> 
+                  (change)="onChange($event.target.value)"
+                >
                   <option value="1"> 1 </option>
                   <option value="2"> 2 </option>
                   <option value="3"> 3 </option>
@@ -242,12 +259,9 @@ style="align-content: center; background-color:#f3f5f8 ;">
               </div>
             </div>
           </form>
-          <button (click)="submitReview()"> Complete order </button>
-        </div> 
-
+          <button (click)="submitReview()">Complete order</button>
+        </div>
       </div>
-
     </tab>
   </tabset>
-
 </div>
