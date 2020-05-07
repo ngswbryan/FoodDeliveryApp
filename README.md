@@ -19,7 +19,7 @@ This project was done as part of NUS CS2102 Database Systems.
 2. Create a new PostgreSQL database.
 3. Create a .env file in the root directory and update it with the credentials of your newly created database.
   * Sample .env file
-  `DB_USER=postgres`
+  `DB_USER=postgres`\
   `DB_PASSWORD=password`
   `DB_HOST=localhost`
   `DB_PORT=5432`
