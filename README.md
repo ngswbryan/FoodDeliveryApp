@@ -16,7 +16,7 @@ This project was done as part of NUS CS2102 Database Systems.
 
 ## Deploying our app
 
-# We have deployed our app on a free dynos on Heroku over at https://mighty-mountain-99792.herokuapp.com/
+### We have deployed our app on a free dynos on Heroku over at https://mighty-mountain-99792.herokuapp.com/
 
 Alternatively,
 
