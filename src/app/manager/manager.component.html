@@ -427,6 +427,68 @@
             Add new campaign
           </button>
         </tab>
+        <tab heading="Manage Restaurants">
+          <br />
+          <h5>FoodHub Restaurants</h5>
+          <div *ngIf="restaurants.length == 0">
+            <alert type="danger">
+              <strong>None found!</strong> FoodHub currently does not have any
+              restaurants! 😢
+            </alert>
+          </div>
+          <ul class="list-group">
+            <li class="list-group-item" *ngFor="let rest of restaurants">
+              <p>Name: {{ rest[1] }}</p>
+              <p>Location: {{ rest[3] }}</p>
+              <p>Minimum Order: {{ rest[2] }}</p>
+              <p>
+                <button
+                  class="btn btn-danger"
+                  (click)="deleteRestaurant(rest[0])"
+                >
+                  Delete
+                </button>
+              </p>
+            </li>
+          </ul>
+          <br />
+          <br />
+          <form [formGroup]="createRestaurant">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-12">
+                  <input
+                    type="text"
+                    placeholder="Restaurant Name"
+                    formControlName="rname"
+                    class="form-control form-input"
+                  />
+                </div>
+
+                <div class="col-12">
+                  <input
+                    placeholder="Restaurant Location"
+                    type="text"
+                    formControlName="location"
+                    class="form-control form-input"
+                  />
+                </div>
+                <div class="col-12">
+                  <input
+                    placeholder="Minimum Order"
+                    type="text"
+                    formControlName="minimum"
+                    class="form-control form-input"
+                  />
+                </div>
+              </div>
+            </div>
+          </form>
+          <br />
+          <button class="btn btn-success" (click)="addRestaurant()">
+            Add new restaurant
+          </button>
+        </tab>
       </tabset>
     </div>
     <div class="col-md-2"></div>

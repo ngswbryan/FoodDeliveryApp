@@ -23,6 +23,7 @@ export class LoginComponent implements OnInit {
     this.loadingService.loading.next(true);
     this.ApiService.getUsers().subscribe((users: any) => {
       this.users = users;
+      console.log(this.users);
     });
     this.loadingService.loading.next(false);
   }

@@ -1,6 +1,6 @@
 -- ENTITIES
 
-CREATE TABLE Users (
+CREATE TABLE Users ( --BCNF
     uid SERIAL PRIMARY KEY,
     name VARCHAR(100),
     username VARCHAR(100),
@@ -10,7 +10,7 @@ CREATE TABLE Users (
     UNIQUE(username)
 );
 
-CREATE TABLE Riders (
+CREATE TABLE Riders ( --BCNF
     rider_id INTEGER REFERENCES Users(uid)
         ON DELETE CASCADE,
     rating DECIMAL,
@@ -21,14 +21,14 @@ CREATE TABLE Riders (
     UNIQUE(rider_id)
 );
 
-CREATE TABLE RidersSalary (
+CREATE TABLE RidersSalary ( --BCNF
     rider_type BOOLEAN,
     commission INTEGER,
     base_salary DECIMAL,
     PRIMARY KEY(rider_type)
 );
 
-CREATE TABLE Restaurants (
+CREATE TABLE Restaurants ( --BCNF
     rid INTEGER PRIMARY KEY,
     rname VARCHAR(100),
     location VARCHAR(100),
@@ -36,26 +36,26 @@ CREATE TABLE Restaurants (
     unique(rid)
 );
 
-CREATE TABLE RestaurantStaff (
+CREATE TABLE RestaurantStaff ( --BCNF
     uid INTEGER REFERENCES Users
         ON DELETE CASCADE,
     rid INTEGER REFERENCES Restaurants(rid)
         ON DELETE CASCADE
 );
 
-CREATE TABLE FDSManager (
+CREATE TABLE FDSManager ( --BCNF
     uid INTEGER REFERENCES Users
         ON DELETE CASCADE PRIMARY KEY
 );
 
-CREATE TABLE Customers (
+CREATE TABLE Customers ( --BCNF
     uid INTEGER REFERENCES Users
         ON DELETE CASCADE PRIMARY KEY,
     points INTEGER,
     credit_card VARCHAR(100)
 );
 
-CREATE TABLE FoodOrder (
+CREATE TABLE FoodOrder ( --BCNF
     order_id SERIAL PRIMARY KEY NOT NULL,
     uid INTEGER REFERENCES Customers NOT NULL,
     rid INTEGER REFERENCES Restaurants NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE FoodOrder (
     UNIQUE(order_id)
 );
 
-CREATE TABLE FoodItem (
+CREATE TABLE FoodItem ( --BCNF
     food_id SERIAL NOT NULL, 
     rid INTEGER REFERENCES Restaurants
         ON DELETE CASCADE,
@@ -81,7 +81,7 @@ CREATE TABLE FoodItem (
     UNIQUE(food_id)
 );
 
-CREATE TABLE PromotionalCampaign (
+CREATE TABLE PromotionalCampaign ( --BCNF
     promo_id SERIAL PRIMARY KEY,
     rid INTEGER REFERENCES Restaurants 
         ON DELETE CASCADE,
@@ -91,7 +91,7 @@ CREATE TABLE PromotionalCampaign (
     end_date TIMESTAMP
 );
 
-CREATE TABLE FDSPromotionalCampaign (
+CREATE TABLE FDSPromotionalCampaign ( --BCNF
     promo_id SERIAL PRIMARY KEY,
     discount INTEGER,
     description VARCHAR(100),
@@ -99,7 +99,7 @@ CREATE TABLE FDSPromotionalCampaign (
     end_date TIMESTAMP
 );
 
-CREATE TABLE WeeklyWorkSchedule (
+CREATE TABLE WeeklyWorkSchedule ( --BCNF
     wws_id SERIAL PRIMARY KEY NOT NULL,
     rider_id INTEGER references Riders(rider_id),
     start_hour INTEGER,
@@ -110,7 +110,7 @@ CREATE TABLE WeeklyWorkSchedule (
     year INTEGER
 );
 
-CREATE TABLE MonthlyWorkSchedule (
+CREATE TABLE MonthlyWorkSchedule ( --BCNF
     rider_id INTEGER references Riders(rider_id),
     start_hour INTEGER,
     end_hour INTEGER,
@@ -121,30 +121,35 @@ CREATE TABLE MonthlyWorkSchedule (
     PRIMARY KEY(rider_id,start_hour,end_hour,day,month,year)
 );
 
+CREATE TABLE DeliveryDuration ( --BCNF
+    delivery_id INTEGER REFERENCES Delivery(delivery_id),
+    time_for_one_delivery DECIMAL --in hour
+);
+
 --ENTITIES
 
 --RELATIONSHIPS
 
-CREATE TABLE Sells (
-    rid INTEGER REFERENCES Restaurants(rid) NOT NULL,
+CREATE TABLE Sells ( --BCNF
+    rid INTEGER REFERENCES Restaurants(rid) ON DELETE CASCADE,
     food_id INTEGER REFERENCES FoodItem(food_id) ON DELETE CASCADE,
     price DECIMAL NOT NULL check (price > 0),
     PRIMARY KEY(rid, food_id)
 );
 
-CREATE TABLE OrdersContain (
+CREATE TABLE OrdersContain ( --BCNF
     order_id INTEGER REFERENCES FoodOrder(order_id),
     food_id INTEGER REFERENCES FoodItem(food_id),
     item_quantity INTEGER,
     PRIMARY KEY(order_id,food_id)
 );
 
-CREATE TABLE Receives (
+CREATE TABLE Receives ( --BCNF
     order_id INTEGER REFERENCES FoodOrder(order_id),
     promo_id INTEGER REFERENCES PromotionalCampaign(promo_id)
 );
 
-CREATE TABLE Delivery (
+CREATE TABLE Delivery ( --BCNF
     delivery_id SERIAL NOT NULL,
     order_id INTEGER REFERENCES FoodOrder(order_id) NOT NULL,
     rider_id INTEGER REFERENCES Riders(rider_id) NOT NULL,
@@ -161,45 +166,17 @@ CREATE TABLE Delivery (
     UNIQUE(delivery_id)
 );
 
-CREATE TABLE DeliveryDuration ( --BCNF
-    delivery_id INTEGER REFERENCES Delivery(delivery_id),
-    time_for_one_delivery DECIMAL --in minutes
-);
 
-
---CREATE TABLE Delivery (
---    delivery_id SERIAL NOT NULL,
---    order_id INTEGER REFERENCES FoodOrder(order_id),
---    rider_id INTEGER REFERENCES Riders(rider_id),
---    delivery_cost DECIMAL NOT NULL,
---    delivery_start_time TIMESTAMP NOT NULL,
---    delivery_end_time TIMESTAMP,
---    time_for_one_delivery DECIMAL, --in minutes
---    location VARCHAR(100),
---    delivery_rating INTEGER, 
---    food_review varchar(100),
---    ongoing BOOLEAN, --true means delivering, false means done
---    PRIMARY KEY(delivery_id),
---    UNIQUE(delivery_id)
---);
-
---CREATE TABLE Contain (
---    order_id INTEGER REFERENCES FoodOrder(order_id),
---    food_id INTEGER REFERENCES FoodItem(food_id),
---    PRIMARY KEY(order_id, food_id),
---    UNIQUE(order_id, food_id)
---);
 
 --RELATIONSHIPS
 
 
 -------- POPULATION -------------
-
-INSERT INTO Restaurants VALUES (1, 'kfc', 'PASIR RIS', 5.0);
-INSERT INTO Restaurants VALUES (2, 'mac', 'CHINATOWN', 8.0);
-INSERT INTO Restaurants VALUES (3, 'sweechoon', 'WOODLANDS', 4.0);
-INSERT INTO Restaurants VALUES (4, 'reedz', 'HARBOURFRONT', 10.0);
-INSERT INTO Restaurants VALUES (5, 'nanathai', 'VIVOCITY', 6.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'kfc', 'PASIR RIS', 5.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'mac', 'CHINATOWN', 8.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'sweechoon', 'WOODLANDS', 4.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'reedz', 'HARBOURFRONT', 10.0);
+INSERT INTO Restaurants VALUES (DEFAULT, 'nanathai', 'VIVOCITY', 6.0);
 
 --*********important******************---
 INSERT INTO RidersSalary VALUES (true, 6, 200);
@@ -226,13 +203,6 @@ INSERT INTO FoodItem VALUES (DEFAULT, 4, 'thai', 'mookata', 12, 0, 0, true, fals
 INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'garlic naan', 13, 0, 0, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'chicken taandori', 9, 0, 0, true, false);
 INSERT INTO FoodItem VALUES (DEFAULT, 5, 'indian', 'roti john', 2, 0, 0, true, false);
-
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'good stuff', 12, 2,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'stuff good', 12, 3,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork loin', 12, 5,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork bone', 12, 4,0,true,false);
---INSERT INTO FoodItem VALUES (DEFAULT,1, 'western', 'pork jizz', 12, 3.3,0,true,false);
-
 
 INSERT INTO Sells VALUES (1,1,5.5);
 INSERT INTO Sells VALUES (1,2,4.5);
@@ -330,15 +300,16 @@ CREATE OR REPLACE FUNCTION past_delivery_ratings(customers_uid INTEGER)
  $$ LANGUAGE SQL;
 
 
- --c)
+--c)
  --List of restaurants
   CREATE OR REPLACE FUNCTION list_of_restaurant()
  RETURNS TABLE (
      restaurant_id INTEGER,
      restaurant_name VARCHAR,
-     min_order_price DECIMAL
+     min_order_price DECIMAL,
+     location VARCHAR
  ) AS $$
-     SELECT R.rid, R.rname, R.min_order_price
+     SELECT R.rid, R.rname, R.min_order_price, R.location
      FROM Restaurants R
  $$ LANGUAGE SQL;
 
@@ -854,6 +825,23 @@ BEGIN
 END;
 $$ LANGUAGE PLPGSQL;
 
+CREATE OR REPLACE FUNCTION checkTimeInterval()
+  RETURNS TRIGGER as $$
+BEGIN
+   IF (NEW.start_date > NEW.end_date) THEN
+       RAISE EXCEPTION 'Start date should be earlier than End date';
+   END IF;
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_time_trigger ON PromotionalCampaign CASCADE;
+CREATE TRIGGER check_time_trigger
+BEFORE UPDATE OR INSERT
+ON PromotionalCampaign
+FOR EACH ROW
+EXECUTE FUNCTION checkTimeInterval();
+
 ------ RESTAURANT STAFF ------
 
 -- FDS Manager
@@ -977,7 +965,10 @@ $$ LANGUAGE PLPGSQL;
      ROUND((sum(DD.time_for_one_delivery)/count(*)), 3) as average_delivery_time,
      count(D.delivery_rating) as total_number_ratings, 
      ROUND((sum(D.delivery_rating)::DECIMAL/count(D.delivery_rating)), 3) as average_ratings
-     FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id join DeliveryDuration DD on D.delivery_id = DD.delivery_id join Riders R on R.rider_id = D.rider_id join RidersSalary RS on R.rider_type = RS.rider_type
+     FROM FoodOrder FO join Delivery D on FO.order_id = D.order_id
+     join DeliveryDuration DD on D.delivery_id = DD.delivery_id
+     join Riders R on R.rider_id = D.rider_id
+     join RidersSalary RS on R.rider_type = RS.rider_type
      GROUP BY order_month, D.rider_id, order_year, R.rider_type, RS.base_salary, RS.commission;
   END
  $$ LANGUAGE PLPGSQL;
@@ -1075,7 +1066,26 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE FUNCTION checkTimeInterval()
+  RETURNS TRIGGER as $$
+BEGIN
+   IF (NEW.start_date > NEW.end_date) THEN
+       RAISE EXCEPTION 'Start date should be earlier than End date';
+   END IF;
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_time_trigger ON PromotionalCampaign CASCADE;
+CREATE TRIGGER check_time_trigger
+BEFORE UPDATE OR INSERT
+ON FDSPromotionalCampaign
+FOR EACH ROW
+EXECUTE FUNCTION checkTimeInterval();
+
 ------ FDS MANAGER -------
+
 ------ RIDERS ------
 -- --a)
 --  -- get current job
@@ -1637,7 +1647,4 @@ $$ LANGUAGE SQL;
   $$ LANGUAGE PLPGSQL;
 
 -------------- rider delivery process ----------------
-
-
-
 ------ RIDERS ------

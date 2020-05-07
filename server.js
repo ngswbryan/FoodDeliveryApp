@@ -13,6 +13,7 @@ var distDir = __dirname + "/dist/";
 app.use(express.static(distDir));
 
 const getUsers = (request, response) => {
+  console.log("jere");
   pool.query("SELECT * FROM users", (error, results) => {
     if (error) {
       response.status(400).json(error.message);
@@ -91,7 +92,7 @@ const getLocation = (request, response) => {
       response.status(200).json(results.rows);
     }
   );
-}
+};
 
 const getRiders = (request, response) => {
   const month = request.query.month;
@@ -238,6 +239,22 @@ const addUser = (request, response) => {
   );
 };
 
+const addRestaurant = (request, response) => {
+  const { rname, location, minimum } = request.body;
+
+  pool.query(
+    "INSERT INTO RESTAURANTS VALUES(DEFAULT, $1, $2, $3)",
+    [rname, location, minimum],
+    (error) => {
+      if (error) {
+        response.status(400).json(error.message);
+        return;
+      }
+      response.status(201).json({ status: "success", message: "User added." });
+    }
+  );
+};
+
 const updateOrderCount = (request, response) => {
   const {
     currentorder,
@@ -337,6 +354,21 @@ const deleteMenuItem = (request, response) => {
   console.log(rid);
 
   pool.query("select delete_menu_item($1, $2);", [fname, rid], (error) => {
+    if (error) {
+      response.status(400).json(error.message);
+      return;
+    }
+    response.status(200).json({ status: "success", message: "food deleted." });
+  });
+};
+
+const deleteRestaurant = (request, response) => {
+  const rid = request.params.rid;
+
+  console.log("delete rest");
+  console.log(rid);
+
+  pool.query("DELETE from RESTAURANTS where rid = $1;", [rid], (error) => {
     if (error) {
       response.status(400).json(error.message);
       return;
@@ -449,24 +481,20 @@ const getRiderRating = (request, response) => {
 };
 
 const getDeliveryTimings = (request, response) => {
-  const did = request.params.did; 
+  const did = request.params.did;
 
-  pool.query(
-    "select * from delivery_timings($1)",
-    [did],
-    (error, results) => {
-      if (error) {
-        response.status(400).json(error.message);
-        return; 
-      }
-      response.status(200).json(results.rows);
+  pool.query("select * from delivery_timings($1)", [did], (error, results) => {
+    if (error) {
+      response.status(400).json(error.message);
+      return;
     }
-  )
-}
+    response.status(200).json(results.rows);
+  });
+};
 
 //returns boolean
 const checkIfCompleted = (request, response) => {
-  const did = request.params.did; 
+  const did = request.params.did;
 
   pool.query(
     "select * from delivery where delivery.delivery_id = ($1) and delivery.ongoing = FALSE;",
@@ -474,15 +502,15 @@ const checkIfCompleted = (request, response) => {
     (error, results) => {
       if (error) {
         response.status(400).json(error.message);
-        return; 
+        return;
       }
       response.status(200).json(results.rows);
     }
-  )
+  );
 };
 
 const checkOngoing = (request, response) => {
-  const uid = request.params.uid; 
+  const uid = request.params.uid;
 
   pool.query(
     "SELECT cast(case WHEN EXISTS (select d.delivery_id from delivery d join foodorder fo on fo.order_id = d.order_id where fo.uid = ($1) and d.ongoing = TRUE and fo.completion_status = FALSE) THEN 1 ELSE 0 END as bit);",
@@ -490,17 +518,16 @@ const checkOngoing = (request, response) => {
     (error, results) => {
       if (error) {
         response.status(400).json(error.message);
-        return; 
+        return;
       }
       response.status(200).json(results.rows);
     }
-  )
-}
+  );
+};
 
-
-//only if ongoing 
+//only if ongoing
 const getDIDfromUID = (request, response) => {
-  const uid = request.params.uid; 
+  const uid = request.params.uid;
 
   pool.query(
     "SELECT (case WHEN EXISTS (select d.delivery_id from delivery d join foodorder fo on fo.order_id = d.order_id where fo.uid = ($1) and d.ongoing = TRUE and fo.completion_status = FALSE) THEN d.delivery_id ELSE -1::integer END) from delivery d;",
@@ -508,28 +535,23 @@ const getDIDfromUID = (request, response) => {
     (error, results) => {
       if (error) {
         response.status(400).json(error.message);
-        return; 
+        return;
       }
       response.status(200).json(results.rows);
     }
-  )
-}
-
+  );
+};
 
 const getEndTime = (request, response) => {
-  const did = request.params.did; 
+  const did = request.params.did;
 
-  pool.query(
-    "select * from delivery_endtime($1)",
-    [did],
-    (error, results) => {
-      if (error) {
-        response.status(400).json(error.message);
-        return; 
-      }
-      response.status(200).json(results.rows);
+  pool.query("select * from delivery_endtime($1)", [did], (error, results) => {
+    if (error) {
+      response.status(400).json(error.message);
+      return;
     }
-  )
+    response.status(200).json(results.rows);
+  });
 };
 
 const foodReviewUpdate = (request, response) => {
@@ -555,18 +577,18 @@ const updateDeliveryRating = (request, response) => {
 
   pool.query(
     "select update_delivery_rating($1, $2)",
-    [deliveryid, deliveryrating], 
+    [deliveryid, deliveryrating],
     (error) => {
       if (error) {
         response.status(400).json(error.message);
-        return; 
+        return;
       }
-      response 
-      .status(201)
-      .json({ status: "success", message: "updated delivery rating." })
+      response
+        .status(201)
+        .json({ status: "success", message: "updated delivery rating." });
     }
-  )
-}
+  );
+};
 
 const updateFoodItem = (request, response) => {
   const fid = request.params.fid;
@@ -607,7 +629,6 @@ const getCampaigns = (request, response) => {
     }
   );
 };
-
 
 const getFDSCampaigns = (request, response) => {
   pool.query("SELECT * FROM FDSPromotionalCampaign;", (error, results) => {
@@ -734,7 +755,6 @@ const getWeeklyStats = (request, response) => {
   );
 };
 
-
 const getMonthlyStats = (request, response) => {
   const rid = request.params.rid;
   const month = request.query.month;
@@ -752,7 +772,6 @@ const getMonthlyStats = (request, response) => {
     }
   );
 };
-
 
 const getWWS = (request, response) => {
   const rid = request.params.rid;
@@ -858,7 +877,6 @@ const updateWWS = async (request, response) => {
   }
 };
 
-
 const updateDeparture = (request, response) => {
   const did = request.query.did;
   const rid = request.query.rid;
@@ -875,7 +893,6 @@ const updateDeparture = (request, response) => {
     response.status(200).json({ status: "success", message: "food updated." });
   });
 };
-
 
 const updateCollected = (request, response) => {
   const did = request.query.did;
@@ -905,7 +922,6 @@ const updateDelivery = (request, response) => {
   });
 };
 
-
 const updateDone = (request, response) => {
   const did = request.query.did;
   const rid = request.query.rid;
@@ -928,6 +944,10 @@ app
   .delete(deleteCampaign);
 
 app.route("/manager/campaigns").get(getFDSCampaigns).post(addFDSCampaigns);
+
+app.route("/manager/restaurants/:rid").patch(deleteRestaurant);
+
+app.route("/manager/restaurants").post(addRestaurant);
 
 app.route("/manager/campaigns/:rid").delete(deleteFDSCampaign);
 
@@ -1003,13 +1023,17 @@ app.route("/users/restaurant/order/rewards/:uid").get(getRewardBalance);
 
 app.route("/users/restaurant/order/promo").post(applyDeliveryPromo);
 
-app.route("/users/restaurant/order/:uid/:rid/:total_order_cost").get(getFoodandDeliveryID);
+app
+  .route("/users/restaurant/order/:uid/:rid/:total_order_cost")
+  .get(getFoodandDeliveryID);
 
 app.route("/users/restaurant/order/ridername/:did").get(getRiderName);
 
 app.route("/users/restaurant/order/riderrating/:did").get(getRiderRating);
 
-app.route("/users/restaurant/order/deliverytimings/:did").get(getDeliveryTimings);
+app
+  .route("/users/restaurant/order/deliverytimings/:did")
+  .get(getDeliveryTimings);
 
 app.route("/users/restaurant/order/endtime/:did").get(getEndTime);
 
