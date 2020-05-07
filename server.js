@@ -372,19 +372,13 @@ const deleteRestaurant = (request, response) => {
   console.log("delete rest");
   console.log(rid);
 
-  pool.query(
-    "UPDATE RESTAURANTS set is_deleted = true where rid = $1;",
-    [rid],
-    (error) => {
-      if (error) {
-        response.status(400).json(error.message);
-        return;
-      }
-      response
-        .status(200)
-        .json({ status: "success", message: "food deleted." });
+  pool.query("DELETE from RESTAURANTS where rid = $1;", [rid], (error) => {
+    if (error) {
+      response.status(400).json(error.message);
+      return;
     }
-  );
+    response.status(200).json({ status: "success", message: "food deleted." });
+  });
 };
 
 const getFoodItems = (request, response) => {
