@@ -30,7 +30,7 @@ Alternatively,
   `DB_PORT=5432`\
   `DB_DATABASE=databasename`
 4. Run init.sql in the root directory to seed your new database.
-5. Run `node server.js` in the food of the app to start the Express server.
+5. Run `nodemon server.js` in the root of the app to start the Express server.
 6. Run `ng serve --open` to deploy the Angular app locally. 
 7. Update the url variable in api.service.ts to point to `http://localhost:3002/`
 8. Navigate to `http://localhost:4200/`. 
